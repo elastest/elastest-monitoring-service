@@ -1,0 +1,336 @@
+swagger: "2.0"
+info:
+  description: "This is the OpenAPI specification for accessing the ElasTest monitoring services."
+  version: "1.0.0"
+  title: "Monitoring as a Service API"
+  termsOfService: "TBD"
+  contact:
+    email: "felipe.gorostiaga@imdea.org"
+  license:
+    name: "License: TBD"
+    # url: ""
+host: "TBD"
+basePath: "/TBD"
+# schemes:
+# - "http"
+# - "https"
+paths:
+  /publish:
+    post:
+      tags:
+      - "Publishers"
+      summary: "Publish events"
+      description: "Through this method, a client specifies a list of events to publish over channels. Deprecated until we know how to document it properly."
+      operationId: "publishEvents"
+      deprecated: true
+      consumes:
+      - "application/json"
+      produces:
+      - "application/json"
+      parameters:
+      - in: "body"
+        name: "events"
+        description: "Events to be published.."
+        required: true
+        schema:
+         type: "array"
+         items: 
+           $ref: "#/definitions/Event"
+      responses:
+        405:
+          description: "Invalid input.."
+        200:
+          description: "Events successfully published.."
+      # security:
+      # - petstore_auth:
+      #   - "write:pets"
+      #   - "read:pets"
+      #
+
+  /subscriber:
+    post:
+      tags:
+      - "Subscribers"
+      summary: "Subscribe an endpoint to a channel"
+      description: "Through this method, a client can subscribe to a channel and receive the events published on it."
+      operationId: "subscribe"
+      consumes:
+      - "application/json"
+      produces:
+      - "application/json"
+      parameters:
+      - in: "body"
+        name: "endpoint"
+        description: "Endpoint to be registered."
+        required: true
+        schema:
+          $ref: "#/definitions/Endpoint"
+      responses:
+        405:
+          description: "Invalid input."
+        200:
+          description: "Endpoint successfully registered."
+          schema:
+            type: "string"
+            description: "Id of subscription."
+          # schema:
+          #    $ref: "#/definitions/Event" For future reference: this is how you return sth
+      # security:
+      # - petstore_auth:
+      #   - "write:pets"
+      #   - "read:pets"
+  /subscriber/{subId}:
+    delete:
+      tags:
+      - "Subscribers"
+      summary: "Unsubscribe an endpoint"
+      description: "Through this method, a client unbinds an endpoint."
+      operationId: "unsubscribe"
+      produces:
+      - "application/json"
+      parameters:
+      - name: "subId"
+        in: "path"
+        description: "Subscription id to drop."
+        required: true
+        type: "string"
+      responses:
+        200:
+          description: "Endpoint successfully unsubscribed."
+        400:
+          description: "Invalid Id supplied."
+        404:
+          description: "Subscriber not found."
+
+  /announcement:
+    post:
+      tags:
+      - "Announcements"
+      summary: "Register a new announcement rule"
+      description: "TORM/EPM/ESM may register a rule to infer the channel to route raw events when it is not explicitly defined."
+      operationId: "register"
+      consumes:
+      - "application/json"
+      produces:
+      - "application/json"
+      parameters:
+      - in: "body"
+        name: "routingRule"
+        description: "Rule to be registered."
+        required: true
+        schema:
+          $ref: "#/definitions/AnnouncementRule"
+      responses:
+        405:
+          description: "Invalid input."
+        200:
+          description: "Announcement successfully registered."
+          schema:
+            type: "string"
+            description: "Id of registration."
+  /announcement/{subId}:
+    delete:
+      tags:
+      - "Announcements"
+      summary: "Drop an announcement rule"
+      description: "Through this method, a client removes an announcement rule."
+      operationId: "unregister"
+      produces:
+      - "application/json"
+      parameters:
+      - name: "regId"
+        in: "path"
+        description: "Registration id to drop."
+        required: true
+        type: "string"
+      responses:
+        200:
+          description: "Announcement successfully removed."
+        400:
+          description: "Invalid Id supplied."
+        404:
+          description: "Announcement not found."
+      
+  /EventProcessingMachine:
+    get:
+      tags:
+      - "EventProcessingMachine (name TBD)"
+      summary: "Get the list of deployed EPM"
+      description: "Retrieves the list of deployed EPMs."
+      operationId: "getDeployedEPMs"
+      produces:
+      - "application/json"
+      responses:
+        200:
+          description: "Array of EPMs deployed."
+          schema:
+           type: "array"
+           items: 
+              $ref: "#/definitions/DeployedEPM"
+      # security:
+      # - petstore_auth:
+      #   - "write:pets"
+      #   - "read:pets"
+    post:
+      tags:
+      - "EventProcessingMachine (name TBD)"
+      summary: "Deploy a new EPM"
+      description: "Through this method, a client deploys a new EPM."
+      operationId: "postEPM"
+      consumes:
+      - "application/json"
+      produces:
+      - "application/json"
+      parameters:
+      - in: "body"
+        name: "epm"
+        description: "EPM to be deployed."
+        required: true
+        schema:
+          $ref: "#/definitions/EPM"
+      responses:
+        405:
+          description: "Invalid input."
+        200:
+          description: "EPM successfully deployed."
+          schema:
+            type: "string"
+            description: "id of deployed EPM."
+      # security:
+      # - petstore_auth:
+      #   - "write:pets"
+      #   - "read:pets"
+  /EventProcessingMachine/{EPMId}:
+    get:
+      tags:
+      - "EventProcessingMachine (name TBD)"
+      summary: "Find EPM by Id"
+      description: "Returns a single EPM."
+      operationId: "getEPMById"
+      produces:
+      - "application/json"
+      parameters:
+      - name: "EPMId"
+        in: "path"
+        description: "Id of EPM to return."
+        required: true
+        type: "string"
+      responses:
+        200:
+          description: "EPM found and returned."
+          schema:
+            $ref: '#/definitions/EPM'
+        400:
+          description: "Invalid Id supplied."
+        404:
+          description: "EPM not found."
+    put:
+      tags:
+      - "EventProcessingMachine (name TBD)"
+      summary: "Update an existing EPM"
+      description: "."
+      operationId: "updateEPM"
+      consumes:
+      - "application/json"
+      produces:
+      - "application/json"
+      parameters:
+      - name: "EPMId"
+        in: "path"
+        description: "Id of EPM to return."
+        required: true
+        type: "string"
+      - in: "body"
+        name: "epm"
+        description: "New EPM definition."
+        required: true
+        schema:
+          $ref: "#/definitions/EPM"
+      responses:
+        200:
+          description: "EPM successfully updated."
+        400:
+          description: "Invalid EPM supplied."
+        404:
+          description: "EPM not found."
+    delete:
+      tags:
+      - "EventProcessingMachine (name TBD)"
+      summary: "Deletes an EPM"
+      description: "."
+      operationId: "deleteEPM"
+      produces:
+      - "application/xml"
+      - "application/json"
+      parameters:
+      - name: "EPMId"
+        in: "path"
+        description: "Id of EPM to delete."
+        required: true
+        type: "string"
+      responses:
+        200:
+          description: "EPM successfully deleted."
+        400:
+          description: "Invalid Id supplied."
+        404:
+          description: "EPM not found."
+  /flush:
+    post:
+      tags:
+      - "Flush"
+      summary: "Flush EMS data"
+      description: "This method resets the EMS instance to its initial state, as if it had just been started."
+      operationId: "flush"
+      responses:
+        200:
+          description: "EMS successfully flushed."
+definitions:
+  Event:
+    type: "object"
+    properties:
+      header:
+        $ref: "#/definitions/EventHeader"
+      payload:
+        type: "string"
+  EventHeader:
+    type: "object"
+    properties:
+      id:
+        type: "string"
+      channel:
+        type: "string"
+      timestamp:
+        type: "integer"
+        format: "int64"
+  EPM:
+    type: "object"
+    properties:
+      definition:
+        type: "string"
+  DeployedEPM:
+    type: "object"
+    properties:
+        id:
+          type: "string"
+        epm:
+          $ref: "#/definitions/EPM"
+  Endpoint:
+    type: "object"
+    properties:
+      channel:
+        type: "string"
+      ip:
+        type: "string"
+      port:
+        type: "integer"
+      protocol:
+        type: "string"
+  AnnouncementRule:
+    type: "object"
+    properties:
+      inferenceRule:
+          type: "string"
+externalDocs:
+  description: "Monitoring Services and Instrumentation Agents document."
+  url: "https://docs.google.com/document/d/1Txd9qNtLbYWph1Ne61TfNomtAxQtmH2P-8Ib5SZ1uiE"
