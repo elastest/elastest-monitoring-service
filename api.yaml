@@ -151,130 +151,130 @@ paths:
         404:
           description: "Announcement not found."
       
-  /EventProcessingMachine:
+  /MonitoringMachine:
     get:
       tags:
-      - "EventProcessingMachine (name TBD)"
-      summary: "Get the list of deployed EPM"
-      description: "Retrieves the list of deployed EPMs."
-      operationId: "getDeployedEPMs"
+      - "MonitoringMachine"
+      summary: "Get the list of deployed MoM"
+      description: "Retrieves the list of deployed MoMs."
+      operationId: "getDeployedMoMs"
       produces:
       - "application/json"
       responses:
         200:
-          description: "Array of EPMs deployed."
+          description: "Array of MoMs deployed."
           schema:
            type: "array"
            items: 
-              $ref: "#/definitions/DeployedEPM"
+              $ref: "#/definitions/DeployedMoM"
       # security:
       # - petstore_auth:
       #   - "write:pets"
       #   - "read:pets"
     post:
       tags:
-      - "EventProcessingMachine (name TBD)"
-      summary: "Deploy a new EPM"
-      description: "Through this method, a client deploys a new EPM."
-      operationId: "postEPM"
+      - "MonitoringMachine"
+      summary: "Deploy a new MoM"
+      description: "Through this method, a client deploys a new MoM."
+      operationId: "postMoM"
       consumes:
       - "application/json"
       produces:
       - "application/json"
       parameters:
       - in: "body"
-        name: "epm"
-        description: "EPM to be deployed."
+        name: "mom"
+        description: "MoM to be deployed."
         required: true
         schema:
-          $ref: "#/definitions/EPM"
+          $ref: "#/definitions/MoM"
       responses:
         405:
           description: "Invalid input."
         200:
-          description: "EPM successfully deployed."
+          description: "MoM successfully deployed."
           schema:
             type: "string"
-            description: "id of deployed EPM."
+            description: "id of deployed MoM."
       # security:
       # - petstore_auth:
       #   - "write:pets"
       #   - "read:pets"
-  /EventProcessingMachine/{EPMId}:
+  /MonitoringMachine/{MoMId}:
     get:
       tags:
-      - "EventProcessingMachine (name TBD)"
-      summary: "Find EPM by Id"
-      description: "Returns a single EPM."
-      operationId: "getEPMById"
+      - "MonitoringMachine"
+      summary: "Find MoM by Id"
+      description: "Returns a single MoM."
+      operationId: "getMoMById"
       produces:
       - "application/json"
       parameters:
-      - name: "EPMId"
+      - name: "MoMId"
         in: "path"
-        description: "Id of EPM to return."
+        description: "Id of MoM to return."
         required: true
         type: "string"
       responses:
         200:
-          description: "EPM found and returned."
+          description: "MoM found and returned."
           schema:
-            $ref: '#/definitions/EPM'
+            $ref: '#/definitions/MoM'
         400:
           description: "Invalid Id supplied."
         404:
-          description: "EPM not found."
+          description: "MoM not found."
     put:
       tags:
-      - "EventProcessingMachine (name TBD)"
-      summary: "Update an existing EPM"
+      - "MonitoringMachine"
+      summary: "Update an existing MoM"
       description: "."
-      operationId: "updateEPM"
+      operationId: "updateMoM"
       consumes:
       - "application/json"
       produces:
       - "application/json"
       parameters:
-      - name: "EPMId"
+      - name: "MoMId"
         in: "path"
-        description: "Id of EPM to return."
+        description: "Id of MoM to return."
         required: true
         type: "string"
       - in: "body"
-        name: "epm"
-        description: "New EPM definition."
+        name: "mom"
+        description: "New MoM definition."
         required: true
         schema:
-          $ref: "#/definitions/EPM"
+          $ref: "#/definitions/MoM"
       responses:
         200:
-          description: "EPM successfully updated."
+          description: "MoM successfully updated."
         400:
-          description: "Invalid EPM supplied."
+          description: "Invalid MoM supplied."
         404:
-          description: "EPM not found."
+          description: "MoM not found."
     delete:
       tags:
-      - "EventProcessingMachine (name TBD)"
-      summary: "Deletes an EPM"
+      - "MonitoringMachine"
+      summary: "Deletes a MoM"
       description: "."
-      operationId: "deleteEPM"
+      operationId: "deleteMoM"
       produces:
       - "application/xml"
       - "application/json"
       parameters:
-      - name: "EPMId"
+      - name: "MoMId"
         in: "path"
-        description: "Id of EPM to delete."
+        description: "Id of MoM to delete."
         required: true
         type: "string"
       responses:
         200:
-          description: "EPM successfully deleted."
+          description: "MoM successfully deleted."
         400:
           description: "Invalid Id supplied."
         404:
-          description: "EPM not found."
+          description: "MoM not found."
   /flush:
     post:
       tags:
@@ -303,18 +303,18 @@ definitions:
       timestamp:
         type: "integer"
         format: "int64"
-  EPM:
+  MoM:
     type: "object"
     properties:
       definition:
         type: "string"
-  DeployedEPM:
+  DeployedMoM:
     type: "object"
     properties:
         id:
           type: "string"
-        epm:
-          $ref: "#/definitions/EPM"
+        mom:
+          $ref: "#/definitions/MoM"
   Endpoint:
     type: "object"
     properties:
