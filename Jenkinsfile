@@ -12,7 +12,8 @@ node('docker') {
 
             stage "Build image - Package"
                 echo ("Building")
-                def myimage = docker.build 'elastest/elastest-monitoring-service'
+                sh 'docker build -t elastest/elastest-monitoring-service .'
+                def myimage = docker.image('elastest/elastest-monitoring-service');
 
             stage "Run image"
                 myimage.run()
