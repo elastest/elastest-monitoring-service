@@ -81,7 +81,7 @@ func getAggregatedSignal(signalid SignalNameAndPars) (*AggregatedSignal, error) 
 	return &AggregatedSignal{}, errors.New("no such entry")
 }
 
-var signalCreationMap = map[SignalName][]SNameAndRebound {
+var aggregatedSignalCreationMap = map[SignalName][]SNameAndRebound {
 	"cpuload": []SNameAndRebound {
 		SNameAndRebound{"avgcpuload", map[Param]Param{}},
 	},
@@ -125,7 +125,7 @@ func createSampledSignal(signalpars SignalNameAndPars) *SampledSignal {
 	if (err!= nil) {
 		panic(err)
 	}
-	triggerAggSignalCreation(signalpars, ret)
+	reportSignalCreation(signalpars, ret)
 	return ret
 }
 
@@ -146,17 +146,17 @@ func createAggregatedSignal(signalpars SignalNameAndPars) *AggregatedSignal {
 	if (err!= nil) {
 		panic(err)
 	}
-	triggerAggSignalCreation(signalpars, ret)
+	reportSignalCreation(signalpars, ret)
 	return ret
 }
 
-func triggerAggSignalCreation(srcSignalId SignalNameAndPars, srcSignal Signal) {
+func reportSignalCreation(srcSignalId SignalNameAndPars, srcSignal Signal) {
 	// it also triggers write def creations
 	registerWriteDefs(srcSignalId, &srcSignal)
 
 	sName := srcSignalId.signalName
 	sPars := srcSignalId.parameters
-	arr, ok := signalCreationMap[sName]
+	arr, ok := aggregatedSignalCreationMap[sName]
 	if (ok) {
 		for _, inducedSignal := range arr {
 			theDefinition,ok := theGlobalAggregatedSignalDefs[inducedSignal.signalName]

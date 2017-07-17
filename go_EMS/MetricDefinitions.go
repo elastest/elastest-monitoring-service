@@ -2,16 +2,12 @@ package main
 
 import "reflect"
 
-type ParamAndValue struct {
-	param Param
-	value JSONPath
-}
-
 type SampledSignalDefinition struct {
 	name SignalName
 	paramsPaths map[Param]JSONPath
 	inChannel Channel
 	valuePath JSONPath
+	// add predicate over events
 }
 
 func (ssignaldef *SampledSignalDefinition) getParams() []Param {
@@ -36,6 +32,15 @@ type AggregatedSignalDefinition struct {
 
 func (aggsignaldef *AggregatedSignalDefinition) getParams() []Param {
 	return aggsignaldef.params
+}
+
+type ConditionalSignalDefinition struct {
+	name SignalName
+	params []Param
+	sourceSignal SignalName
+	sourceParamRebind map[Param]Param
+	condition SessionName
+	conditionParamRebind map[Param]Param
 }
 
 
