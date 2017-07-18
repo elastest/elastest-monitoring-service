@@ -29,6 +29,11 @@ type SignalIdToConditionalSignal struct {
 	signal *ConditionalSignal
 }
 
+type SessionParsAndSignal struct {
+	params map[Param]string
+	signal *SessionSignal
+}
+
 func (sigida SignalNameAndPars) equals(sigidb SignalNameAndPars) bool {
 	if (sigida.signalName == sigidb.signalName) {
 		paramsa := sigida.parameters
@@ -97,6 +102,24 @@ func registerConditionalSignal(signalid SignalNameAndPars, signal *ConditionalSi
 	return nil
 }
 
+// stub
+type StubSessSignal struct {}
+func (ssignal StubSessSignal) getState() bool {
+	return true // TODO
+}
+
+var stubSessionSignal SessionSignal = StubSessSignal {}
+
+var stubSessionParsAndSignals []SessionParsAndSignal = []SessionParsAndSignal {
+	SessionParsAndSignal {nil, &stubSessionSignal},
+}
+// end of stub
+
+func getSessionSignals(sessionName SessionName, conditionBoundParams map[Param]string) []SessionParsAndSignal {
+	// TODO
+	return stubSessionParsAndSignals
+}
+
 var aggregatedSignalCreationMap = map[SignalName][]SNameAndRebound {
 	"cpuload": []SNameAndRebound {
 		SNameAndRebound{"avgcpuload", map[Param]Param{}},
@@ -141,15 +164,6 @@ var aggregatorsMap = map[string] (func(vals []interface{}) interface{}) {
 		// assert len(vals)>0. Else, should be undefined
 		return res / float64(len(vals))
 	},
-}
-
-type SessionParsAndSignal struct {
-	params map[Param]string
-	signal *SessionSignal
-}
-
-func getSessionSignals(sessionName SessionName, conditionBoundParams map[Param]string) []*SessionParsAndSignal {
-	return nil// TODO
 }
 
 func createSampledSignal(signalpars SignalNameAndPars) *SampledSignal {
