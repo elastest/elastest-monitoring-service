@@ -3,6 +3,7 @@ package main
 import "errors"
 import "encoding/json"
 import "fmt"
+import "time"
 
 type SNameAndRebound struct {
 	signalName SignalName
@@ -116,7 +117,7 @@ func registerConditionalSignal(signalid SignalNameAndPars, signal *ConditionalSi
 // stub
 type StubSessSignal struct {}
 func (ssignal StubSessSignal) getState() bool {
-	return true // TODO
+	return time.Now().Minute() %2 == 0
 }
 
 var stubSessionSignal SessionSignal = StubSessSignal {}
@@ -223,6 +224,7 @@ func createConditionalSignal(signalpars SignalNameAndPars, sessionSignal *Sessio
 	if (err!= nil) {
 		panic(err)
 	}
+	reportSignalCreation(signalpars, csignal)
 }
 
 func reportSignalCreation(srcSignalId SignalNameAndPars, srcSignal Signal) {
@@ -317,6 +319,21 @@ var theGlobalWriteDefs = []SignalWriteDefinition {
 		"cpuload",
 		"out",
 		map[JSONPath]WriteValue{
+			"load" : WriteValue{"value", ""},
+			"hostname" : WriteValue{"param", "x"},
+		},
+		SNameAndRebound{
+			"cpuload",
+			map[Param]Param{
+				"x" : "x",
+			},
+		},
+	},
+	SignalWriteDefinition{
+		"condcpuload",
+		"out",
+		map[JSONPath]WriteValue{
+			"conditional" : WriteValue{"literal", "!!"},
 			"load" : WriteValue{"value", ""},
 			"hostname" : WriteValue{"param", "x"},
 		},
