@@ -9,8 +9,19 @@ type SNameAndRebound struct {
 	reboundParameters map[Param]Param
 }
 
+type SNameAndBiRebound struct {
+	signalName SignalName
+	reboundMetricParameters map[Param]Param
+	reboundSessionParameters map[Param]Param
+}
+
 type SignalNameAndPars struct {
 	signalName SignalName
+	parameters map[Param]string
+}
+
+type SessionNameAndPars struct {
+	sessionName SessionName
 	parameters map[Param]string
 }
 
@@ -126,8 +137,10 @@ var aggregatedSignalCreationMap = map[SignalName][]SNameAndRebound {
 	},
 }
 
-var conditionalSignalCreationMap = map[SignalName][]SNameAndRebound {
-	// TODO
+var conditionalSignalCreationMap = map[SignalName][]SNameAndBiRebound {
+	"cpuload" : []SNameAndBiRebound {
+		SNameAndBiRebound{"condcpuload", map[Param]Param{"x":"x"}, nil},
+	},
 }
 
 func reportSample(signalpars SignalNameAndPars, value interface{}) {
@@ -138,20 +151,27 @@ func reportSample(signalpars SignalNameAndPars, value interface{}) {
 	theSignal.latestValue = value
 }
 
-// TODO change to array maybe?
+// TODO change to array maybe (to avoid repetition)?
 var theGlobalAggregatedSignalDefs = map[SignalName]AggregatedSignalDefinition {
 	"avgcpuload" : AggregatedSignalDefinition {
 			"avgcpuload",
-			"avg",
-			"cpuload",
 			[]Param{},
+			"avg",
 			[]Param{"x"},
-			map[Param]Param{},
+			"cpuload",
+			[]Param{"x"},
 		},
 }
 
 var theGlobalConditionalSignalDefs = map[SignalName]ConditionalSignalDefinition {
-	// TODO
+	"condcpuload" : ConditionalSignalDefinition {
+			"condcpuload",
+			[]Param{"x"},
+			"cpuload",
+			[]Param{"x"},
+			"timeIsOdd",
+			nil,
+	},
 }
 
 
@@ -220,16 +240,16 @@ func reportSignalCreation(srcSignalId SignalNameAndPars, srcSignal Signal) {
 			// assert ok
 			if (!ok) {
 				// error
-				panic("nosuchaggsig")
+				panic("nosuchcondsig")
 			}
 
 			signalBoundParams := make(map[Param]string)
-			for srcParam, myParam := range theDefinition.sourceParamRebind {
+			for srcParam, myParam := range inducedSignal.reboundMetricParameters {
 				signalBoundParams[myParam] = sPars[srcParam]
 			}
 
 			conditionBoundParams := make(map[Param]string)
-			for sessParam, myParam := range theDefinition.conditionParamRebind {
+			for sessParam, myParam := range inducedSignal.reboundSessionParameters {
 				val, ok := signalBoundParams[myParam]
 				if (ok) {
 					conditionBoundParams[sessParam] = val
@@ -244,7 +264,7 @@ func reportSignalCreation(srcSignalId SignalNameAndPars, srcSignal Signal) {
 					paramvals[k] = v
 				}
 				for k,v := range sessParsAndSignal.params {
-					paramvals[theDefinition.conditionParamRebind[k]] = v
+					paramvals[inducedSignal.reboundSessionParameters[k]] = v
 				}
 				// assert paramvals are all the parameters
 				nameAndPars := SignalNameAndPars{inducedSignal.signalName, paramvals}

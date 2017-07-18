@@ -21,13 +21,11 @@ func (ssignaldef *SampledSignalDefinition) getParams() []Param {
 
 type AggregatedSignalDefinition struct {
 	name SignalName
-	funcName string
-	signalsFamily SignalName
 	params []Param
+	funcName string
 	quantifiedParams []Param // in signalsFamily's definition
-	freeParams map[Param]Param
-	// Every signalsFamily's not-quantified param must be a key of freeParams,
-	// and every member of params must be a value
+	signalsFamily SignalName
+	signalParams []Param
 }
 
 func (aggsignaldef *AggregatedSignalDefinition) getParams() []Param {
@@ -38,9 +36,9 @@ type ConditionalSignalDefinition struct {
 	name SignalName
 	params []Param
 	sourceSignal SignalName
-	sourceParamRebind map[Param]Param
+	srcSignalParams []Param
 	condition SessionName
-	conditionParamRebind map[Param]Param
+	conditionParams []Param
 }
 
 
