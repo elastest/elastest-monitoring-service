@@ -51,6 +51,20 @@ func (aggSignal AggregatedSignal) Sample() interface{} {
 	return ret
 }
 
+type ConditionalSignal struct {
+	srcSignal *Signal
+	conditionSignal *SessionSignal
+}
+
+var UNDEFINED interface {} = nil
+
+func (csignal ConditionalSignal) Sample() interface{} {
+	if (*csignal.conditionSignal).getState() {
+		return (*csignal.srcSignal).Sample()
+	}
+	return UNDEFINED
+}
+
 var sampledSignals []SignalNameAndPars
 
 func checkWriteDefs (timestamp string) {

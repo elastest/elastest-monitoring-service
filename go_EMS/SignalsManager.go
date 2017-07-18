@@ -24,6 +24,11 @@ type SignalIdToAggregatedSignal struct {
 	signal *AggregatedSignal
 }
 
+type SignalIdToConditionalSignal struct {
+	sigid SignalNameAndPars
+	signal *ConditionalSignal
+}
+
 func (sigida SignalNameAndPars) equals(sigidb SignalNameAndPars) bool {
 	if (sigida.signalName == sigidb.signalName) {
 		paramsa := sigida.parameters
@@ -42,6 +47,7 @@ func (sigida SignalNameAndPars) equals(sigidb SignalNameAndPars) bool {
 
 var sampledSignalMan []*SignalIdToSampledSignal
 var aggregatedSignalMan []*SignalIdToAggregatedSignal
+var conditionalSignalMan []*SignalIdToConditionalSignal
 
 func registerSampledSignal(signalid SignalNameAndPars, signal *SampledSignal) error {
 	for _, entry := range sampledSignalMan {
@@ -79,6 +85,16 @@ func getAggregatedSignal(signalid SignalNameAndPars) (*AggregatedSignal, error) 
 		}
 	}
 	return &AggregatedSignal{}, errors.New("no such entry")
+}
+
+func registerConditionalSignal(signalid SignalNameAndPars, signal *ConditionalSignal) error {
+	for _, entry := range conditionalSignalMan {
+		if (signalid.equals(entry.sigid)) {
+			return errors.New("entry already exists")
+		}
+	}
+	conditionalSignalMan = append(conditionalSignalMan, &SignalIdToConditionalSignal{signalid, signal})
+	return nil
 }
 
 var aggregatedSignalCreationMap = map[SignalName][]SNameAndRebound {
@@ -168,7 +184,11 @@ func createAggregatedSignal(signalpars SignalNameAndPars) *AggregatedSignal {
 }
 
 func createConditionalSignal(signalpars SignalNameAndPars, sessionSignal *SessionSignal, metricSignal *Signal) {
-	// TODO
+	csignal := &ConditionalSignal{metricSignal, sessionSignal}
+	err := registerConditionalSignal(signalpars, csignal)
+	if (err!= nil) {
+		panic(err)
+	}
 }
 
 func reportSignalCreation(srcSignalId SignalNameAndPars, srcSignal Signal) {
