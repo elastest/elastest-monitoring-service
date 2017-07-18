@@ -87,6 +87,10 @@ var aggregatedSignalCreationMap = map[SignalName][]SNameAndRebound {
 	},
 }
 
+var conditionalSignalCreationMap = map[SignalName][]SNameAndRebound {
+	// TODO
+}
+
 func reportSample(signalpars SignalNameAndPars, value interface{}) {
 	theSignal, err := getSampledSignal(signalpars)
 	if (err != nil) {
@@ -107,6 +111,10 @@ var theGlobalAggregatedSignalDefs = map[SignalName]AggregatedSignalDefinition {
 		},
 }
 
+var theGlobalConditionalSignalDefs = map[SignalName]ConditionalSignalDefinition {
+	// TODO
+}
+
 
 var aggregatorsMap = map[string] (func(vals []interface{}) interface{}) {
 	"avg": func (vals []interface{}) interface{} {
@@ -114,9 +122,18 @@ var aggregatorsMap = map[string] (func(vals []interface{}) interface{}) {
 		for _, val := range vals {
 			res += val.(float64)
 		}
-		// assert len(vals)>0
+		// assert len(vals)>0. Else, should be undefined
 		return res / float64(len(vals))
 	},
+}
+
+type SessionParsAndSignal struct {
+	params map[Param]string
+	signal *SessionSignal
+}
+
+func getSessionSignals(sessionName SessionName, conditionBoundParams map[Param]string) []*SessionParsAndSignal {
+	return nil// TODO
 }
 
 func createSampledSignal(signalpars SignalNameAndPars) *SampledSignal {
@@ -150,15 +167,62 @@ func createAggregatedSignal(signalpars SignalNameAndPars) *AggregatedSignal {
 	return ret
 }
 
+func createConditionalSignal(signalpars SignalNameAndPars, sessionSignal *SessionSignal, metricSignal *Signal) {
+	// TODO
+}
+
 func reportSignalCreation(srcSignalId SignalNameAndPars, srcSignal Signal) {
 	// it also triggers write def creations
 	registerWriteDefs(srcSignalId, &srcSignal)
 
 	sName := srcSignalId.signalName
 	sPars := srcSignalId.parameters
-	arr, ok := aggregatedSignalCreationMap[sName]
+
+	// create conditional signals
+	arr, ok := conditionalSignalCreationMap[sName]
 	if (ok) {
 		for _, inducedSignal := range arr {
+			theDefinition,ok := theGlobalConditionalSignalDefs[inducedSignal.signalName]
+			// assert ok
+			if (!ok) {
+				// error
+				panic("nosuchaggsig")
+			}
+
+			signalBoundParams := make(map[Param]string)
+			for srcParam, myParam := range theDefinition.sourceParamRebind {
+				signalBoundParams[myParam] = sPars[srcParam]
+			}
+
+			conditionBoundParams := make(map[Param]string)
+			for sessParam, myParam := range theDefinition.conditionParamRebind {
+				val, ok := signalBoundParams[myParam]
+				if (ok) {
+					conditionBoundParams[sessParam] = val
+				}
+			}
+
+			sessionParsAndSignals := getSessionSignals(theDefinition.condition, conditionBoundParams)
+
+			for _, sessParsAndSignal := range sessionParsAndSignals {
+				paramvals := make(map[Param]string)
+				for k,v := range signalBoundParams {
+					paramvals[k] = v
+				}
+				for k,v := range sessParsAndSignal.params {
+					paramvals[theDefinition.conditionParamRebind[k]] = v
+				}
+				// assert paramvals are all the parameters
+				nameAndPars := SignalNameAndPars{inducedSignal.signalName, paramvals}
+				createConditionalSignal(nameAndPars, sessParsAndSignal.signal, &srcSignal)
+			}
+		}
+	}
+
+	// create aggregated signals and add source
+	aggSignals, ok := aggregatedSignalCreationMap[sName]
+	if (ok) {
+		for _, inducedSignal := range aggSignals {
 			theDefinition,ok := theGlobalAggregatedSignalDefs[inducedSignal.signalName]
 			// assert ok
 			if (!ok) {
