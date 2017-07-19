@@ -92,6 +92,24 @@ var theGlobalSampledSignalDefs = []SampledSignalDefinition {
 		},
 }
 
+var theGlobalBaseSessionDefs = []BaseSessionDefinition {
+	BaseSessionDefinition {
+		"condcpuload",
+		[]EventDefinition {
+			EventDefinition {
+				"condition_true",
+				nil,
+			},
+		},
+		[]EventDefinition {
+			EventDefinition {
+				"condition_false",
+				nil,
+			},
+		},
+	},
+}
+
 func checkSamples(evt Event) {
 	for _, ssdef := range theGlobalSampledSignalDefs {
 		if (evt.Channel == ssdef.inChannel) {

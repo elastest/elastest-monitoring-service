@@ -13,7 +13,7 @@ type BaseSessionDefinition struct {
 type EventDefinition struct {
 	inChannel Channel
 	paramsPaths map[Param]JSONPath // May be partial function for inhibitor evs
-	// add predicate over events
+	// eventProperties func(e Event) bool <- add later, also for sampled signals
 }
 
 func (basedef *BaseSessionDefinition) getParams() []Param {
