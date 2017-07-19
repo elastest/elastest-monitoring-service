@@ -149,7 +149,7 @@ func reportSample(signalpars SignalNameAndPars, value interface{}) {
 	if (err != nil) {
 		theSignal = createSampledSignal(signalpars)
 	}
-	theSignal.latestValue = value
+	theSignal.latestValue = &value
 }
 
 // TODO change to array maybe (to avoid repetition)?
@@ -176,14 +176,17 @@ var theGlobalConditionalSignalDefs = map[SignalName]ConditionalSignalDefinition 
 }
 
 
-var aggregatorsMap = map[string] (func(vals []interface{}) interface{}) {
-	"avg": func (vals []interface{}) interface{} {
+var aggregatorsMap = map[string] (func(vals []interface{}) *interface{}) {
+	"avg": func (vals []interface{}) *interface{} {
+		if len(vals) == 0 {
+			return UNDEFINED
+		}
 		res := 0.0
 		for _, val := range vals {
 			res += val.(float64)
 		}
-		// assert len(vals)>0. Else, should be undefined
-		return res / float64(len(vals))
+		var ret interface{} = res / float64(len(vals))
+		return &ret
 	},
 }
 
@@ -369,7 +372,11 @@ func createWriter(srcSignal *Signal, parameters map[Param]string, writedef Signa
 			for f, v := range writedef.fieldsAndValues {
 				switch v.valtype {
 					case "value":
-						dasmap[f] = value // should do a proper structure for dasmap
+						if (value == nil) {
+							dasmap[f] = 0 // should get the "zero value" from the type of the signal
+						} else {
+							dasmap[f] = *value // should do a proper structure for dasmap <- I no longer know what I meant with this comment
+						}
 					case "param":
 						dasmap[f] = parameters[Param(v.valpayload)]
 					case "literal":
