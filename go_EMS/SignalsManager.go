@@ -319,6 +319,7 @@ var theGlobalWriteDefs = []SignalWriteDefinition {
 		"cpuload",
 		"out",
 		map[JSONPath]WriteValue{
+			"metric" : WriteValue{"literal", "cpuload"},
 			"load" : WriteValue{"value", ""},
 			"hostname" : WriteValue{"param", "x"},
 		},
@@ -333,7 +334,7 @@ var theGlobalWriteDefs = []SignalWriteDefinition {
 		"condcpuload",
 		"out",
 		map[JSONPath]WriteValue{
-			"conditional" : WriteValue{"literal", "!!"},
+			"metric" : WriteValue{"literal", "condcpuload"},
 			"load" : WriteValue{"value", ""},
 			"hostname" : WriteValue{"param", "x"},
 		},
