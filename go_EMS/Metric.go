@@ -94,16 +94,16 @@ var theGlobalSampledSignalDefs = []SampledSignalDefinition {
 
 var theGlobalBaseSessionDefs = []BaseSessionDefinition {
 	BaseSessionDefinition {
-		"condcpuload",
+		"timeIsEven",
 		[]EventDefinition {
 			EventDefinition {
-				"condition_true",
+				"in_condition_true",
 				nil,
 			},
 		},
 		[]EventDefinition {
 			EventDefinition {
-				"condition_false",
+				"in_condition_false",
 				nil,
 			},
 		},
@@ -111,22 +111,37 @@ var theGlobalBaseSessionDefs = []BaseSessionDefinition {
 }
 
 func checkSamples(evt Event) {
-	for _, ssdef := range theGlobalSampledSignalDefs {
-		if (evt.Channel == ssdef.inChannel) {
-			sampledSignal, value := extractSignalIdAndValue(ssdef, evt)
+	for _, ssignaldef := range theGlobalSampledSignalDefs {
+		if (evt.Channel == ssignaldef.inChannel) {
+			sampledSignal := SignalNameAndPars{ssignaldef.name, extractParamsMap(evt, ssignaldef.paramsPaths)}
+			value := extractFromMap(evt.Payload, ssignaldef.valuePath)
 			sampledSignals = append(sampledSignals, sampledSignal)
 			reportSample(sampledSignal, value)
 		}
 	}
+	for _, bsessiondef := range theGlobalBaseSessionDefs {
+		// first inhibitors, so activators can override them if needed
+		for _, inhEvent := range bsessiondef.inhibitorEvents {
+			if (evt.Channel == inhEvent.inChannel) {
+				inhibitedSession := SignalNameAndPars{bsessiondef.name, extractParamsMap(evt, inhEvent.paramsPaths)}
+				updateBaseSession(inhibitedSession, false)
+			}
+		}
+		for _, actEvent := range bsessiondef.activatorEvents {
+			if (evt.Channel == actEvent.inChannel) {
+				activatedSession := SignalNameAndPars{bsessiondef.name, extractParamsMap(evt, actEvent.paramsPaths)}
+				updateBaseSession(activatedSession, true)
+			}
+		}
+	}
 }
 
-func extractSignalIdAndValue(ssdef SampledSignalDefinition, evt Event) (SignalNameAndPars, interface{}) {
+func extractParamsMap(evt Event, paramsPaths map[Param]JSONPath) map[Param]string {
 	paramsMap := map[Param]string{}
-	for param, path := range ssdef.paramsPaths {
+	for param, path := range paramsPaths {
 		paramsMap[param] = extractFromMap(evt.Payload, path).(string)
 	}
-	value := extractFromMap(evt.Payload, ssdef.valuePath)
-	return SignalNameAndPars{ssdef.name, paramsMap}, value
+	return paramsMap
 }
 
 func extractFromMap(themap map[string]interface{}, strpath JSONPath) interface{} {

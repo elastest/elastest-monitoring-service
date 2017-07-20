@@ -2,8 +2,6 @@ package main
 
 import "reflect"
 
-type SessionName string
-
 type BaseSessionDefinition struct {
 	name SignalName
 	activatorEvents []EventDefinition// cannot be empty

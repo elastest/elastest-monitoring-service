@@ -3,7 +3,6 @@ package main
 import "errors"
 import "encoding/json"
 import "fmt"
-import "time"
 
 type SNameAndRebound struct {
 	signalName SignalName
@@ -18,11 +17,6 @@ type SNameAndBiRebound struct {
 
 type SignalNameAndPars struct {
 	signalName SignalName
-	parameters map[Param]string
-}
-
-type SessionNameAndPars struct {
-	sessionName SessionName
 	parameters map[Param]string
 }
 
@@ -41,9 +35,9 @@ type SignalIdToConditionalSignal struct {
 	signal *ConditionalSignal
 }
 
-type SessionParsAndSignal struct {
+type MetricParsAndSignal struct {
 	params map[Param]string
-	signal *SessionSignal
+	signal *Signal
 }
 
 func (sigida SignalNameAndPars) equals(sigidb SignalNameAndPars) bool {
@@ -65,6 +59,11 @@ func (sigida SignalNameAndPars) equals(sigidb SignalNameAndPars) bool {
 var sampledSignalMan []*SignalIdToSampledSignal
 var aggregatedSignalMan []*SignalIdToAggregatedSignal
 var conditionalSignalMan []*SignalIdToConditionalSignal
+
+func getSignals(signalName SignalName, boundParams map[Param]string) []MetricParsAndSignal {
+	// TODO
+	return nil
+}
 
 func registerSampledSignal(signalid SignalNameAndPars, signal *SampledSignal) error {
 	for _, entry := range sampledSignalMan {
@@ -114,24 +113,6 @@ func registerConditionalSignal(signalid SignalNameAndPars, signal *ConditionalSi
 	return nil
 }
 
-// stub
-type StubSessSignal struct {}
-func (ssignal StubSessSignal) getState() bool {
-	return time.Now().Minute() %2 == 0
-}
-
-var stubSessionSignal SessionSignal = StubSessSignal {}
-
-var stubSessionParsAndSignals []SessionParsAndSignal = []SessionParsAndSignal {
-	SessionParsAndSignal {nil, &stubSessionSignal},
-}
-// end of stub
-
-func getSessionSignals(sessionName SessionName, conditionBoundParams map[Param]string) []SessionParsAndSignal {
-	// TODO
-	return stubSessionParsAndSignals
-}
-
 var aggregatedSignalCreationMap = map[SignalName][]SNameAndRebound {
 	"cpuload": []SNameAndRebound {
 		SNameAndRebound{"avgcpuload", map[Param]Param{}},
@@ -141,6 +122,9 @@ var aggregatedSignalCreationMap = map[SignalName][]SNameAndRebound {
 var conditionalSignalCreationMap = map[SignalName][]SNameAndBiRebound {
 	"cpuload" : []SNameAndBiRebound {
 		SNameAndBiRebound{"condcpuload", map[Param]Param{"x":"x"}, nil},
+	},
+	"timeIsEven" : []SNameAndBiRebound {
+		SNameAndBiRebound{"condcpuload", nil, nil},
 	},
 }
 
@@ -170,7 +154,7 @@ var theGlobalConditionalSignalDefs = map[SignalName]ConditionalSignalDefinition 
 			[]Param{"x"},
 			"cpuload",
 			[]Param{"x"},
-			"timeIsOdd",
+			"timeIsEven",
 			nil,
 	},
 }

@@ -37,7 +37,7 @@ type ConditionalSignalDefinition struct {
 	params []Param
 	sourceSignal SignalName
 	srcSignalParams []Param
-	condition SessionName
+	condition SignalName
 	conditionParams []Param
 }
 
