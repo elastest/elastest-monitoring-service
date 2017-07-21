@@ -1,6 +1,7 @@
 package main
 
 import "strings"
+import "fmt"
 
 type JSONPath string
 type Channel string
@@ -64,6 +65,8 @@ type ConditionalSignal struct {
 var UNDEFINED *interface{} = nil
 
 func (csignal ConditionalSignal) Sample() *interface{} {
+
+	fmt.Printf("csignal: %p\n", csignal.conditionSignal)
 	if (*csignal.conditionSignal).getState() {
 		return (*csignal.srcSignal).Sample()
 	}
