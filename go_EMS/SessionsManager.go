@@ -11,7 +11,7 @@ type SignalIdToBaseSession struct {
 
 type SessionParsAndSignal struct {
 	params map[Param]string
-	signal *SessionSignal
+	signal SessionSignal
 }
 
 var baseSessionMan []*SignalIdToBaseSession
@@ -25,7 +25,7 @@ func (ssignal StubSessSignal) getState() bool {
 var stubSessionSignal SessionSignal = StubSessSignal {}
 
 var stubSessionParsAndSignals []SessionParsAndSignal = []SessionParsAndSignal {
-	SessionParsAndSignal {nil, &stubSessionSignal},
+	SessionParsAndSignal {nil, stubSessionSignal},
 }
 // end of stub
 
@@ -43,8 +43,7 @@ func getSessionSignals(sessionName SignalName, conditionBoundParams map[Param]st
 			}
 		}
 		if (add) {
-			var signal SessionSignal = *sigidandsignal.signal
-			ret = append(ret, SessionParsAndSignal{sigid.parameters, &signal})
+			ret = append(ret, SessionParsAndSignal{sigid.parameters, sigidandsignal.signal})
 		}
 	}
 	return ret
@@ -130,7 +129,7 @@ func reportSessionSignalCreation(srcSignalId SignalNameAndPars, srcSignal Sessio
 				}
 				// assert paramvals are all the parameters
 				nameAndPars := SignalNameAndPars{inducedSignal.signalName, paramvals}
-				createConditionalSignal(nameAndPars, &srcSignal, metricParsAndSignal.signal)
+				createConditionalSignal(nameAndPars, srcSignal, metricParsAndSignal.signal)
 			}
 		}
 	}

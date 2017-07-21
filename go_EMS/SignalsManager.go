@@ -37,7 +37,7 @@ type SignalIdToConditionalSignal struct {
 
 type MetricParsAndSignal struct {
 	params map[Param]string
-	signal *Signal
+	signal Signal
 }
 
 func (sigida SignalNameAndPars) equals(sigidb SignalNameAndPars) bool {
@@ -205,7 +205,7 @@ func createAggregatedSignal(signalpars SignalNameAndPars) *AggregatedSignal {
 	return ret
 }
 
-func createConditionalSignal(signalpars SignalNameAndPars, sessionSignal *SessionSignal, metricSignal *Signal) {
+func createConditionalSignal(signalpars SignalNameAndPars, sessionSignal SessionSignal, metricSignal Signal) {
 	csignal := &ConditionalSignal{metricSignal, sessionSignal}
 	err := registerConditionalSignal(signalpars, csignal)
 	if (err!= nil) {
@@ -216,7 +216,7 @@ func createConditionalSignal(signalpars SignalNameAndPars, sessionSignal *Sessio
 
 func reportSignalCreation(srcSignalId SignalNameAndPars, srcSignal Signal) {
 	// it also triggers write def creations
-	registerWriteDefs(srcSignalId, &srcSignal)
+	registerWriteDefs(srcSignalId, srcSignal)
 
 	sName := srcSignalId.signalName
 	sPars := srcSignalId.parameters
@@ -257,7 +257,7 @@ func reportSignalCreation(srcSignalId SignalNameAndPars, srcSignal Signal) {
 				}
 				// assert paramvals are all the parameters
 				nameAndPars := SignalNameAndPars{inducedSignal.signalName, paramvals}
-				createConditionalSignal(nameAndPars, sessParsAndSignal.signal, &srcSignal)
+				createConditionalSignal(nameAndPars, sessParsAndSignal.signal, srcSignal)
 			}
 		}
 	}
@@ -334,7 +334,7 @@ var theGlobalWriteDefs = []SignalWriteDefinition {
 	},
 }
 
-func registerWriteDefs(srcSignalId SignalNameAndPars, srcSignal *Signal) {
+func registerWriteDefs(srcSignalId SignalNameAndPars, srcSignal Signal) {
 	for _, wd := range theGlobalWriteDefs {
 		if (wd.sourceSignal == srcSignalId.signalName) {
 			createWriter(srcSignal, srcSignalId.parameters, wd)
@@ -349,9 +349,9 @@ type SignalParsToWriter struct {
 
 var theGlobalWriters []SignalParsToWriter
 
-func createWriter(srcSignal *Signal, parameters map[Param]string, writedef SignalWriteDefinition) {
+func createWriter(srcSignal Signal, parameters map[Param]string, writedef SignalWriteDefinition) {
 	thefun := func(timestamp string) {
-			value := (*srcSignal).Sample()
+			value := srcSignal.Sample()
 			dasmap := map[JSONPath]interface{} {}
 			for f, v := range writedef.fieldsAndValues {
 				switch v.valtype {

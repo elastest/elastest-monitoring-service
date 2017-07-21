@@ -58,8 +58,8 @@ func (aggSignal AggregatedSignal) Sample() *interface{} {
 }
 
 type ConditionalSignal struct {
-	srcSignal *Signal
-	conditionSignal *SessionSignal
+	srcSignal Signal
+	conditionSignal SessionSignal
 }
 
 var UNDEFINED *interface{} = nil
@@ -67,8 +67,8 @@ var UNDEFINED *interface{} = nil
 func (csignal ConditionalSignal) Sample() *interface{} {
 
 	fmt.Printf("csignal: %p\n", csignal.conditionSignal)
-	if (*csignal.conditionSignal).getState() {
-		return (*csignal.srcSignal).Sample()
+	if (csignal.conditionSignal).getState() {
+		return (csignal.srcSignal).Sample()
 	}
 	return UNDEFINED
 }
