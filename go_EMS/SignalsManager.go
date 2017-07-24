@@ -35,6 +35,11 @@ type SignalIdToConditionalSignal struct {
 	signal *ConditionalSignal
 }
 
+type SignalIdToSignal struct {
+	sigid SignalNameAndPars
+	signal Signal
+}
+
 type MetricParsAndSignal struct {
 	params map[Param]string
 	signal Signal
@@ -61,8 +66,33 @@ var aggregatedSignalMan []*SignalIdToAggregatedSignal
 var conditionalSignalMan []*SignalIdToConditionalSignal
 
 func getSignals(signalName SignalName, boundParams map[Param]string) []MetricParsAndSignal {
-	// TODO
-	return nil
+	var ret []MetricParsAndSignal = nil
+	sigidsandsignals := make([]SignalIdToSignal, len(sampledSignalMan) + len(aggregatedSignalMan) + len(conditionalSignalMan))
+	for _, sigidandsignal := range sampledSignalMan {
+		sigidsandsignals = append(sigidsandsignals, SignalIdToSignal{sigidandsignal.sigid, sigidandsignal.signal})
+	}
+	for _, sigidandsignal := range aggregatedSignalMan {
+		sigidsandsignals = append(sigidsandsignals, SignalIdToSignal{sigidandsignal.sigid, sigidandsignal.signal})
+	}
+	for _, sigidandsignal := range conditionalSignalMan {
+		sigidsandsignals = append(sigidsandsignals, SignalIdToSignal{sigidandsignal.sigid, sigidandsignal.signal})
+	}
+	for _, sigidandsignal := range sigidsandsignals {
+		sigid := sigidandsignal.sigid
+		add := false
+		if (sigid.signalName == signalName) {
+			add = true
+			for p,v := range boundParams {
+				if (sigid.parameters[p] != v) {
+					add = false
+				}
+			}
+		}
+		if (add) {
+			ret = append(ret, MetricParsAndSignal{sigid.parameters, sigidandsignal.signal})
+		}
+	}
+	return ret
 }
 
 func registerSampledSignal(signalid SignalNameAndPars, signal *SampledSignal) error {
@@ -124,7 +154,7 @@ var conditionalSignalCreationMap = map[SignalName][]SNameAndBiRebound {
 		SNameAndBiRebound{"condcpuload", map[Param]Param{"x":"x"}, nil},
 	},
 	"timeIsEven" : []SNameAndBiRebound {
-		SNameAndBiRebound{"condcpuload", nil, nil},
+		SNameAndBiRebound{"condcpuload", map[Param]Param{"x":"x"}, nil},
 	},
 }
 

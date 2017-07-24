@@ -2,7 +2,6 @@ package main
 
 import "time"
 import "errors"
-import "fmt"
 
 type SignalIdToBaseSession struct {
 	sigid SignalNameAndPars
@@ -73,9 +72,7 @@ func updateBaseSession(signalpars SignalNameAndPars, value bool) {
 	if (err != nil) {
 		theSignal = createBaseSession(signalpars)
 	}
-	fmt.Printf("session %v is now %v\n", signalpars, value)
 	theSignal.state = value
-	fmt.Printf("csignalupdated: %p\n", theSignal)
 }
 
 func createBaseSession(signalpars SignalNameAndPars) *BaseSessionSignal {
@@ -117,7 +114,7 @@ func reportSessionSignalCreation(srcSignalId SignalNameAndPars, srcSignal Sessio
 				}
 			}
 
-			metricParsAndSignals := getSignals(theDefinition.condition, signalBoundParams)
+			metricParsAndSignals := getSignals(theDefinition.sourceSignal, signalBoundParams)
 
 			for _, metricParsAndSignal := range metricParsAndSignals {
 				paramvals := make(map[Param]string)
