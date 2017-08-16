@@ -2,16 +2,12 @@ package main
 
 import "reflect"
 
-type ParamAndValue struct {
-	param Param
-	value JSONPath
-}
-
 type SampledSignalDefinition struct {
 	name SignalName
 	paramsPaths map[Param]JSONPath
 	inChannel Channel
 	valuePath JSONPath
+	// add predicate over events
 }
 
 func (ssignaldef *SampledSignalDefinition) getParams() []Param {
@@ -25,17 +21,24 @@ func (ssignaldef *SampledSignalDefinition) getParams() []Param {
 
 type AggregatedSignalDefinition struct {
 	name SignalName
-	funcName string
-	signalsFamily SignalName
 	params []Param
+	funcName string
 	quantifiedParams []Param // in signalsFamily's definition
-	freeParams map[Param]Param
-	// Every signalsFamily's not-quantified param must be a key of freeParams,
-	// and every member of params must be a value
+	signalsFamily SignalName
+	signalParams []Param
 }
 
 func (aggsignaldef *AggregatedSignalDefinition) getParams() []Param {
 	return aggsignaldef.params
+}
+
+type ConditionalSignalDefinition struct {
+	name SignalName
+	params []Param
+	sourceSignal SignalName
+	srcSignalParams []Param
+	condition SignalName
+	conditionParams []Param
 }
 
 

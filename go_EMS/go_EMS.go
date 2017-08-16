@@ -11,6 +11,7 @@ func main() {
 	scanner := bufio.NewScanner(os.Stdin)
     var dasmap map[string]interface{}
 	for scanner.Scan() {
+		dasmap = nil
 		thetextbytes := []byte(scanner.Text())
 
 		if err := json.Unmarshal(thetextbytes, &dasmap); err != nil {

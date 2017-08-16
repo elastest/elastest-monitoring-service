@@ -11,32 +11,37 @@ type Signal interface {
 	// GetValue(time uint64) interface{} 
 	// Actually, Signal X should have
 	// GetValue :: Time -> X 
-	Sample() interface{}
+	Sample() *interface{}
 	// Actually, Signal X should have Sample :: () -> X.  It is GetValue(now)
 }
 
 type SampledSignal struct {
-	latestValue interface{} // SampledSignal X, latestValue :: X
+	latestValue *interface{} // SampledSignal X, latestValue :: X
 }
 
-func (ssignal SampledSignal) Sample() interface{} {
+func (ssignal SampledSignal) Sample() *interface{} {
 	return ssignal.latestValue
 }
 
 type AggregatedSignal struct {
 	signalsFamily []Signal
-	aggregationFun func(vals []interface{}) interface{} // combinator
+	aggregationFun func(vals []interface{}) *interface{} // combinator
 }
 
 func (aggSignal *AggregatedSignal) AddSource(srcSignal Signal) {
 	aggSignal.signalsFamily = append(aggSignal.signalsFamily, srcSignal)
 }
 
-func (aggSignal AggregatedSignal) Sample() interface{} {
+func (aggSignal AggregatedSignal) Sample() *interface{} {
 	signals := aggSignal.signalsFamily
 	vals := make([]interface{}, len(signals))
-	for i, signal := range signals {
-		vals[i] = signal.Sample()
+	i:=0
+	for _, signal := range signals {
+		val:=signal.Sample()
+		if (val !=nil) {
+			vals[i] = *val
+			i++
+		}
 	}
 	ret := aggSignal.aggregationFun(vals)
 	/*
@@ -49,6 +54,21 @@ func (aggSignal AggregatedSignal) Sample() interface{} {
 	}
 	*/
 	return ret
+}
+
+type ConditionalSignal struct {
+	srcSignal Signal
+	conditionSignal SessionSignal
+}
+
+var UNDEFINED *interface{} = nil
+
+func (csignal ConditionalSignal) Sample() *interface{} {
+
+	if (csignal.conditionSignal).getState() {
+		return (csignal.srcSignal).Sample()
+	}
+	return UNDEFINED
 }
 
 var sampledSignals []SignalNameAndPars
@@ -73,23 +93,56 @@ var theGlobalSampledSignalDefs = []SampledSignalDefinition {
 		},
 }
 
+var theGlobalBaseSessionDefs = []BaseSessionDefinition {
+	BaseSessionDefinition {
+		"timeIsEven",
+		[]EventDefinition {
+			EventDefinition {
+				"in_condition_true",
+				nil,
+			},
+		},
+		[]EventDefinition {
+			EventDefinition {
+				"in_condition_false",
+				nil,
+			},
+		},
+	},
+}
+
 func checkSamples(evt Event) {
-	for _, ssdef := range theGlobalSampledSignalDefs {
-		if (evt.Channel == ssdef.inChannel) {
-			sampledSignal, value := extractSignalIdAndValue(ssdef, evt)
+	for _, ssignaldef := range theGlobalSampledSignalDefs {
+		if (evt.Channel == ssignaldef.inChannel) {
+			sampledSignal := SignalNameAndPars{ssignaldef.name, extractParamsMap(evt, ssignaldef.paramsPaths)}
+			value := extractFromMap(evt.Payload, ssignaldef.valuePath)
 			sampledSignals = append(sampledSignals, sampledSignal)
 			reportSample(sampledSignal, value)
 		}
 	}
+	for _, bsessiondef := range theGlobalBaseSessionDefs {
+		// first inhibitors, so activators can override them if needed
+		for _, inhEvent := range bsessiondef.inhibitorEvents {
+			if (evt.Channel == inhEvent.inChannel) {
+				inhibitedSession := SignalNameAndPars{bsessiondef.name, extractParamsMap(evt, inhEvent.paramsPaths)}
+				updateBaseSession(inhibitedSession, false)
+			}
+		}
+		for _, actEvent := range bsessiondef.activatorEvents {
+			if (evt.Channel == actEvent.inChannel) {
+				activatedSession := SignalNameAndPars{bsessiondef.name, extractParamsMap(evt, actEvent.paramsPaths)}
+				updateBaseSession(activatedSession, true)
+			}
+		}
+	}
 }
 
-func extractSignalIdAndValue(ssdef SampledSignalDefinition, evt Event) (SignalNameAndPars, interface{}) {
+func extractParamsMap(evt Event, paramsPaths map[Param]JSONPath) map[Param]string {
 	paramsMap := map[Param]string{}
-	for param, path := range ssdef.paramsPaths {
+	for param, path := range paramsPaths {
 		paramsMap[param] = extractFromMap(evt.Payload, path).(string)
 	}
-	value := extractFromMap(evt.Payload, ssdef.valuePath)
-	return SignalNameAndPars{ssdef.name, paramsMap}, value
+	return paramsMap
 }
 
 func extractFromMap(themap map[string]interface{}, strpath JSONPath) interface{} {

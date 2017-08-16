@@ -7,10 +7,8 @@ func getEvent (rawEvent map[string]interface{}) Event {
 
 	// channel inference
 	var channel Channel = "undefined" // default channel: #undefined
-	if evchannel, ok := rawEvent["channel"].(Channel); ok {
-		// It's already stamped (doesn't happen).
-		channel = evchannel
-		panic("received stamped event?")
+	if evchannel, ok := rawEvent["channel"].(string); ok {
+		channel = Channel(evchannel)
 	} else {
 		// Inference rule: if system.load is defined, then it goes through channel #in
 		if sysmap, ok := rawEvent["system"].(map[string]interface{}); ok {
