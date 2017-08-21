@@ -83,18 +83,18 @@ func checkWriteDefs (timestamp string) {
 }
 
 var theGlobalSampledSignalDefs = []SampledSignalDefinition {
-	SampledSignalDefinition {
+	/*SampledSignalDefinition {
 			"cpuload",
 			map[Param]JSONPath {
 				"x": "beat.hostname",
 			},
 			"in",
 			"system.load.1",
-		},
+		},*/
 }
 
 var theGlobalBaseSessionDefs = []BaseSessionDefinition {
-	BaseSessionDefinition {
+	/*BaseSessionDefinition {
 		"timeIsEven",
 		[]EventDefinition {
 			EventDefinition {
@@ -108,7 +108,7 @@ var theGlobalBaseSessionDefs = []BaseSessionDefinition {
 				nil,
 			},
 		},
-	},
+	},*/
 }
 
 func checkSamples(evt Event) {

@@ -10,7 +10,7 @@ info:
     name: "License: TBD"
     # url: ""
 host: "TBD"
-basePath: "/TBD"
+basePath: "/"
 # schemes:
 # - "http"
 # - "https"
@@ -47,13 +47,13 @@ paths:
       #   - "read:pets"
       #
 
-  /subscriber:
+  /subscriber/elasticsearch:
     post:
       tags:
       - "Subscribers"
-      summary: "Subscribe an endpoint to a channel"
-      description: "Through this method, a client can subscribe to a channel and receive the events published on it."
-      operationId: "subscribe"
+      summary: "Subscribe an elasticsearch endpoint to a channel"
+      description: "Through this method, a client can subscribe an elasticsearch instance to a channel and receive the events published on it."
+      operationId: "subscribeElasticSearch"
       consumes:
       - "application/json"
       produces:
@@ -64,7 +64,7 @@ paths:
         description: "Endpoint to be registered."
         required: true
         schema:
-          $ref: "#/definitions/Endpoint"
+          $ref: "#/definitions/ESEndpoint"
       responses:
         405:
           description: "Invalid input."
@@ -75,6 +75,32 @@ paths:
             description: "Id of subscription."
           # schema:
           #    $ref: "#/definitions/Event" For future reference: this is how you return sth
+  /subscriber/rabbitmq:
+    post:
+      tags:
+      - "Subscribers"
+      summary: "Subscribe a rabbitmq endpoint to a channel"
+      description: "Through this method, a client can subscribe a rabbitmq instance to a channel and receive the events published on it."
+      operationId: "subscribeRabbitMQ"
+      consumes:
+      - "application/json"
+      produces:
+      - "application/json"
+      parameters:
+      - in: "body"
+        name: "endpoint"
+        description: "Endpoint to be registered."
+        required: true
+        schema:
+          $ref: "#/definitions/RMQEndpoint"
+      responses:
+        405:
+          description: "Invalid input."
+        200:
+          description: "Endpoint successfully registered."
+          schema:
+            type: "string"
+            description: "Id of subscription."
       # security:
       # - petstore_auth:
       #   - "write:pets"
@@ -128,7 +154,7 @@ paths:
           schema:
             type: "string"
             description: "Id of registration."
-  /announcement/{subId}:
+  /announcement/{regId}:
     delete:
       tags:
       - "Announcements"
@@ -315,7 +341,7 @@ definitions:
           type: "string"
         mom:
           $ref: "#/definitions/MoM"
-  Endpoint:
+  ESEndpoint:
     type: "object"
     properties:
       channel:
@@ -324,7 +350,28 @@ definitions:
         type: "string"
       port:
         type: "integer"
-      protocol:
+      user:
+        type: "string"
+      password:
+        type: "string"
+  RMQEndpoint:
+    type: "object"
+    properties:
+      channel:
+        type: "string"
+      ip:
+        type: "string"
+      port:
+        type: "integer"
+      user:
+        type: "string"
+      password:
+        type: "string"
+      key:
+        type: "string"
+      exchange:
+        type: "string"
+      exchange_type:
         type: "string"
   AnnouncementRule:
     type: "object"
