@@ -7,7 +7,11 @@ import "os"
 import "bufio"
 
 func main() {
+	go scanAPIPipe()
+	scanStdIn()
+}
 
+func scanStdIn() {
 	scanner := bufio.NewScanner(os.Stdin)
     var dasmap map[string]interface{}
 	for scanner.Scan() {
@@ -24,4 +28,28 @@ func main() {
 			//fmt.Println(string(newJSON))
 		}
 	}
+}
+
+func scanAPIPipe() {
+	file, err := os.Open("thepipe")
+    if err != nil {
+        panic(err)
+    }
+    defer file.Close()
+
+    var dasmap map[string]interface{}
+	for {
+    scanner := bufio.NewScanner(file)
+		for scanner.Scan()  {
+			dasmap = nil
+			thetextbytes := []byte(scanner.Text())
+
+			if err := json.Unmarshal(thetextbytes, &dasmap); err != nil {
+				fmt.Println("No JSON. Error: " + err.Error())
+			} else {
+				fmt.Printf("JSON read: %v\n", dasmap)
+			}
+	}
+	}
+	fmt.Println("leaving")
 }
