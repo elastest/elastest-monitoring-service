@@ -144,18 +144,18 @@ func registerConditionalSignal(signalid SignalNameAndPars, signal *ConditionalSi
 }
 
 var aggregatedSignalCreationMap = map[SignalName][]SNameAndRebound {
-	"cpuload": []SNameAndRebound {
+	/*"cpuload": []SNameAndRebound {
 		SNameAndRebound{"avgcpuload", map[Param]Param{}},
-	},
+	},*/
 }
 
 var conditionalSignalCreationMap = map[SignalName][]SNameAndBiRebound {
-	"cpuload" : []SNameAndBiRebound {
+	/*"cpuload" : []SNameAndBiRebound {
 		SNameAndBiRebound{"condcpuload", map[Param]Param{"x":"x"}, nil},
 	},
 	"timeIsEven" : []SNameAndBiRebound {
 		SNameAndBiRebound{"condcpuload", map[Param]Param{"x":"x"}, nil},
-	},
+	},*/
 }
 
 func reportSample(signalpars SignalNameAndPars, value interface{}) {
@@ -168,6 +168,7 @@ func reportSample(signalpars SignalNameAndPars, value interface{}) {
 
 // TODO change to array maybe (to avoid repetition)?
 var theGlobalAggregatedSignalDefs = map[SignalName]AggregatedSignalDefinition {
+	/*
 	"avgcpuload" : AggregatedSignalDefinition {
 			"avgcpuload",
 			[]Param{},
@@ -176,9 +177,11 @@ var theGlobalAggregatedSignalDefs = map[SignalName]AggregatedSignalDefinition {
 			"cpuload",
 			[]Param{"x"},
 		},
+	*/
 }
 
 var theGlobalConditionalSignalDefs = map[SignalName]ConditionalSignalDefinition {
+	/*
 	"condcpuload" : ConditionalSignalDefinition {
 			"condcpuload",
 			[]Param{"x"},
@@ -187,6 +190,7 @@ var theGlobalConditionalSignalDefs = map[SignalName]ConditionalSignalDefinition 
 			"timeIsEven",
 			nil,
 	},
+	*/
 }
 
 
@@ -318,6 +322,7 @@ func reportSignalCreation(srcSignalId SignalNameAndPars, srcSignal Signal) {
 }
 
 var theGlobalWriteDefs = []SignalWriteDefinition {
+	/*
 	// write def of avg
 	SignalWriteDefinition{
 		"avgcpuload",
@@ -347,6 +352,7 @@ var theGlobalWriteDefs = []SignalWriteDefinition {
 			},
 		},
 	},
+	// write def of condcpuload
 	SignalWriteDefinition{
 		"condcpuload",
 		"out",
@@ -362,6 +368,7 @@ var theGlobalWriteDefs = []SignalWriteDefinition {
 			},
 		},
 	},
+	*/
 }
 
 func registerWriteDefs(srcSignalId SignalNameAndPars, srcSignal Signal) {

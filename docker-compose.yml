@@ -7,6 +7,7 @@ services:
         image: fg
         ports:
             - 5044:5044
+            - 80:8888
 
     elasticsearch:
         container_name: elasticsearch

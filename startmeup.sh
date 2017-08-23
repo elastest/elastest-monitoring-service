@@ -9,6 +9,8 @@ mkdir /usr/share/logstash/out_data
 
 logstash -f /usr/share/logstash/pipeline/inlogstash.conf --path.data /usr/share/logstash/in_data &
 
-logstash -f /usr/share/logstash/pipeline/outlogstash.conf --path.data /usr/share/logstash/out_data &
+logstash -f /usr/share/logstash/pipeline/outlogstash.conf --config.reload.automatic --path.data /usr/share/logstash/out_data &
+
+swagger --port=8888 --host=0.0.0.0 &
 
 go_EMS < /usr/share/logstash/pipes/leftpipe > /usr/share/logstash/pipes/rightpipe
