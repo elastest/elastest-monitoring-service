@@ -3,6 +3,7 @@
 mkdir /usr/share/logstash/pipes
 mkfifo /usr/share/logstash/pipes/leftpipe
 mkfifo /usr/share/logstash/pipes/rightpipe
+mkfifo /usr/share/logstash/pipes/swagpipe
 
 mkdir /usr/share/logstash/in_data
 mkdir /usr/share/logstash/out_data

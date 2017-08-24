@@ -24,6 +24,10 @@ func scanStdIn() {
 			evt := getEvent(dasmap)
 			checkSamples(evt)
 			checkWriteDefs(evt.Timestamp)
+			if (evt.Channel == "undefined") {
+				newJSON, _ := json.Marshal(evt)
+				fmt.Println(string(newJSON))
+			}
 			//newJSON, _ := json.Marshal(dasmap)
 			//fmt.Println(string(newJSON))
 		}
@@ -31,7 +35,7 @@ func scanStdIn() {
 }
 
 func scanAPIPipe() {
-	file, err := os.Open("thepipe")
+	file, err := os.Open("/usr/share/logstash/pipes/swagpipe")
     if err != nil {
         panic(err)
     }
