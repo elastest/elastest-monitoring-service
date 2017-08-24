@@ -1,9 +1,9 @@
 node('docker') {
     stage "Container Prep"
         echo("The node is up")
-        def mycontainer = docker.image('elastest/docker-in-docker:latest')
+        def mycontainer = docker.image('elastest/docker-siblings')
         mycontainer.pull()
-        mycontainer.inside("-u jenkins -v /var/run/docker.sock:/var/run/docker.sock:rw") {
+        mycontainer.inside("-u jenkins -v /var/run/docker.sock:/var/run/docker.sock:rw -v ${WORKSPACE}:/home/jenkins/.m2") {
             git 'https://github.com/elastest/elastest-monitoring-service'
 
             stage "Tests"
@@ -12,8 +12,8 @@ node('docker') {
 
             stage "Build image - Package"
                 echo ("Building")
-                sh 'docker build -t elastest/elastest-monitoring-service .'
-                def myimage = docker.image('elastest/elastest-monitoring-service');
+                sh 'docker build -t elastest/ems .'
+                def myimage = docker.image('elastest/ems');
 
             stage "Run image"
                 myimage.run()
