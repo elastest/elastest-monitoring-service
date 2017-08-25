@@ -1,154 +1,91 @@
+# ElasTest Monitoring Service (EMS)
 
-[![License badge](https://img.shields.io/badge/license-Apache2-orange.svg)](http://www.apache.org/licenses/LICENSE-2.0)
-[![Documentation badge](https://img.shields.io/badge/docs-latest-brightgreen.svg)](http://elastest.io/docs/)
+The ElasTest Monitoring Service (EMS)provides a monitoring infrastructure suitable for inspecting executions of a System Under Test (hereinafter "SuT") and the ElasTest platform itself online.
+This service allows the user and the platform to deploy machines able to process events in real time and generate complex, higher level events from them. This can help to better understand what's happening, detect anomalies, correlate issues, and even stress the tests automatically; all of which aims to maximize the chances of uncover bugs and their causes.
+To achieve its goal, it provides an OpenAPI endpoint whose specification can be found at http://elastest.io/docs/api/ems, along with input endpoints over which events can be fed to the service.
 
-[![][ElasTest Logo]][ElasTest]
+## Features
+The version 0.1 of the ElasTest Monitoring Service accepts the subscription of rabbitmq and elasticsearch endpoints, which will receive all the events sent through all the cannels.
+The only current input endpoint for events is for [beats](https://www.elastic.co/products/beats) on port 5044.
 
-Copyright © 2017-2019 [Universidad Rey Juan Carlos]. Licensed under
-[Apache 2.0 License].
+## How to run
 
-ElasTest Monitoring Service
-==============================
-
-ElasTest Monitoring Service (EMS) is responsible for receiving events and metrics sent by the System Under Test (hereinafter SuT) and other ElasTest components, potentially generate new events from them, as specified by the definition of "monitoring machines" and in turn sending them to the subscribed endpoints.
-
-How to run
------------------------------
 To run the EMS as a standalone component, you can download the docker-compose file available at https://github.com/elastest/elastest-monitoring-service/blob/master/docker-compose.yml and then run it with the following command line:
 ```
 $ docker-compose up
 ```
 
-Features
------------------------------
-The general goal of this component is to provide a monitoring infrastructure suitable for inspecting executions of a SuT and the ElasTest platform itself online.
-This service will allow the user and the platform to deploy machines able to process events in real time and generate complex, higher level events from them. This can help to better understand what's happening, detect anomalies, correlate issues, and even stress the tests automatically; all of which aims to maximize the chances of uncover bugs and their causes.
+## Basic usage
 
-In the current version, the monitoring service accepts the subscription of rabbitmq and elasticsearch endpoints, which will receive all the events sent through all the cannels.
-Events must be sent as beats to the port 5044.
+When the EMS is started, a server for managing the monitoring machines and the subscription endpoints, in compliance with the [EMS API](http://elastest.io/docs/api/ems) is started at port 8888.
+As specified by the API, the user can subscribe a new RabbitMQ endpoint by executing the following command:
+```
+$ echo '{"channel": "in", "ip": "rabbitHost", "port": 5672, "user": "rabbituser", "password": "passw0rd", "key": "key", "exchange": "exc", "exchange_type": "fanout"}' | curl -i -H "Content-Type: application/json" --data @- http://127.0.0.1:8888/subscriber/rabbitmq
+```
 
+A client can send events to the EMS configuring a beats server to send its output as specified by the following lines in its configuration file:
+```
+output.logstash:
+  hosts: ["logstash:5044"]
+```
 
-Basic usage
--------------------------------
-The user can manage the monitoring machines and subscribers following the API defined at http://elastest.io/docs/api/ems. The server implementing it will be listening on port 8888.
-Beats events must be fed to the system through port 5044.
+## Development documentation
 
+### Architecture
 
-Clone the Project
------------------
+The EMS is distributed as a single Docker image, running the following processes:
+* A logstash instance acting as an input endpoint
+* A logstash instance acting as an output endpoint
+* A webserver handling the OpenAPI requests
+* The EMS engine itself
+
+#### Input Logstash instance
+
+The configuration file of this Logstash instance is static and specifies the input endpoints that are currently supported by the component. Adding a new input endpoint in future versions of this component means editing this configuration file.
+
+#### Output Logstash instance
+
+The configuration file of this Logstash instance is dynamic and it's manipulated by the webserver upon requests.
+
+#### OpenAPI webserver
+
+The webserver is generated on runtime using [Swagger-go](https://github.com/go-swagger/go-swagger). The implementation of its methods can be found in the directory elastest-monitoring-service/swagger-go/
+
+#### The EMS Engine
+
+The EMS Engine is the core of this component, and implements the logic of the monitoring machines registered via the webserver.
+
+### Prepare development environment
+
+Clone the project from GitHub:
 ```
 $ git clone https://github.com/elastest/elastest-monitoring-service.git
 ```
 
-Creating Docker Image
----------------------
-To create a docker image from source, go to the repository root directory and execute docker build:
-```  
-$ git remote -v
-origin  https://github.com/elastest/elastest-monitoring-service (fetch)
-origin  https://github.com/elastest/elastest-monitoring-service (push)
-$ docker build .
-```  
+Every architecture subcomponent is generated and run inside a docker image, so the development and is carried out in them, making Docker the only requisite for it. Anyway, feel free to set up your own local deveolpment environment.
 
+### Development procedure
 
-Development documentation
---------------------------------------------------------------------------------------------------------------
+#### Input logstash instance
 
+The input logstash instance will read its configuration file from /usr/share/logstash/pipeline/inlogstash.conf, and its output is expected to be written to a FIFO at /usr/share/logstash/pipes/leftpipe.
 
+#### Output logstash instance
 
+The out logstash instance will read its configuration file from /usr/share/logstash/pipeline/outlogstash.conf, and its input is expected to be read from a FIFO at /usr/share/logstash/pipes/rightpipe.
 
-What is ElasTest
------------------
+#### OpenAPI webserver
 
-This repository is part of [ElasTest], which is a flexible open source testing
-platform aimed to simplify the end-to-end testing processes for different types
-of applications, including web and mobile, among others.
+To generate the webserver, you can run the following command in a shell inside the directory elastest-monitoring-service/swagger-go/ :
+```
+$ docker run --rm -it -v $HOME:$HOME -w $(pwd) quay.io/goswagger/swagger generate server -f ../api.yaml
+```
 
-The objective of ElasTest is to provide advance testing capabilities aimed to
-increase the scalability, robustness, security and quality of experience of
-large distributed systems. All in all, ElasTest will make any software
-development team capable of delivering software faster and with fewer defects.
+Unfortunately, the import paths of the generated files are incorrectly generated. To fix them, you may find useful tuning and running the script file convertpaths.sh located on the same folder.
 
-Documentation
--------------
+#### The EMS Engine
 
-The ElasTest project provides detailed [documentation][ElasTest Doc] including
-tutorials, installation and development guide.
-
-Source
-------
-
-Source code for other ElasTest projects can be found in the [GitHub ElasTest
-Group].
-
-News
-----
-
-Check the [ElasTest Blog] and follow us on Twitter [@elastestio][ElasTest Twitter].
-
-Issue tracker
--------------
-
-Issues and bug reports should be posted to the [GitHub ElasTest Bugtracker].
-
-Licensing and distribution
---------------------------
-
-Licensed under the Apache License, Version 2.0 (the "License");
-you may not use this file except in compliance with the License.
-You may obtain a copy of the License at
-
-  http://www.apache.org/licenses/LICENSE-2.0
-
-Unless required by applicable law or agreed to in writing, software
-distributed under the License is distributed on an "AS IS" BASIS,
-WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-See the License for the specific language governing permissions and
-limitations under the License.
-
-Contribution policy
--------------------
-
-You can contribute to the ElasTest community through bug-reports, bug-fixes,
-new code or new documentation. For contributing to the ElasTest community,
-you can use GitHub, providing full information about your contribution and its
-value. In your contributions, you must comply with the following guidelines
-
-* You must specify the specific contents of your contribution either through a
-  detailed bug description, through a pull-request or through a patch.
-* You must specify the licensing restrictions of the code you contribute.
-* For newly created code to be incorporated in the ElasTest code-base, you
-  must accept ElasTest to own the code copyright, so that its open source
-  nature is guaranteed.
-* You must justify appropriately the need and value of your contribution. The
-  ElasTest project has no obligations in relation to accepting contributions
-  from third parties.
-* The ElasTest project leaders have the right of asking for further
-  explanations, tests or validations of any code contributed to the community
-  before it being incorporated into the ElasTest code-base. You must be ready
-  to addressing all these kind of concerns before having your code approved.
-
-Support
--------
-
-The ElasTest project provides community support through the [ElasTest Public
-Mailing List] and through [StackOverflow] using the tag *elastest*.
-
-
-<p align="center">
-  <img src="http://elastest.io/images/logos_elastest/ue_logo-small.png"><br>
-  Funded by the European Union
-</p>
-
-[Apache 2.0 License]: http://www.apache.org/licenses/LICENSE-2.0
-[ElasTest]: http://elastest.io/
-[ElasTest Blog]: http://elastest.io/blog/
-[ElasTest Doc]: http://elastest.io/docs/
-[ElasTest Logo]: http://elastest.io/images/logos_elastest/elastest-logo-gray-small.png
-[ElasTest Public Mailing List]: https://groups.google.com/forum/#!forum/elastest-users
-[ElasTest Twitter]: https://twitter.com/elastestio
-[GitHub ElasTest Group]: https://github.com/elastest
-[GitHub ElasTest Bugtracker]: https://github.com/elastest/bugtracker
-[StackOverflow]: http://stackoverflow.com/questions/tagged/elastest
-[Universidad Rey Juan Carlos]: https://www.urjc.es/
-
+To build the engine, run the following command in a shell inside the directory elastest-monitoring-service/swagger-go/ :
+```
+$ go build -o bin/go_EMS .
+```
