@@ -1,13 +1,13 @@
 version: '2.1'
 services:
     ems:
-        container_name: ems
+        container_name: elastest-ems
         depends_on:
             - elasticsearch
-        image: fg
+        image: elastest/ems
         ports:
             - 5044:5044
-            - 80:8888
+            - 8888:8888
 
     elasticsearch:
         container_name: elasticsearch
