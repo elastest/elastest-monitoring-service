@@ -21,12 +21,17 @@ $ docker-compose up
 
 Features
 -----------------------------
+The general goal of this component is to provide a monitoring infrastructure suitable for inspecting executions of a SuT and the ElasTest platform itself online.
+This service will allow the user and the platform to deploy machines able to process events in real time and generate complex, higher level events from them. This can help to better understand what's happening, detect anomalies, correlate issues, and even stress the tests automatically; all of which aims to maximize the chances of uncover bugs and their causes.
+
+In the current version, the monitoring service accepts the subscription of rabbitmq and elasticsearch endpoints, which will receive all the events sent through all the cannels.
+Events must be sent as beats to the port 5044.
 
 
 Basic usage
 -------------------------------
 The user can manage the monitoring machines and subscribers following the API defined at http://elastest.io/docs/api/ems. The server implementing it will be listening on port 8888.
-Elasticsearch events must be fed to the system through port 5044.
+Beats events must be fed to the system through port 5044.
 
 
 Clone the Project
