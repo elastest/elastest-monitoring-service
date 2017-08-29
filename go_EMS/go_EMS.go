@@ -26,7 +26,8 @@ func scanStdIn() {
 			checkWriteDefs(evt.Timestamp)
 			if (evt.Channel == "undefined") {
 				newJSON, _ := json.Marshal(evt)
-				fmt.Println(string(newJSON))
+				newJSON = newJSON
+				//fmt.Println(string(newJSON))
 			}
 			//newJSON, _ := json.Marshal(dasmap)
 			//fmt.Println(string(newJSON))
@@ -43,17 +44,17 @@ func scanAPIPipe() {
 
     var dasmap map[string]interface{}
 	for {
-    scanner := bufio.NewScanner(file)
-		for scanner.Scan()  {
-			dasmap = nil
-			thetextbytes := []byte(scanner.Text())
+		scanner := bufio.NewScanner(file)
+			for scanner.Scan()  {
+				dasmap = nil
+				thetextbytes := []byte(scanner.Text())
 
-			if err := json.Unmarshal(thetextbytes, &dasmap); err != nil {
-				fmt.Println("No JSON. Error: " + err.Error())
-			} else {
-				fmt.Printf("JSON read: %v\n", dasmap)
-			}
+				if err := json.Unmarshal(thetextbytes, &dasmap); err != nil {
+					panic("No JSON. Error: " + err.Error())
+				} else {
+					//readAndRegister(dasmap)
+				}
+		}
 	}
-	}
-	fmt.Println("leaving")
+	panic("leaving")
 }

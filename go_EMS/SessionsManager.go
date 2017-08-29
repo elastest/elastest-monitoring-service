@@ -1,6 +1,5 @@
 package main
 
-import "time"
 import "errors"
 
 type SignalIdToBaseSession struct {
@@ -15,7 +14,7 @@ type SessionParsAndSignal struct {
 
 var baseSessionMan []*SignalIdToBaseSession
 
-// stub
+/* stub
 type StubSessSignal struct {}
 func (ssignal StubSessSignal) getState() bool {
 	return time.Now().Minute() %2 == 0
@@ -26,7 +25,7 @@ var stubSessionSignal SessionSignal = StubSessSignal {}
 var stubSessionParsAndSignals []SessionParsAndSignal = []SessionParsAndSignal {
 	SessionParsAndSignal {nil, stubSessionSignal},
 }
-// end of stub
+end of stub */
 
 func getSessionSignals(sessionName SignalName, conditionBoundParams map[Param]string) []SessionParsAndSignal {
 	var ret []SessionParsAndSignal = nil

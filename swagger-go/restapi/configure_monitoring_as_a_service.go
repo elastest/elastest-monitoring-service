@@ -57,7 +57,7 @@ func configureAPI(api *operations.MonitoringAsAServiceAPI) http.Handler {
 		return middleware.NotImplemented("operation monitoring_machine.GetMoMByID has not yet been implemented")
 	})
 	api.MonitoringMachinePostMoMHandler = monitoring_machine.PostMoMHandlerFunc(func(params monitoring_machine.PostMoMParams) middleware.Responder {
-		return middleware.NotImplemented("operation monitoring_machine.PostMoM has not yet been implemented")
+		return implementation.PostMOM(params)
 	})
 	api.PublishersPublishEventsHandler = publishers.PublishEventsHandlerFunc(func(params publishers.PublishEventsParams) middleware.Responder {
 		return middleware.NotImplemented("operation publishers.PublishEvents has not yet been implemented")
