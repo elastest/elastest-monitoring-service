@@ -3,6 +3,8 @@ package main
 import (
 	"testing"
 	"encoding/json"
+	"fmt"
+	"os"
 )
 
 var theEvent Event
@@ -57,6 +59,7 @@ func TestAddSource(t *testing.T) {
 var baseSession BaseSessionSignal = BaseSessionSignal{true}
 var condSignal ConditionalSignal = ConditionalSignal{aggSignal, baseSession}
 var signalNameAndPars SignalNameAndPars = SignalNameAndPars{"signal", map[Param]string{}}
+var otherSignalNameAndPars SignalNameAndPars = SignalNameAndPars{"othersignal", map[Param]string{}}
 
 func TestCreate(t *testing.T) {
 	theGlobalAggregatedSignalDefs = map[SignalName]AggregatedSignalDefinition {
@@ -87,7 +90,8 @@ func TestRest(t *testing.T) {
 	registerBaseSessionSignal(signalNameAndPars, &baseSession)
 	getBaseSession(signalNameAndPars)
 	updateBaseSession(signalNameAndPars, false)
-	reportSessionSignalCreation(signalNameAndPars, baseSession)
+	reportSessionSignalCreation(otherSignalNameAndPars, baseSession)
+fmt.Println("")
 	signalNameAndPars.equals(signalNameAndPars)
 	getSignals("signal", map[Param]string{})
 	registerSampledSignal(signalNameAndPars, &sampledSignal)
@@ -96,7 +100,6 @@ func TestRest(t *testing.T) {
 	getAggregatedSignal(signalNameAndPars)
 	registerConditionalSignal(signalNameAndPars, &condSignal)
 	reportSample(signalNameAndPars, 8)
-	reportSignalCreation(signalNameAndPars, aggSignal)
 
 
 	theGlobalWriteDefs = []SignalWriteDefinition {
@@ -113,8 +116,15 @@ func TestRest(t *testing.T) {
 		},
 	}
 	registerWriteDefs(signalNameAndPars, aggSignal)
-	getWriters(signalNameAndPars)
+	getWriters(signalNameAndPars)[0]("ts")
 	main()
+	file, err := os.Open("testinputs/testEvents.txt")
+	if err != nil {
+		panic(err)
+	}
+	scanStdIn(file)
+
+	scanAPIPipe("testinputs/testdefs.json")
 }
 
 var ssdef SampledSignalDefinition = SampledSignalDefinition {

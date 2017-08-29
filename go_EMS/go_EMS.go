@@ -4,15 +4,16 @@ package main
 import "encoding/json"
 import "fmt"
 import "os"
+import "io"
 import "bufio"
 
 func main() {
-	go scanAPIPipe()
-	scanStdIn()
+	go scanAPIPipe("/usr/share/logstash/pipes/swagpipe")
+	scanStdIn(os.Stdin)
 }
 
-func scanStdIn() {
-	scanner := bufio.NewScanner(os.Stdin)
+func scanStdIn(fdes io.Reader) {
+	scanner := bufio.NewScanner(fdes)
     var dasmap map[string]interface{}
 	for scanner.Scan() {
 		dasmap = nil
@@ -35,15 +36,15 @@ func scanStdIn() {
 	}
 }
 
-func scanAPIPipe() {
-	file, err := os.Open("/usr/share/logstash/pipes/swagpipe")
+func scanAPIPipe(pipename string) {
+	file, err := os.Open(pipename)
     if err != nil {
         panic(err)
     }
     defer file.Close()
 
     var dasmap map[string]interface{}
-	for {
+	//for {
 		scanner := bufio.NewScanner(file)
 			for scanner.Scan()  {
 				dasmap = nil
@@ -55,6 +56,6 @@ func scanAPIPipe() {
 					//readAndRegister(dasmap)
 				}
 		}
-	}
-	panic("leaving")
+	//}
+	//leaving
 }
