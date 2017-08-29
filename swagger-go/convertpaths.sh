@@ -21,5 +21,5 @@ clearpath() {
 	cd ..
 }
 
-REPLACEPATH="../swagger-go/"
+REPLACEPATH="swagger-go/"
 clearpath . ""

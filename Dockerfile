@@ -1,5 +1,6 @@
 FROM quay.io/goswagger/swagger as swaggerbuilder
-WORKDIR /go/swagger-go
+WORKDIR /go/src/swagger-go
+ENV GOPATH /go
 COPY swagger-go ./
 COPY api.yaml ./swagger.yaml
 RUN swagger generate server
@@ -11,7 +12,7 @@ COPY go_EMS ./
 RUN CGO_ENABLED=0 GOOS=linux go build -o go_EMS go_EMS.go Event.go ChannelInference.go Metric.go Session.go SignalsManager.go MetricDefinitions.go SessionDefinitions.go SessionsManager.go
 # old workdir would lead to weird error of package not found
 WORKDIR /go
-COPY --from=swaggerbuilder /go/swagger-go ./
+COPY --from=swaggerbuilder /go/src/swagger-go ./
 RUN go get github.com/go-openapi/errors
 RUN go get github.com/go-openapi/loads
 RUN go get github.com/go-openapi/runtime
