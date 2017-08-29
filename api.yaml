@@ -334,6 +334,8 @@ definitions:
     properties:
       definition:
         type: "string"
+      momType:
+        type: "string"
   DeployedMoM:
     type: "object"
     properties:
