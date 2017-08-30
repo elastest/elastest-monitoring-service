@@ -4,7 +4,7 @@ services:
         container_name: elastest-ems
         depends_on:
             - elasticsearch
-        image: elastest/ems
+        image: elastest/ems:0.1
         ports:
             - 5044:5044
             - 8888:8888
