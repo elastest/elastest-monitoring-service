@@ -113,24 +113,24 @@ var theGlobalBaseSessionDefs = []BaseSessionDefinition {
 
 func checkSamples(evt Event) {
 	for _, ssignaldef := range theGlobalSampledSignalDefs {
-		if (evt.Channel == ssignaldef.inChannel) {
-			sampledSignal := SignalNameAndPars{ssignaldef.name, extractParamsMap(evt, ssignaldef.paramsPaths)}
-			value := extractFromMap(evt.Payload, ssignaldef.valuePath)
+		if (evt.Channel == ssignaldef.InChannel) {
+			sampledSignal := SignalNameAndPars{ssignaldef.Name, extractParamsMap(evt, ssignaldef.ParamsPaths)}
+			value := extractFromMap(evt.Payload, ssignaldef.ValuePath)
 			sampledSignals = append(sampledSignals, sampledSignal)
 			reportSample(sampledSignal, value)
 		}
 	}
 	for _, bsessiondef := range theGlobalBaseSessionDefs {
 		// first inhibitors, so activators can override them if needed
-		for _, inhEvent := range bsessiondef.inhibitorEvents {
-			if (evt.Channel == inhEvent.inChannel) {
-				inhibitedSession := SignalNameAndPars{bsessiondef.name, extractParamsMap(evt, inhEvent.paramsPaths)}
+		for _, inhEvent := range bsessiondef.InhibitorEvents {
+			if (evt.Channel == inhEvent.InChannel) {
+				inhibitedSession := SignalNameAndPars{bsessiondef.Name, extractParamsMap(evt, inhEvent.ParamsPaths)}
 				updateBaseSession(inhibitedSession, false)
 			}
 		}
-		for _, actEvent := range bsessiondef.activatorEvents {
-			if (evt.Channel == actEvent.inChannel) {
-				activatedSession := SignalNameAndPars{bsessiondef.name, extractParamsMap(evt, actEvent.paramsPaths)}
+		for _, actEvent := range bsessiondef.ActivatorEvents {
+			if (evt.Channel == actEvent.InChannel) {
+				activatedSession := SignalNameAndPars{bsessiondef.Name, extractParamsMap(evt, actEvent.ParamsPaths)}
 				updateBaseSession(activatedSession, true)
 			}
 		}

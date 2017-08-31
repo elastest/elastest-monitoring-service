@@ -113,7 +113,7 @@ func reportSessionSignalCreation(srcSignalId SignalNameAndPars, srcSignal Sessio
 				}
 			}
 
-			metricParsAndSignals := getSignals(theDefinition.sourceSignal, signalBoundParams)
+			metricParsAndSignals := getSignals(theDefinition.SourceSignal, signalBoundParams)
 
 			for _, metricParsAndSignal := range metricParsAndSignals {
 				paramvals := make(map[Param]string)

@@ -5,8 +5,8 @@ import "encoding/json"
 import "fmt"
 
 type SNameAndRebound struct {
-	signalName SignalName
-	reboundParameters map[Param]Param
+	SignalName SignalName
+	ReboundParameters map[Param]Param
 }
 
 type SNameAndBiRebound struct {
@@ -225,7 +225,7 @@ func createAggregatedSignal(signalpars SignalNameAndPars) *AggregatedSignal {
 		// error
 		panic("nosuchaggsig")
 	}
-	aggfun, ok := aggregatorsMap[aggDef.funcName]
+	aggfun, ok := aggregatorsMap[aggDef.FuncName]
 	// assert ok
 	if (!ok) {
 		panic("nosuchaggfun")
@@ -279,7 +279,7 @@ func reportSignalCreation(srcSignalId SignalNameAndPars, srcSignal Signal) {
 				}
 			}
 
-			sessionParsAndSignals := getSessionSignals(theDefinition.condition, conditionBoundParams)
+			sessionParsAndSignals := getSessionSignals(theDefinition.Condition, conditionBoundParams)
 
 			for _, sessParsAndSignal := range sessionParsAndSignals {
 				paramvals := make(map[Param]string)
@@ -300,7 +300,7 @@ func reportSignalCreation(srcSignalId SignalNameAndPars, srcSignal Signal) {
 	aggSignals, ok := aggregatedSignalCreationMap[sName]
 	if (ok) {
 		for _, inducedSignal := range aggSignals {
-			theDefinition,ok := theGlobalAggregatedSignalDefs[inducedSignal.signalName]
+			theDefinition,ok := theGlobalAggregatedSignalDefs[inducedSignal.SignalName]
 			// assert ok
 			if (!ok) {
 				// error
@@ -309,9 +309,9 @@ func reportSignalCreation(srcSignalId SignalNameAndPars, srcSignal Signal) {
 			defParams := theDefinition.getParams()
 			paramvals := make(map[Param]string)
 			for _, param := range defParams {
-				paramvals[param] = sPars[inducedSignal.reboundParameters[param]]
+				paramvals[param] = sPars[inducedSignal.ReboundParameters[param]]
 			}
-			signalid := SignalNameAndPars{inducedSignal.signalName, paramvals}
+			signalid := SignalNameAndPars{inducedSignal.SignalName, paramvals}
 			theAggSignal, err:= getAggregatedSignal(signalid)
 			if (err != nil) {
 				theAggSignal = createAggregatedSignal(signalid)
@@ -373,7 +373,7 @@ var theGlobalWriteDefs = []SignalWriteDefinition {
 
 func registerWriteDefs(srcSignalId SignalNameAndPars, srcSignal Signal) {
 	for _, wd := range theGlobalWriteDefs {
-		if (wd.sourceSignal == srcSignalId.signalName) {
+		if (wd.SourceSignal == srcSignalId.signalName) {
 			createWriter(srcSignal, srcSignalId.parameters, wd)
 		}
 	}
@@ -390,8 +390,8 @@ func createWriter(srcSignal Signal, parameters map[Param]string, writedef Signal
 	thefun := func(timestamp string) {
 			value := srcSignal.Sample()
 			dasmap := map[JSONPath]interface{} {}
-			for f, v := range writedef.fieldsAndValues {
-				switch v.valtype {
+			for f, v := range writedef.FieldsAndValues {
+				switch v.Valtype {
 					case "value":
 						if (value == nil) {
 							dasmap[f] = 0 // should get the "zero value" from the type of the signal
@@ -399,9 +399,9 @@ func createWriter(srcSignal Signal, parameters map[Param]string, writedef Signal
 							dasmap[f] = *value // should do a proper structure for dasmap <- I no longer know what I meant with this comment
 						}
 					case "param":
-						dasmap[f] = parameters[Param(v.valpayload)]
+						dasmap[f] = parameters[Param(v.Valpayload)]
 					case "literal":
-						dasmap[f] = v.valpayload
+						dasmap[f] = v.Valpayload
 				}
 			}
 			dasmap["@timestamp"] = timestamp
@@ -410,10 +410,10 @@ func createWriter(srcSignal Signal, parameters map[Param]string, writedef Signal
 		}
 		// aca
 		reboundMap := map[Param]string {}
-		for k,v := range writedef.triggerer.reboundParameters {
+		for k,v := range writedef.Triggerer.ReboundParameters {
 			reboundMap[k] = parameters[v]
 		}
-		snameAndPars := SignalNameAndPars{writedef.triggerer.signalName, reboundMap}
+		snameAndPars := SignalNameAndPars{writedef.Triggerer.SignalName, reboundMap}
 		theGlobalWriters = append(theGlobalWriters, SignalParsToWriter{snameAndPars, thefun})
 }
 
