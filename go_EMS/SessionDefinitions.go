@@ -3,19 +3,19 @@ package main
 import "reflect"
 
 type BaseSessionDefinition struct {
-	name SignalName
-	activatorEvents []EventDefinition// cannot be empty
-	inhibitorEvents []EventDefinition
+	Name SignalName
+	ActivatorEvents []EventDefinition// cannot be empty
+	InhibitorEvents []EventDefinition
 }
 
 type EventDefinition struct {
-	inChannel Channel
-	paramsPaths map[Param]JSONPath // May be partial function for inhibitor evs
+	InChannel Channel
+	ParamsPaths map[Param]JSONPath // May be partial function for inhibitor evs
 	// eventProperties func(e Event) bool <- add later, also for sampled signals
 }
 
 func (basedef *BaseSessionDefinition) getParams() []Param {
-	paramsPaths := basedef.activatorEvents[0].paramsPaths
+	paramsPaths := basedef.ActivatorEvents[0].ParamsPaths
 	keys := reflect.ValueOf(paramsPaths).MapKeys()
 	strkeys := make([]Param, len(keys))
 	for i := 0; i < len(keys); i++ {

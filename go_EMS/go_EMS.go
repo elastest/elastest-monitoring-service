@@ -4,16 +4,30 @@ package main
 import "encoding/json"
 import "fmt"
 import "os"
-import "io"
 import "bufio"
+import "io"
 
 func main() {
-	go scanAPIPipe("/usr/share/logstash/pipes/swagpipe")
-	scanStdIn(os.Stdin)
+	go openAndLoop("/usr/share/logstash/pipes/swagpipe",scanAPIPipe)
+	openAndLoop("/usr/share/logstash/pipes/leftpipe",scanStdIn)
 }
 
-func scanStdIn(fdes io.Reader) {
-	scanner := bufio.NewScanner(fdes)
+
+func openAndLoop(pipename string, callback func(reader io.Reader)) {
+	file, err := os.Open(pipename)
+    if err != nil {
+        panic(err)
+    }
+    defer file.Close()
+
+	for {
+		callback(file)
+	}
+	panic("leaving!")
+}
+
+func scanStdIn(file io.Reader) {
+	scanner := bufio.NewScanner(file)
     var dasmap map[string]interface{}
 	for scanner.Scan() {
 		dasmap = nil
@@ -36,26 +50,17 @@ func scanStdIn(fdes io.Reader) {
 	}
 }
 
-func scanAPIPipe(pipename string) {
-	file, err := os.Open(pipename)
-    if err != nil {
-        panic(err)
-    }
-    defer file.Close()
-
+func scanAPIPipe(file io.Reader) {
+	scanner := bufio.NewScanner(file)
     var dasmap map[string]interface{}
-	//for {
-		scanner := bufio.NewScanner(file)
-			for scanner.Scan()  {
-				dasmap = nil
-				thetextbytes := []byte(scanner.Text())
+	for scanner.Scan()  {
+		dasmap = nil
+		thetextbytes := []byte(scanner.Text())
 
-				if err := json.Unmarshal(thetextbytes, &dasmap); err != nil {
-					panic("No JSON. Error: " + err.Error())
-				} else {
-					//readAndRegister(dasmap)
-				}
+		if err := json.Unmarshal(thetextbytes, &dasmap); err != nil {
+			panic("No JSON. Error: " + err.Error())
+		} else {
+			readAndRegister(dasmap)
 		}
-	//}
-	//leaving
+	}
 }
