@@ -117,14 +117,17 @@ fmt.Println("")
 	}
 	registerWriteDefs(signalNameAndPars, aggSignal)
 	getWriters(signalNameAndPars)[0]("ts")
-	main()
-	file, err := os.Open("testinputs/testEvents.txt")
-	if err != nil {
-		panic(err)
-	}
+	//main()
+	file, err := os.Open("testinputs/testdefs.json")
+    if err != nil {
+        panic(err)
+    }
+	scanAPIPipe(file)
+	file, err = os.Open("testinputs/testEvents.txt")
+    if err != nil {
+        panic(err)
+    }
 	scanStdIn(file)
-
-	scanAPIPipe("testinputs/testdefs.json")
 }
 
 var ssdef SampledSignalDefinition = SampledSignalDefinition {

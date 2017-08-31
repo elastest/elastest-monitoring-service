@@ -3,15 +3,15 @@ package main
 import "reflect"
 
 type SampledSignalDefinition struct {
-	name SignalName
-	paramsPaths map[Param]JSONPath
-	inChannel Channel
-	valuePath JSONPath
+	Name SignalName
+	ParamsPaths map[Param]JSONPath
+	InChannel Channel
+	ValuePath JSONPath
 	// add predicate over events
 }
 
 func (ssignaldef *SampledSignalDefinition) getParams() []Param {
-	keys := reflect.ValueOf(ssignaldef.paramsPaths).MapKeys()
+	keys := reflect.ValueOf(ssignaldef.ParamsPaths).MapKeys()
 	strkeys := make([]Param, len(keys))
 	for i := 0; i < len(keys); i++ {
 		strkeys[i] = Param(keys[i].String())
@@ -20,38 +20,38 @@ func (ssignaldef *SampledSignalDefinition) getParams() []Param {
 }
 
 type AggregatedSignalDefinition struct {
-	name SignalName
-	params []Param
-	funcName string
-	quantifiedParams []Param // in signalsFamily's definition
-	signalsFamily SignalName
-	signalParams []Param
+	Name SignalName
+	Params []Param
+	FuncName string
+	QuantifiedParams []Param // in signalsFamily's definition
+	SignalsFamily SignalName
+	SignalParams []Param
 }
 
 func (aggsignaldef *AggregatedSignalDefinition) getParams() []Param {
-	return aggsignaldef.params
+	return aggsignaldef.Params
 }
 
 type ConditionalSignalDefinition struct {
-	name SignalName
-	params []Param
-	sourceSignal SignalName
-	srcSignalParams []Param
-	condition SignalName
-	conditionParams []Param
+	Name SignalName
+	Params []Param
+	SourceSignal SignalName
+	SrcSignalParams []Param
+	Condition SignalName
+	ConditionParams []Param
 }
 
 
 type WriteValue struct {
-	valtype string
-	valpayload string
+	Valtype string
+	Valpayload string
 }
 
 type SignalWriteDefinition struct {
-	sourceSignal SignalName
-	outChannel Channel
-	fieldsAndValues map[JSONPath]WriteValue
+	SourceSignal SignalName
+	OutChannel Channel
+	FieldsAndValues map[JSONPath]WriteValue
 	// This is stringly typed. Actually, value could be either a Param, a
 	// literal or "value". Maybe every Param should be present at least once.
-	triggerer SNameAndRebound // Those params not present can be any
+	Triggerer SNameAndRebound // Those params not present can be any
 }
