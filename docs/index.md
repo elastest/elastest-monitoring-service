@@ -17,16 +17,28 @@ $ docker-compose up
 
 ## Basic usage
 
+### Subscription
+
 When the EMS is started, a server for managing the monitoring machines and the subscription endpoints, in compliance with the [EMS API](http://elastest.io/docs/api/ems) is started at port 8888.
 As specified by the API, the user can subscribe a new RabbitMQ endpoint by executing the following command:
 ```
 $ echo '{"channel": "in", "ip": "rabbitHost", "port": 5672, "user": "rabbituser", "password": "passw0rd", "key": "key", "exchange": "exc", "exchange_type": "fanout"}' | curl -i -H "Content-Type: application/json" --data @- http://127.0.0.1:8888/subscriber/rabbitmq
 ```
 
+### Event feeding
+
 A client can send events to the EMS configuring a beats server to send its output as specified by the following lines in its configuration file:
 ```
 output.logstash:
   hosts: ["logstash:5044"]
+```
+
+### Monitoring machines deployment
+
+The tester can deploy monitoring machines by performing a POST request to the MonitoringMachine path, providing the parameters specified at the [EMS API](http://elastest.io/docs/api/ems). The definition depends on the type of monitoring machine being deployed (field "momType"), and consists of a JSON with the corresponding format.
+Examples for deploying SampledSignals and WriteDefinitions can be found in the directory elastest-monitoring-service/go\_EMS/testinputs. For example, to declare a metric called "cpuload x", listening over channel "in", whose value is scrapped from field "event[system][load][1]" and whose parameter "x" must be retrieved from field "event[beat][hostname]", we can execute the following command:
+```
+$ echo '{ "momType":"sampledSignal", "definition":"{ \"name\": \"cpuload\", \"paramsPaths\": {\"x\": \"beat.hostname\"}, \"inChannel\": \"in\", \"valuePath\": \"system.load.1\" }"}' | curl -i -H "Content-Type: application/json" --data @- http://127.0.0.1:8888/MonitoringMachine
 ```
 
 ## Development documentation
