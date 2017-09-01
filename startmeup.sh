@@ -14,4 +14,4 @@ logstash -f /usr/share/logstash/pipeline/outlogstash.conf --config.reload.automa
 
 swagger --port=8888 --host=0.0.0.0 &
 
-go_EMS < /usr/share/logstash/pipes/leftpipe > /usr/share/logstash/pipes/rightpipe
+go_EMS > /usr/share/logstash/pipes/rightpipe

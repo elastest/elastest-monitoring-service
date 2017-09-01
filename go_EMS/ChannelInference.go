@@ -11,7 +11,7 @@ func getEvent (rawEvent map[string]interface{}) Event {
 		channel = Channel(evchannel)
 	} else {
 		// Inference rule: if system.load is defined, then it goes through channel #in
-		if sysmap, ok := rawEvent["system"].(map[string]interface{}); ok {
+		if sysmap, ok := rawEvent["system"].(map[string]interface{}); false && ok {
 			if _, ok := sysmap["load"]; ok {
 				channel = "in";
 			}
