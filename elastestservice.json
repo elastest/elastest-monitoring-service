@@ -34,6 +34,39 @@
 		"manifest_content": "version: '2.1'</br>services:</br>    ems:</br>        container_name: elastest-ems</br>        depends_on:</br>            - elasticsearch</br>        image: elastest/ems</br>        ports:</br>            - 5044:5044</br>            - 8888:8888</br></br>    elasticsearch:</br>        container_name: elasticsearch</br>        image: docker.elastic.co/elasticsearch/elasticsearch:5.4.0</br>        ports:</br>            - 9200:9200</br>        environment:</br>            - http.host=0.0.0.0</br>            - transport.host=127.0.0.1</br>",
 		"manifest_type": "dummy",
 		"plan_id": "9b7dd476-462f-4a56-81b0-eccee8917cf7",
-		"service_id": "bab3ae67-8c1d-46ec-a940-94183a443825"
+		"service_id": "bab3ae67-8c1d-46ec-a940-94183a443825",
+		"endpoints": {
+			"EngineManagement": {
+				"description": "Service for managing monitoring machines and subscribers",  
+				"main": true,  
+				"api": {
+					"protocol": "http",  
+					"port": 8888,  
+					"path": "/",  
+					"definition": {
+					"type": "openapi",  
+					"path": "/api.yaml"
+					}
+				},
+				"gui": {
+					"protocol": "http",  
+					"port": 8889, // To be done.
+					"path": "/gui"
+				}
+			},
+			"BeatsFeed": {
+				"description": "this endpoint receives events sent by beats (elasticsearch data shippers)",  
+				"main": false,  
+				"api": {
+					"protocol": "TCP/IP",  
+					"port": 5044
+				},
+				"gui": { // Makes no sense for an event feeding endpoint
+					"protocol": "http",  
+					"port": 9090,  
+					"path": "/gui"  
+				}
+			}
+		}
 	}
 }
