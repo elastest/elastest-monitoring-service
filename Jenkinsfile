@@ -8,7 +8,7 @@ node('docker') {
 
             stage "Tests"
                 echo ("Starting tests")
-                echo ("(No tests yet)")
+                sh 'docker run -v $(pwd)/go_EMS:/go/go_EMS golang /bin/bash -c "cd go_EMS;go test"'
 
             stage "Build image - Package"
                 echo ("Building")
