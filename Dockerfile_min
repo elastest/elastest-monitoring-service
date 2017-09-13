@@ -1,0 +1,24 @@
+FROM quay.io/goswagger/swagger as swaggerbuilder
+WORKDIR /go/src/swagger-go
+ENV GOPATH /go
+COPY swagger-go ./
+COPY api.yaml ./swagger.yaml
+RUN swagger generate server
+RUN sh ./convertpaths.sh
+
+FROM golang:1.7.3 as builder
+WORKDIR /go
+COPY --from=swaggerbuilder /go/src/swagger-go ./
+RUN go get github.com/go-openapi/runtime/flagext
+RUN go get github.com/jessevdk/go-flags
+COPY vendor /go/src
+RUN CGO_ENABLED=0 GOOS=linux go build -o swagger cmd/monitoring-as-a-service-server/main.go
+
+FROM docker.elastic.co/logstash/logstash:5.4.0
+WORKDIR /root/
+COPY --from=builder /go/swagger /usr/local/bin/swagger
+COPY startmeup_min.sh /startmeup.sh
+COPY logstashcfgs/minlogstash.conf /usr/share/logstash/pipeline/outlogstash.conf
+USER root
+RUN chmod 666 /usr/share/logstash/pipeline/outlogstash.conf
+ENTRYPOINT ["/startmeup.sh"]
