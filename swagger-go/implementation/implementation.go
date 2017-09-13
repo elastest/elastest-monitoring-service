@@ -85,7 +85,7 @@ func injectNewOutput(injStr string) {
 	}
 
 	fsize := finfo.Size()
-	fmt.Printf("The file is %d bytes long", fsize)
+	//fmt.Printf("The file is %d bytes long", fsize)
 
 	if _, err := file.WriteAt([]byte(injStr), fsize-2); err != nil {
 		panic(err)
@@ -96,7 +96,7 @@ func subscribeEndpoint(endpoint IEndpoint) middleware.Responder {
 	subId := strconv.Itoa(rand.Int())
 	injStr := endpoint.getInjectableString(subId)
 	injectNewOutput(injStr)
-	fmt.Println(injStr)
+	//fmt.Println(injStr)
 	return SubscribeOk{subId}
 }
 
