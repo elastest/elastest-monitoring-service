@@ -311,6 +311,16 @@ paths:
       responses:
         200:
           description: "EMS successfully flushed."
+  /health:
+    get:
+      tags:
+      - "Health"
+      summary: "Get health information about the EMS"
+      description: "This method returns a health summary of this Monitoring Service instance"
+      operationId: "getHealth"
+      responses:
+        200:
+          description: "EMS is functioning correctly."
 definitions:
   Event:
     type: "object"
