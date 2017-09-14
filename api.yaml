@@ -316,11 +316,26 @@ paths:
       tags:
       - "Health"
       summary: "Get health information about the EMS"
-      description: "This method returns a health summary of this Monitoring Service instance"
+      description: "This method returns a health summary of this Monitoring Service instance."
       operationId: "getHealth"
       responses:
         200:
           description: "EMS is functioning correctly."
+          schema:
+            $ref: '#/definitions/HealthSummary'
+  /environment:
+    get:
+      tags:
+      - "Health"
+      summary: "Get environment information about the EMS"
+      description: "This method returns information about the environment where this Monitoring Service instance was deployed in JSON format."
+      operationId: "getEnvironment"
+      responses:
+        200:
+          description: "Check body to find the environment information.."
+          schema:
+            type: "string"
+            description: "Environment information."
 definitions:
   Event:
     type: "object"
@@ -389,7 +404,12 @@ definitions:
     type: "object"
     properties:
       inferenceRule:
-          type: "string"
+        type: "string"
+  HealthSummary:
+    type: "object"
+    properties:
+      status:
+        type: "string"
 externalDocs:
   description: "Monitoring Services and Instrumentation Agents document."
   url: "https://docs.google.com/document/d/1Txd9qNtLbYWph1Ne61TfNomtAxQtmH2P-8Ib5SZ1uiE"
