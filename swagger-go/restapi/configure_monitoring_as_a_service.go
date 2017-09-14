@@ -54,6 +54,9 @@ func configureAPI(api *operations.MonitoringAsAServiceAPI) http.Handler {
 	api.MonitoringMachineGetDeployedMoMsHandler = monitoring_machine.GetDeployedMoMsHandlerFunc(func(params monitoring_machine.GetDeployedMoMsParams) middleware.Responder {
 		return middleware.NotImplemented("operation monitoring_machine.GetDeployedMoMs has not yet been implemented")
 	})
+	api.HealthGetEnvironmentHandler = health.GetEnvironmentHandlerFunc(func(params health.GetEnvironmentParams) middleware.Responder {
+		return implementation.GetEnvironment()
+	})
 	api.HealthGetHealthHandler = health.GetHealthHandlerFunc(func(params health.GetHealthParams) middleware.Responder {
 		return implementation.GetHealth()
 	})
