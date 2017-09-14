@@ -193,6 +193,8 @@ paths:
            type: "array"
            items: 
               $ref: "#/definitions/DeployedMoM"
+        405:
+          descrption: "Monitoring machines are not allowed in this version of the ElasTest Monitoring Service"
       # security:
       # - petstore_auth:
       #   - "write:pets"
@@ -216,7 +218,7 @@ paths:
           $ref: "#/definitions/MoM"
       responses:
         405:
-          description: "Invalid input."
+          descrption: "Monitoring machines are not allowed in this version of the ElasTest Monitoring Service"
         200:
           description: "MoM successfully deployed."
           schema:
@@ -246,8 +248,8 @@ paths:
           description: "MoM found and returned."
           schema:
             $ref: '#/definitions/MoM'
-        400:
-          description: "Invalid Id supplied."
+        405:
+          descrption: "Monitoring machines are not allowed in this version of the ElasTest Monitoring Service"
         404:
           description: "MoM not found."
     put:
@@ -279,6 +281,8 @@ paths:
           description: "Invalid MoM supplied."
         404:
           description: "MoM not found."
+        405:
+          descrption: "Monitoring machines are not allowed in this version of the ElasTest Monitoring Service"
     delete:
       tags:
       - "MonitoringMachine"
@@ -301,6 +305,8 @@ paths:
           description: "Invalid Id supplied."
         404:
           description: "MoM not found."
+        405:
+          descrption: "Monitoring machines are not allowed in this version of the ElasTest Monitoring Service"
   /flush:
     post:
       tags:
