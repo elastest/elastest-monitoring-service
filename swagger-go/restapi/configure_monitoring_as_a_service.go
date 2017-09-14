@@ -14,6 +14,7 @@ import (
 	"../restapi/operations"
 	"../restapi/operations/announcements"
 	"../restapi/operations/flush"
+	"../restapi/operations/health"
 	"../restapi/operations/monitoring_machine"
 	"../restapi/operations/publishers"
 	"../restapi/operations/subscribers"
@@ -52,6 +53,9 @@ func configureAPI(api *operations.MonitoringAsAServiceAPI) http.Handler {
 	})
 	api.MonitoringMachineGetDeployedMoMsHandler = monitoring_machine.GetDeployedMoMsHandlerFunc(func(params monitoring_machine.GetDeployedMoMsParams) middleware.Responder {
 		return middleware.NotImplemented("operation monitoring_machine.GetDeployedMoMs has not yet been implemented")
+	})
+	api.HealthGetHealthHandler = health.GetHealthHandlerFunc(func(params health.GetHealthParams) middleware.Responder {
+		return implementation.GetHealth()
 	})
 	api.MonitoringMachineGetMoMByIDHandler = monitoring_machine.GetMoMByIDHandlerFunc(func(params monitoring_machine.GetMoMByIDParams) middleware.Responder {
 		return middleware.NotImplemented("operation monitoring_machine.GetMoMByID has not yet been implemented")
