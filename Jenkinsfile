@@ -12,19 +12,11 @@ node('docker') {
                 
             stage "Publish code coverage"
                 echo ("Publishing code coverage")
-                def codecovArgs = '-K '
-                if (env.GITHUB_PR_NUMBER != '') {
-                  // This is a PR
-                  codecovArgs += "-B ${env.GITHUB_PR_TARGET_BRANCH} " +
-                      "-C ${env.GITHUB_PR_HEAD_SHA} " +
-                      "-P ${env.GITHUB_PR_NUMBER} "
-                } else {
-                  // Not a PR
-                  codecovArgs += "-B ${env.GIT_BRANCH} " +
-                      "-C ${env.GIT_COMMIT} "
-                }
-                sh "echo args = ${codecovArgs}"
-                sh 'docker run -v $(pwd)/go_EMS:/go/go_EMS golang /bin/bash -c "cd go_EMS; go test -race -coverprofile=coverage.txt -covermode=atomic; curl -s https://codecov.io/bash | bash -s - ${codecovArgs} -t ${COB_EMS_TOKEN} || echo \'Codecov did not collect coverage reports\'"'
+                sh "mkdir shared || true"
+                sh 'export PWD=$(pwd)'
+                sh 'docker run -v ${PWD}/shared:/shared -v ${PWD}/go_EMS:/go/go_EMS golang /bin/bash -c "cd go_EMS; go test -race -coverprofile=coverage.txt -covermode=atomic; mv coverage.txt /shared"'
+                sh "curl -s https://codecov.io/bash > shared/curlout.txt"
+                sh "cd shared; JENKINS_URL= bash <curlout.txt -s - -t ${COB_EMS_TOKEN}; cd ..; rm -rf shared"
 
             stage "Build images - Package"
                 echo ("Building full version")
