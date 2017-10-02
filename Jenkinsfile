@@ -20,11 +20,11 @@ node('docker') {
 
             stage "Build images - Package"
                 echo ("Building full version")
-                sh 'docker build -t elastest/ems:0.1 .'
-                def myfullimage = docker.image('elastest/ems:0.1');
+                sh 'docker build -t elastest/ems:0.5.0-alpha1 .'
+                def myfullimage = docker.image('elastest/ems:0.5.0-alpha1');
                 echo ("Building min version")
-                sh 'docker build -f Dockerfile_min -t elastest/ems_min:0.1 .'
-                def myminimage = docker.image('elastest/ems_min:0.1');
+                sh 'docker build -f Dockerfile_min -t elastest/ems_min:0.5.0-alpha1 .'
+                def myminimage = docker.image('elastest/ems_min:0.5.0-alpha1');
 
             stage "Run images"
                 myfullimage.run()
@@ -36,7 +36,7 @@ node('docker') {
                     usernameVariable: 'USERNAME', passwordVariable: 'PASSWORD']]) {
                     sh 'docker login -u "$USERNAME" -p "$PASSWORD"'
                     myfullimage.push()
-					myminimage.run()
+					myminimage.push()
                 }   
         }   
 }
