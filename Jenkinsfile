@@ -23,8 +23,8 @@ node('docker') {
                 sh 'docker build -t elastest/ems:0.5.0-alpha1 .'
                 def myfullimage = docker.image('elastest/ems:0.5.0-alpha1');
                 echo ("Building min version")
-                sh 'docker build -f Dockerfile_min -t elastest/ems_min:0.5.0-alpha1 .'
-                def myminimage = docker.image('elastest/ems_min:0.5.0-alpha1');
+                sh 'docker build -f Dockerfile_min -t elastest/ems-min:0.5.0-alpha1 .'
+                def myminimage = docker.image('elastest/ems-min:0.5.0-alpha1');
 
             stage "Run images"
                 myfullimage.run()
@@ -37,6 +37,6 @@ node('docker') {
                     sh 'docker login -u "$USERNAME" -p "$PASSWORD"'
                     myfullimage.push()
 					myminimage.push()
-                }   
+                }
         }   
 }
