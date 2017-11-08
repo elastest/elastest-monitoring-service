@@ -155,10 +155,10 @@ paths:
         200:
           description: "Endpoints successfully registered."
           schema:
+           description: "Ids of subscription."
            type: "array"
            items: 
               type: "string"
-          description: "Ids of subscription."
 
   /announcement:
     post:
