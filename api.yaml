@@ -145,10 +145,7 @@ paths:
         description: "Endpoints to be registered."
         required: true
         schema:
-           type: "array"
-           items: 
-            type: string
-            enum: [persistence, dashboard]
+          $ref: "#/definitions/ElastestEndpoints"
       responses:
         405:
           description: "Invalid input."
@@ -438,6 +435,16 @@ definitions:
         type: "string"
       exchange_type:
         type: "string"
+  ElastestEndpoints:
+    type: "object"
+    properties:
+      channel:
+        type: "string"
+      defaultendpoints:
+        type: "array"
+        items: 
+          type: string
+          enum: [persistence, dashboard]
   AnnouncementRule:
     type: "object"
     properties:
