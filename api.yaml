@@ -128,7 +128,7 @@ paths:
         404:
           description: "Subscriber not found."
 
-  /subscriber/elastestendpoints:
+  /subscriber/elastest:
     post:
       tags:
       - "Subscribers"
@@ -440,7 +440,7 @@ definitions:
     properties:
       channel:
         type: "string"
-      defaultendpoints:
+      endpoints:
         type: "array"
         items: 
           type: string
