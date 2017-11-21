@@ -6,7 +6,7 @@ COPY api.yaml ./swagger.yaml
 RUN swagger generate server
 RUN sh ./convertpaths.sh
 
-FROM golang:1.7.3 as builder
+FROM golang:latest as builder
 WORKDIR /go/src/github.com/elastest/elastest-monitoring-service
 COPY . /go/src/github.com/elastest/elastest-monitoring-service
 RUN CGO_ENABLED=0 GOOS=linux go build -o ems ./go_EMS
