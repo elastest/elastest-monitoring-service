@@ -31,9 +31,15 @@ echo $SUT
 
 # T-Job creation
 echo Creating T-Job
-DATA='{ "id": 0, "name": "nombredeltjob", "imageName": "docker.elastic.co/beats/metricbeat:5.4.0", "sut": '"${SUT}"', "project": '"${PROJ}"' , "tjobExecs": [], "parameters": [], "commands": "-e -E output.logstash.hosts=[\"'"${EMSIPPORT}"'\"]", '"$(cat suffix.json)"
+DATA='{ "id": 0, "name": "nombredeltjob", "imageName": "docker.elastic.co/beats/metricbeat:5.4.0", "sut": '"${SUT}"', "project": '"${PROJ}"' , "tjobExecs": [], "parameters": [], "commands": "metricbeat -e -E output.logstash.hosts=[\"'"${EMSIPPORT}"'\"] -E output.elasticsearch.hosts=[\"edm-elasticsearch:9200\"]", '"$(cat suffix.json)"
 TJOB=$(curl -s -H "Content-Type: application/json" -d "${DATA}" "http://$ELASTESTURL/api/tjob")
-echo $TJOB
+TJOBID=$(echo $TJOB | sudo docker run -i --rm nimmis/jq .id)
+echo TJOBID: $TJOBID
+
+# T-Job execution
+echo Executing T-Job
+TJOBEXEC=$(curl -s -H "Content-Type: application/json" -d '{"tJobParams": []}' "http://$ELASTESTURL/api/tjob/$TJOBID/exec")
+echo $TJOBEXEC
 
 
 # tjob commands: metricbeat -e -E output.logstash.hosts=['172.19.0.14:5044'] -E output.elasticsearch.hosts=['edm-elasticsearch:9200']
