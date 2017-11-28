@@ -41,9 +41,21 @@ echo Executing T-Job
 TJOBEXEC=$(curl -s -H "Content-Type: application/json" -d '{"tJobParams": []}' "http://$ELASTESTURL/api/tjob/$TJOBID/exec")
 echo $TJOBEXEC
 
-
-# tjob commands: metricbeat -e -E output.logstash.hosts=['172.19.0.14:5044'] -E output.elasticsearch.hosts=['edm-elasticsearch:9200']
-# tjob environment docker image: docker.elastic.co/beats/metricbeat:5.4.0
-
-# subscriber. Doesn't seem necessary anymore
-# curl -H "Content-Type: application/json" -d '{ "channel": "chan", "ip": "edm-elasticsearch", "port": 9201, "user": "elastic", "password": "changeme" }' "${EMSURL}subscriber/elasticsearch" # might be wrong..
+# Waiting for the T-Job to start producing events
+echo Waiting for the T-Job to start producing events
+PROCESSEDEVENTS=0
+COUNTER=0
+while [ $PROCESSEDEVENTS -eq 0 ];
+do
+    COUNTER=$((COUNTER+1))
+    echo Processed events is still 0 ..
+    if [ $COUNTER -eq 50 ]
+    then
+        echo Counter reached
+        exit 1
+    fi
+    sleep 5
+    PROCESSEDEVENTS=$(curl -s "${EMSURL}health" | sudo docker run -i --rm nimmis/jq fromjson.ProcessedEvents)
+done
+echo received $PROCESSEDEVENTS events
+exit 0
