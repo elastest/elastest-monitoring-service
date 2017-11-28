@@ -16,7 +16,7 @@ node('docker') {
                echo "Error: $e"
             }
 
-            sh "docker run --name elastest-platform -d --rm -v /var/run/docker.sock:/var/run/docker.sock elastest/platform start --lite"
+            sh "docker run --name elastest-platform -d --rm -v /var/run/docker.sock:/var/run/docker.sock elastest/platform:20171122 start --lite"
             sh "docker run --rm -v /var/run/docker.sock:/var/run/docker.sock elastest/platform wait --running=240"
             sh "docker logs elastest-platform"
 
@@ -35,7 +35,7 @@ node('docker') {
          }
 
          stage ("E2E tests") {
-            sh "echo Coming soon!"
+            sh "./e2e-test/start-instance.sh"
          }
      }
   }
