@@ -455,6 +455,8 @@ definitions:
     properties:
       status:
         type: "string"
+      processedEvents:
+        type: "integer"
 externalDocs:
   description: "Monitoring Services and Instrumentation Agents document."
   url: "https://docs.google.com/document/d/1Txd9qNtLbYWph1Ne61TfNomtAxQtmH2P-8Ib5SZ1uiE"
