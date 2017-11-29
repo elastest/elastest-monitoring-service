@@ -32,10 +32,16 @@ node('docker') {
                 returnStdout: true
             ).trim()
             echo "ETM container IP=${etEmpApi}"
+            
+            elastestURL= sh(
+                script: 'docker run --rm -v /var/run/docker.sock:/var/run/docker.sock elastest/platform wait --running=240 | grep available | sed "s/.*at //"',
+                returnStdout: true
+            ).trim()
+            echo "Elastest URL=${elastestURL}"
          }
 
          stage ("E2E tests") {
-            sh "./e2e-test/start-instance.sh"
+            sh "cd e2e-test; sh ./start-instance.sh ${elastestURL}"
          }
      }
   }
