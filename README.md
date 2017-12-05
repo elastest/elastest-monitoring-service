@@ -10,7 +10,16 @@ Copyright © 2017-2019 [ElasTest]. Licensed under [Apache 2.0 License].
 elastest-monitoring-service (ems)
 ==============================
 
-ElasTest Monitoring Service.
+The ElasTest Monitoring Service (EMS) provides a monitoring infrastructure
+suitable for inspecting executions of a System Under Test (hereinafter "SuT")
+and the ElasTest platform itself online. This service allows the user and the
+platform to deploy machines able to process events in real time and generate
+complex, higher level events from them. This can help to better understand
+what's happening, detect anomalies, correlate issues, and even stress the tests
+automatically; all of which aims to maximize the chances of uncover bugs and
+their causes. To achieve its goal, it provides an OpenAPI endpoint whose
+specification can be found at http://elastest.io/docs/api/ems, along with input
+endpoints over which events can be fed to the service.
 
 # What is ElasTest
 
