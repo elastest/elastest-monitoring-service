@@ -1,7 +1,3 @@
 bin/
 *.swp
 *.swo
-swagger-go/cmd
-swagger-go/models
-swagger-go/restapi/*
-!swagger-go/restapi/configure_monitoring_as_a_service.go

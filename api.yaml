@@ -128,6 +128,35 @@ paths:
         404:
           description: "Subscriber not found."
 
+  /subscriber/elastest:
+    post:
+      tags:
+      - "Subscribers"
+      summary: "Subscribe default elastest endpoints to a channel"
+      description: "Through this method, a client can subscribe multiple elastest endpoints to a channel for the endpoint to receive the events published on such channel. Currently, the available default endpoints are \"persistence\" and \"dashboard\"."
+      operationId: "subscribeElastestEndpoints"
+      consumes:
+      - "application/json"
+      produces:
+      - "application/json"
+      parameters:
+      - in: "body"
+        name: "endpoints"
+        description: "Endpoints to be registered."
+        required: true
+        schema:
+          $ref: "#/definitions/ElastestEndpoints"
+      responses:
+        405:
+          description: "Invalid input."
+        200:
+          description: "Endpoints successfully registered."
+          schema:
+           description: "Ids of subscription."
+           type: "array"
+           items: 
+              type: "string"
+
   /announcement:
     post:
       tags:
@@ -406,6 +435,16 @@ definitions:
         type: "string"
       exchange_type:
         type: "string"
+  ElastestEndpoints:
+    type: "object"
+    properties:
+      channel:
+        type: "string"
+      endpoints:
+        type: "array"
+        items: 
+          type: string
+          enum: [persistence, dashboard]
   AnnouncementRule:
     type: "object"
     properties:
@@ -416,6 +455,8 @@ definitions:
     properties:
       status:
         type: "string"
+      processedEvents:
+        type: "integer"
 externalDocs:
   description: "Monitoring Services and Instrumentation Agents document."
   url: "https://docs.google.com/document/d/1Txd9qNtLbYWph1Ne61TfNomtAxQtmH2P-8Ib5SZ1uiE"

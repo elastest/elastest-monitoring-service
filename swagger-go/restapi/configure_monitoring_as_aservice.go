@@ -72,6 +72,9 @@ func configureAPI(api *operations.MonitoringAsAServiceAPI) http.Handler {
 	api.AnnouncementsRegisterHandler = announcements.RegisterHandlerFunc(func(params announcements.RegisterParams) middleware.Responder {
 		return middleware.NotImplemented("operation announcements.Register has not yet been implemented")
 	})
+	api.SubscribersSubscribeElastestEndpointsHandler = subscribers.SubscribeElastestEndpointsHandlerFunc(func(params subscribers.SubscribeElastestEndpointsParams) middleware.Responder {
+		return middleware.NotImplemented("operation subscribers.SubscribeElastestEndpoints has not yet been implemented")
+	})
 	api.SubscribersSubscribeElasticSearchHandler = subscribers.SubscribeElasticSearchHandlerFunc(func(params subscribers.SubscribeElasticSearchParams) middleware.Responder {
 		return implementation.SubscribeES(params)
 	})
@@ -103,6 +106,7 @@ func configureTLS(tlsConfig *tls.Config) {
 // This function can be called multiple times, depending on the number of serving schemes.
 // scheme value will be set accordingly: "http", "https" or "unix"
 func configureServer(s *graceful.Server, scheme, addr string) {
+        go implementation.OpenAndLoop()
 }
 
 // The middleware configuration is for the handler executors. These do not apply to the swagger.json document.
