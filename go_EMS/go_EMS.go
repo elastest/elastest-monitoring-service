@@ -45,7 +45,7 @@ func scanStdIn(file io.Reader) {
 				//fmt.Println(string(newJSON))
 			}
 			//newJSON, _ := json.Marshal(dasmap)
-			//fmt.Println(string(newJSON))
+			fmt.Println(string(thetextbytes))
 		}
 	}
 }
