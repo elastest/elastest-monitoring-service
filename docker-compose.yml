@@ -6,3 +6,9 @@ services:
         ports:
             - 5044:5044
             - 8888:8888
+    elasticsearch:
+        container_name: ems-elasticsearch
+        image: docker.elastic.co/elasticsearch/elasticsearch:5.4.0
+        environment:
+            - http.host=0.0.0.0 
+            - transport.host=127.0.0.1
