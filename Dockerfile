@@ -1,4 +1,4 @@
-FROM quay.io/goswagger/swagger as swaggerbuilder
+FROM quay.io/goswagger/swagger:0.13.0 as swaggerbuilder
 WORKDIR /go/src/swagger-go
 ENV GOPATH /go
 COPY swagger-go ./
