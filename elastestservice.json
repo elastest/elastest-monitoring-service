@@ -55,6 +55,11 @@
                         "name": "lsbeats",
                         "protocol": "beats",
                         "port": 5044
+                    },
+                    {
+                        "name": "httpinevents",
+                        "protocol": "http",
+                        "port": 8181
                     }
                 ]
             }
