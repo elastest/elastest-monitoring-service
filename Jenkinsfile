@@ -20,8 +20,8 @@ node('docker') {
 
             stage "Build images - Package"
                 echo ("Building full version")
-                sh 'docker build -t elastest/ems:0.5.0-alpha1 .'
-                def myfullimage = docker.image('elastest/ems:0.5.0-alpha1');
+                sh 'docker build -t elastest/ems:0.6.0-beta3 .'
+                def myfullimage = docker.image('elastest/ems:0.6.0-beta3');
                 echo ("Building metricbeat version")
                 sh 'docker build -f Dockerfile_metricbeat -t elastest/ems-min:1.1.0 .'
                 def mymetricimage = docker.image('elastest/ems-min:1.1.0')
