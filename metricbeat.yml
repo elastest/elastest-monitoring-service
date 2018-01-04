@@ -74,7 +74,7 @@ fields:
 #----------------------------- Logstash output --------------------------------
 output.logstash:
   # The Logstash hosts
-  hosts: ["${ET_EMS_LSBEATS_HOST}:${ET_EMS_LSBEATS_PORT}"]
+  hosts: ["${ET_EMS_LSBEATS_HOST}:5044"]
 
   # Optional SSL. By default is off.
   # List of root certificates for HTTPS server verifications
