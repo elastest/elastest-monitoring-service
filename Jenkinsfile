@@ -24,7 +24,7 @@ node('docker') {
                 def myfullimage = docker.image('elastest/ems:0.5.0-alpha1');
                 echo ("Building metricbeat version")
                 sh 'docker build -f Dockerfile_metricbeat -t elastest/ems-min:1.0.0 .'
-                def mymetricimage = docker.image('elastest/ems-min:1.0.0
+                def mymetricimage = docker.image('elastest/ems-min:1.0.0')
 
             stage "Run images"
                 myfullimage.run()
