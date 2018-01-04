@@ -1,0 +1,7 @@
+FROM elastest/test-etm-alpinegitjava
+
+COPY pom.xml /pom.xml
+
+COPY src /src
+
+CMD mvn test
