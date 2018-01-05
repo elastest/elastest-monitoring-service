@@ -41,13 +41,13 @@ public class EmsTestAppTest {
 
 		/* 1.1 Create a query */
 		
-		// /* Method 1 */
-		// String subscriber_request =
-		// 	"{ \"channel\": \"any\","
-		// 	+ "\"ip\": \"elastest.software.imdea.org\","
-		// 	+ "\"port\": 9202,"
-		// 	+ "\"user\": \"elastic\","
-		// 	+ "\"password\": \"changeme\" }";
+		 /* Method 1 */
+		 String subscriber_request =
+		 	"{ \"channel\": \"any\","
+		 	+ "\"ip\": \"elastest.software.imdea.org\","
+		 	+ "\"port\": 9202,"
+		 	+ "\"user\": \"elastic\","
+		 	+ "\"password\": \"changeme\" }";
 
 		// /* Method 2 */
 		// JSONObject obj = new JSONObject();
@@ -61,13 +61,13 @@ public class EmsTestAppTest {
 		// String subscriber_request = out.toString();
 
 
-		 /* Method 3 */
-		 String subscriber_request =
-		 	"{ 'channel': 'any',"
-		 	+ "'ip': 'elastest.software.imdea.org',"
-		 	+ "'port': 9202,"
-		 	+ "'user': 'elastic',"
-		 	+ "'password': 'changeme' }";
+		 // /* Method 3 */
+		 // String subscriber_request =
+		 // 	"{ 'channel': 'any',"
+		 // 	+ "'ip': 'elastest.software.imdea.org',"
+		 // 	+ "'port': 9202,"
+		 // 	+ "'user': 'elastic',"
+		 // 	+ "'password': 'changeme' }";
 
 
 		/* 1.2 consume the API */
