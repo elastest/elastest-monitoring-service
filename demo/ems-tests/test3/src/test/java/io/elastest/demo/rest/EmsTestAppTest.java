@@ -32,6 +32,7 @@ public class EmsTestAppTest {
             appHost = "172.27.0.9";
         }
 
+            System.out.println("el punto a "+ appHost);
         try {
             String endpointjson = "{ \"channel\": \"any\", \"ip\": \"elastest.software.imdea.org\", \"port\": 9202, \"user\": \"elastic\", \"password\": \"changeme\" }";
             Process p=Runtime.getRuntime().exec(new String[]{"curl","-d",endpointjson,"-H","Content-Type: application/json","http://"+appHost+":8888/subscriber/elasticsearch"});
