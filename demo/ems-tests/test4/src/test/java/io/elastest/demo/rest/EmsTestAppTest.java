@@ -47,7 +47,7 @@ public class EmsTestAppTest {
 
         int counter = 60;
 
-		int expected_events = 100;
+		int expected_events = 10000;
         while (expected_events > Integer.parseInt(result) && counter > 0) {
 			String ems_api_url = "http://" + appHost + ":8888/health";
 			System.out.println("Connecting to "+ems_api_url+"...");
