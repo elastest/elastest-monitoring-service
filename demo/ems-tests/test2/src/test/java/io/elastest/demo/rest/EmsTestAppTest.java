@@ -31,8 +31,8 @@ public class EmsTestAppTest {
         if (appHost == null) {
             appHost = "172.27.0.9";
         }
-		String ems_api = "http://" + appHost + ":8888/health";
-		String ems_api_health = ems_api +  ":8888/health";
+		String ems_api = "http://" + appHost ":8888";
+		String ems_api_health = ems_api +  "/health";
 			
         RestTemplate client = new RestTemplate();
 		
@@ -71,7 +71,6 @@ public class EmsTestAppTest {
 
 		/* 1.2 consume the API */
 		String ems_api_subscribe = ems_api + "/subscriber/elasticsearch";
-
 
 		System.out.println("Requesting EMS to subscribe: \"" + subscriber_request + "\"");
 		String apiResponse = client.postForObject(ems_api_subscribe,
