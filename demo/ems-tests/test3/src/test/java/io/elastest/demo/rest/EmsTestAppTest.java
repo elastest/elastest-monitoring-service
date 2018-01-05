@@ -32,9 +32,14 @@ public class EmsTestAppTest {
             appHost = "172.27.0.9";
         }
 
-        String endpointjson = "{ \"channel\": \"any\", \"ip\": \"elastest.software.imdea.org\", \"port\": 9202, \"user\": \"elastic\", \"password\": \"changeme\" }"
-        Process p=Runtime.getRuntime().exec(new String[]{"curl","-d",endpointjson,"-H","Content-Type: application/json","http://"+appHost+":8888/subscriber/elasticsearch"});
-        p.waitFor();
+        try {
+            String endpointjson = "{ \"channel\": \"any\", \"ip\": \"elastest.software.imdea.org\", \"port\": 9202, \"user\": \"elastic\", \"password\": \"changeme\" }";
+            Process p=Runtime.getRuntime().exec(new String[]{"curl","-d",endpointjson,"-H","Content-Type: application/json","http://"+appHost+":8888/subscriber/elasticsearch"});
+            p.waitFor();
+        } catch (Exception e) {
+            assertThat(0).isNotEqualTo(0);
+            System.out.println("exception: "+e);
+        }
 
         RestTemplate client = new RestTemplate();
 
