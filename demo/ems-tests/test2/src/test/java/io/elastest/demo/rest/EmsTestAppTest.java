@@ -31,15 +31,59 @@ public class EmsTestAppTest {
         if (appHost == null) {
             appHost = "172.27.0.9";
         }
-
+		String ems_api = "http://" + appHost + ":8888/health";
+		String ems_api_health = ems_api +  ":8888/health";
+			
         RestTemplate client = new RestTemplate();
+		
+		/* 1. Configure an external elasticsearch+kibana web site for
+		 * demoing purposes */
 
-        String result = "0";
+		/* 1.1 Create a query */
+		
+		// /* Method 1 */
+		// String subscriber_request =
+		// 	"{ \"channel\": \"any\","
+		// 	+ "\"ip\": \"elastest.software.imdea.org\","
+		// 	+ "\"port\": 9202,"
+		// 	+ "\"user\": \"elastic\","
+		// 	+ "\"password\": \"changeme\" }";
+
+		// /* Method 2 */
+		// JSONObject obj = new JSONObject();
+		// obj.put("channel","any");
+		// obj.put("ip","elastest.software.imdea.org");
+		// obj.put("port",new Integer(9202));
+		// obj.put("user","elastic");
+		// obj.put("password","changeme");
+		// StringWriter out = new StringWriter();
+		// obj.writeJSONString(out);
+		// String subscriber_request = out.toString();
+
+		/* Method 3 */
+		String subscriber_request =
+			"{ 'channel': 'any',"
+			+ "'ip': 'elastest.software.imdea.org',"
+			+ "'port': 9202,"
+			+ "'user': 'elastic',"
+			+ "'password': 'changeme' }";
+
+
+		/* 1.2 consume the API */
+		String ems_api_subscribe = ems_api + "/subscriber/elasticsearch";
+
+
+		System.out.println("Requesting EMS to subscribe: \"" + subscriber_request + "\"");
+		String apiResponse = getRestTemplate().postForObject(ems_api_subscribe,
+															 subscriber_request,
+															 String.class);
+        System.out.println("EMS responds: \"" + apiResponse + "\"");
 
         int counter = 60;
+		int expected_events = "100";
 
-        while ("0".equals(result) && counter > 0) {
-			String ems_api_url = "http://" + appHost + ":8888/health";
+        while (expected_events.equals(result) && counter > 0) {
+			
 			System.out.println("Connecting to "+ems_api_url+"...");
             result = client.getForObject(ems_api_url, String.class);
 
