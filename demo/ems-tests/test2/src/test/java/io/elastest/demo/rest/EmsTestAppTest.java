@@ -31,7 +31,7 @@ public class EmsTestAppTest {
         if (appHost == null) {
             appHost = "172.27.0.9";
         }
-		String ems_api = "http://" + appHost ":8888";
+		String ems_api = "http://" + appHost + ":8888";
 		String ems_api_health = ems_api +  "/health";
 			
         RestTemplate client = new RestTemplate();
