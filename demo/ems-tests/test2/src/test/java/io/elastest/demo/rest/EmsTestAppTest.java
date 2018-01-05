@@ -60,19 +60,27 @@ public class EmsTestAppTest {
 		// obj.writeJSONString(out);
 		// String subscriber_request = out.toString();
 
-		/* Method 3 */
-		String subscriber_request =
-			"{ 'channel': 'any',"
-			+ "'ip': 'elastest.software.imdea.org',"
-			+ "'port': 9202,"
-			+ "'user': 'elastic',"
-			+ "'password': 'changeme' }";
+
+		 /* Method 3 */
+		 String subscriber_request =
+		 	"{ 'channel': 'any',"
+		 	+ "'ip': 'elastest.software.imdea.org',"
+		 	+ "'port': 9202,"
+		 	+ "'user': 'elastic',"
+		 	+ "'password': 'changeme' }";
 
 
 		/* 1.2 consume the API */
 		String ems_api_subscribe = ems_api + "/subscriber/elasticsearch";
 
+		/* Force "application/json" in the POST request */
 		System.out.println("Requesting EMS to subscribe: \"" + subscriber_request + "\"");
+
+		HttpHeaders headers = new HttpHeaders();
+		headers.setContentType(MediaType.APPLICATION_JSON);
+		HttpEntity<String> entity = new HttpEntity<String>(subscriber_request, headers);
+		client.put(ems_api_subscribe, entity);
+		
 		String apiResponse = client.postForObject(ems_api_subscribe,
 												  subscriber_request,
 												  String.class);
