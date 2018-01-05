@@ -81,12 +81,12 @@ public class EmsTestAppTest {
 
         int counter = 60;
 
-		int expected_events = "100";
+		int expected_events = 100;
 		String result = "0";
-        while (expected_events > Integer.ParseInt(result) && counter > 0) {
+        while (expected_events > Integer.parseInt(result) && counter > 0) {
 			
-			System.out.println("Connecting to "+ems_api_url+"...");
-            result = client.getForObject(ems_api_url, String.class);
+			System.out.println("Connecting to "+ ems_api_health +" ...");
+            result = client.getForObject(ems_api_health, String.class);
 
 			System.out.println("Received: \"" + result + "\"");
 
