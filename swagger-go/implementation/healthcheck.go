@@ -5,12 +5,14 @@ import (
 	openapiruntime "github.com/go-openapi/runtime"
 	middleware "github.com/go-openapi/runtime/middleware"
 	"runtime"
-
 	"encoding/json"
+    "os"
+    "bufio"
 )
 
 type HealthIsOk struct {
 	Status string
+    ProcessedEvents int
 }
 
 // WriteResponse to the client
@@ -33,10 +35,10 @@ func (info EnvironmentInfo) WriteResponse(rw http.ResponseWriter, producer opena
     }
 }
 
-var healthok HealthIsOk = HealthIsOk{"up"}
+var evCounter = 0
 
 func GetHealth() middleware.Responder {
-	return healthok
+    return HealthIsOk{"up", evCounter}
 }
 
 func GetEnvironment() middleware.Responder {
@@ -46,4 +48,21 @@ func GetEnvironment() middleware.Responder {
 		"Architecture" : runtime.GOARCH,
 	}
 	return EnvironmentInfo {info}
+}
+
+
+func OpenAndLoop() {
+    file, err := os.Open("/usr/share/logstash/pipes/swageventspipe")
+    if err != nil {
+        panic(err)
+    }
+    defer file.Close()
+
+    for {
+        scanner := bufio.NewScanner(file)
+        for scanner.Scan()  {
+            evCounter++;
+        }
+    }
+    panic("leaving!")
 }
