@@ -79,11 +79,13 @@ public class EmsTestAppTest {
 		 HttpHeaders headers = new HttpHeaders();
 		 headers.setContentType(MediaType.APPLICATION_JSON);
 		 HttpEntity<String> entity = new HttpEntity<String>(subscriber_request, headers);
-		 client.put(ems_api_subscribe, entity);
+		 //	 client.put(ems_api_subscribe, entity);
 		
 		String apiResponse = client.postForObject(ems_api_subscribe,
-												  subscriber_request,
+												  entity,
+												  // subscriber_request,
 												  String.class);
+		
         System.out.println("EMS responds: \"" + apiResponse + "\"");
 
         int counter = 60;
