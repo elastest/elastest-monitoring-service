@@ -6,8 +6,8 @@
 	<version>0.0.1-SNAPSHOT</version>
 
 	<parent>
-	  <groupId>org.springframework</groupId>
-	  <artifactId>spring-web</artifactId>
+	  <groupId>org.springframework.boot</groupId>
+	  <artifactId>spring-boot-starter-parent</artifactId>
 	  <version>1.5.8.RELEASE</version>
 	</parent>
 	<name>${project.groupId}:${project.artifactId}</name>
