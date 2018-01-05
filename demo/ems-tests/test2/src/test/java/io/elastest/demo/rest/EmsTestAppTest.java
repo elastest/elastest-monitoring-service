@@ -21,6 +21,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 import org.junit.jupiter.api.Test;
 
 import org.springframework.web.client.RestTemplate;
+// import org.springframework.http; /* for HttpHeaders */
 
 public class EmsTestAppTest {
 
@@ -76,10 +77,10 @@ public class EmsTestAppTest {
 		/* Force "application/json" in the POST request */
 		System.out.println("Requesting EMS to subscribe: \"" + subscriber_request + "\"");
 
-		HttpHeaders headers = new HttpHeaders();
-		headers.setContentType(MediaType.APPLICATION_JSON);
-		HttpEntity<String> entity = new HttpEntity<String>(subscriber_request, headers);
-		client.put(ems_api_subscribe, entity);
+		// HttpHeaders headers = new HttpHeaders();
+		// headers.setContentType(MediaType.APPLICATION_JSON);
+		// HttpEntity<String> entity = new HttpEntity<String>(subscriber_request, headers);
+		// client.put(ems_api_subscribe, entity);
 		
 		String apiResponse = client.postForObject(ems_api_subscribe,
 												  subscriber_request,
