@@ -74,15 +74,16 @@ public class EmsTestAppTest {
 
 
 		System.out.println("Requesting EMS to subscribe: \"" + subscriber_request + "\"");
-		String apiResponse = getRestTemplate().postForObject(ems_api_subscribe,
-															 subscriber_request,
-															 String.class);
+		String apiResponse = client.postForObject(ems_api_subscribe,
+												  subscriber_request,
+												  String.class);
         System.out.println("EMS responds: \"" + apiResponse + "\"");
 
         int counter = 60;
-		int expected_events = "100";
 
-        while (expected_events.equals(result) && counter > 0) {
+		int expected_events = "100";
+		String result = "0";
+        while (expected_events > Integer.ParseInt(result) && counter > 0) {
 			
 			System.out.println("Connecting to "+ems_api_url+"...");
             result = client.getForObject(ems_api_url, String.class);
