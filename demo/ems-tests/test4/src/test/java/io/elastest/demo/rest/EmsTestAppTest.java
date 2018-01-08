@@ -17,7 +17,8 @@
 package io.elastest.demo.rest;
 
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.assertj.core.api.AbstractIntegerAssert.isGreaterThanOrEqual;
+/* import static org.assertj.core.api.AbstractIntegerAssert.*; */
+import org.assertj.core.api.IntegerAssert.*;
 
 import org.junit.jupiter.api.Test;
 
