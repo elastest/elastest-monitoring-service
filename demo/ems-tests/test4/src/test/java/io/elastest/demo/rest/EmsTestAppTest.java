@@ -16,9 +16,9 @@
  */
 package io.elastest.demo.rest;
 
-/* import static org.assertj.core.api.Assertions.assertThat; */
 import static org.assertj.core.api.Assertions.*;
-import static org.assertj.core.api.*;
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.asswerj.core.api.ComparableAssert;
 
 import org.junit.jupiter.api.Test;
 
