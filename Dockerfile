@@ -1,4 +1,15 @@
 FROM quay.io/goswagger/swagger as swaggerbuilder
+
+# Set Image Labels
+ARG GIT_COMMIT=unspecified
+LABEL git_commit=$GIT_COMMIT
+
+ARG COMMIT_DATE=unspecified
+LABEL commit_date=$COMMIT_DATE
+
+ARG VERSION=unspecified
+LABEL version=$VERSION 
+
 WORKDIR /go/src/swagger-go
 ENV GOPATH /go
 COPY swagger-go ./
