@@ -17,8 +17,6 @@
 package io.elastest.demo.rest;
 
 import static org.assertj.core.api.Assertions.assertThat;
-/* import static org.assertj.core.api.AbstractIntegerAssert.*; */
-import org.assertj.core.api.IntegerAssert.*;
 
 import org.junit.jupiter.api.Test;
 
@@ -76,7 +74,7 @@ public class EmsTestAppTest {
             System.out.println("counter: " + counter + ". trying it again...");
 
         }
-		/* assertThat(result).isNotEqualTo("0");  */
-		assertThat(processed_events).isGreaterThanOrEqual(expected_events); 
+		 assertThat(result).isNotEqualTo("0");  
+		/* assertThat(processed_events).isGreaterThanOrEqual(expected_events);  */
     }
 }
