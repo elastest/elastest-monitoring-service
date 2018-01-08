@@ -71,7 +71,8 @@ public class EmsTestAppTest {
             System.out.println("counter: " + counter + ". trying it again...");
 
         }
-        assertThat(result).isNotEqualTo("0");
+        /* assertThat(result).isNotEqualTo("0"); */
+		assertThat(result,greaterThanOrEqualTo(expected_events));
     }
 
 }
