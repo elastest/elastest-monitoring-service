@@ -20,8 +20,8 @@ node('docker') {
 
             stage "Build images - Package"
                 echo ("Building full version")
-                sh 'docker build -t elastest/ems:0.6.0-beta3 .'
-                def myfullimage = docker.image('elastest/ems:0.6.0-beta3');
+                sh 'docker build --build-arg GIT_COMMIT=$(git rev-parse HEAD) --build-arg COMMIT_DATE=$(git log -1 --format=%cd --date=format:%Y-%m-%dT%H:%M:%S) . -t elastest/ems'
+                def myfullimage = docker.image('elastest/ems');
 
             stage "Run images"
                 myfullimage.run()
