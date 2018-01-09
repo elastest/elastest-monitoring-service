@@ -1,0 +1,1 @@
+.es(index=logstash-*, q='message:Stress AND status:on').if(lte, 0, null).points(show=true).lines(show=false), .es(index=logstash-*, q='message:Stress AND status:off').if(lte, 0, null).points(show=true).lines(show=false), .es(index=logstash-*, timefield='@timestamp', metric='avg:system.cpu.user.pct')

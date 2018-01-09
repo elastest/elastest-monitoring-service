@@ -2,7 +2,8 @@ version: '2.1'
 services:
     ems:
         container_name: elastest-ems
-        image: elastest/ems:0.5.0-alpha1
+        image: elastest/ems:latest
         ports:
             - 5044:5044
             - 8888:8888
+            - 8181:8181

@@ -22,13 +22,9 @@ node('docker') {
                 echo ("Building full version")
                 sh 'docker build --build-arg GIT_COMMIT=$(git rev-parse HEAD) --build-arg COMMIT_DATE=$(git log -1 --format=%cd --date=format:%Y-%m-%dT%H:%M:%S) . -t elastest/ems'
                 def myfullimage = docker.image('elastest/ems');
-                echo ("Building min version")
-                sh 'docker build --build-arg GIT_COMMIT=$(git rev-parse HEAD) --build-arg COMMIT_DATE=$(git log -1 --format=%cd --date=format:%Y-%m-%dT%H:%M:%S) . -t elastest/ems-min'
-                def myminimage = docker.image('elastest/ems-min');
 
             stage "Run images"
                 myfullimage.run()
-                myminimage.run()
 
             stage "Publish"
                 echo ("Publishing")
@@ -36,7 +32,6 @@ node('docker') {
                     usernameVariable: 'USERNAME', passwordVariable: 'PASSWORD']]) {
                     sh 'docker login -u "$USERNAME" -p "$PASSWORD"'
                     myfullimage.push()
-					myminimage.push()
                 }
         }   
 }

@@ -1,0 +1,1 @@
+Runs metricbeats, stressing the cpu every 30 seconds and resting for 30 seconds afterwards. Also, reports the stressing and the relax.
