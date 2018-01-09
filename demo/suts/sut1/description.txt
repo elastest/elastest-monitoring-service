@@ -1,0 +1,1 @@
+Just runs metricbeat, no stress or events.
