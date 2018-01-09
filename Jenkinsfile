@@ -20,15 +20,11 @@ node('docker') {
 
             stage "Build images - Package"
                 echo ("Building full version")
-                sh 'docker build -t elastest/ems:0.6.0-beta3 .'
-                def myfullimage = docker.image('elastest/ems:0.6.0-beta3');
-                echo ("Building metricbeat version")
-                sh 'docker build -f Dockerfile_metricbeat -t elastest/ems-min:1.1.0 .'
-                def mymetricimage = docker.image('elastest/ems-min:1.1.0')
+                sh 'docker build --build-arg GIT_COMMIT=$(git rev-parse HEAD) --build-arg COMMIT_DATE=$(git log -1 --format=%cd --date=format:%Y-%m-%dT%H:%M:%S) . -t elastest/ems'
+                def myfullimage = docker.image('elastest/ems');
 
             stage "Run images"
                 myfullimage.run()
-                mymetricimage.run()
 
             stage "Publish"
                 echo ("Publishing")
@@ -36,7 +32,6 @@ node('docker') {
                     usernameVariable: 'USERNAME', passwordVariable: 'PASSWORD']]) {
                     sh 'docker login -u "$USERNAME" -p "$PASSWORD"'
                     myfullimage.push()
-                    mymetricimage.push()
                 }
         }   
 }

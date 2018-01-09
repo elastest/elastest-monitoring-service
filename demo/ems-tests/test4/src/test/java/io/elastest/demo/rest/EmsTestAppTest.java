@@ -44,11 +44,12 @@ public class EmsTestAppTest {
         RestTemplate client = new RestTemplate();
 
         String result = "0";
+		int processed_events = 0;
 
         int counter = 60;
 
 		int expected_events = 10000;
-        while (expected_events > Integer.parseInt(result) && counter > 0) {
+        while (expected_events > processed_events && counter > 0) {
 			String ems_api_url = "http://" + appHost + ":8888/health";
 			System.out.println("Connecting to "+ems_api_url+"...");
             result = client.getForObject(ems_api_url, String.class);
@@ -61,6 +62,8 @@ public class EmsTestAppTest {
 
 			System.out.println("...which corresponds to " + result + "events");
 
+			processed_events = Integer.parseInt(result);
+
             counter--;
             try {
                 System.out.println("sleeping for 3s...");
@@ -71,7 +74,7 @@ public class EmsTestAppTest {
             System.out.println("counter: " + counter + ". trying it again...");
 
         }
-        assertThat(result).isNotEqualTo("0");
+		 assertThat(result).isNotEqualTo("0");  
+		/* assertThat(processed_events).isGreaterThanOrEqual(expected_events);  */
     }
-
 }

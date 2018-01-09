@@ -20,5 +20,6 @@ RUN chmod 644 /usr/share/metricbeat/metricbeat.yml
 
 USER metricbeat
 
-COPY metric_startmeup.sh /startmeup.sh
+COPY startmeup.sh /startmeup.sh
+COPY stress_periodically.sh /stress_periodically.sh
 ENTRYPOINT ["/startmeup.sh"]
