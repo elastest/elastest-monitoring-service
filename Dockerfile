@@ -36,6 +36,7 @@ COPY --from=builder /go/src/github.com/elastest/elastest-monitoring-service/ems 
 COPY --from=builder /go/swagger /usr/local/bin/swagger
 COPY startmeup.sh /startmeup.sh
 COPY logstashcfgs/* /usr/share/logstash/pipeline/
+COPY logstash.yml /usr/share/logstash/config/logstash.yml
 USER root
 RUN chmod 666 /usr/share/logstash/pipeline/outlogstash.conf
 ENTRYPOINT ["/startmeup.sh"]
