@@ -61,7 +61,18 @@
                         "name": "httpinevents",
                         "protocol": "http",
                         "port": 8181
+                    },
+                    {
+                        "name": "tcp_testlogs",
+                        "protocol": "tcp",
+                        "port": 5000
+                    },
+                    {
+                        "name": "tcp_sutlogs",
+                        "protocol": "tcp",
+                        "port": 5001
                     }
+
                 ]
             }
         }
