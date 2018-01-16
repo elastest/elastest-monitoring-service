@@ -60,7 +60,8 @@
                     {
                         "name": "httpinevents",
                         "protocol": "http",
-                        "port": 8181
+                        "port": 8181,
+                        "path": "/"
                     },
                     {
                         "name": "tcp_testlogs",
