@@ -85,7 +85,7 @@ func configureAPI(api *operations.MonitoringAsAServiceAPI) http.Handler {
 		return middleware.NotImplemented("operation announcements.Unregister has not yet been implemented")
 	})
 	api.SubscribersUnsubscribeHandler = subscribers.UnsubscribeHandlerFunc(func(params subscribers.UnsubscribeParams) middleware.Responder {
-		return middleware.NotImplemented("operation subscribers.Unsubscribe has not yet been implemented")
+        return implementation.UnsubscribeHandler(params)
 	})
 	api.MonitoringMachineUpdateMoMHandler = monitoring_machine.UpdateMoMHandlerFunc(func(params monitoring_machine.UpdateMoMParams) middleware.Responder {
 		return middleware.NotImplemented("operation monitoring_machine.UpdateMoM has not yet been implemented")
