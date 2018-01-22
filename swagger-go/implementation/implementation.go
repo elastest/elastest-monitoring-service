@@ -11,6 +11,8 @@ import (
 	"math/rand"
 	"strconv"
 	"os"
+    "regexp"
+    "strings"
 )
 
 type LocalESEndpoint models.ESEndpoint
@@ -26,11 +28,26 @@ type SubscribeOk struct {
 	subscriptionId string
 }
 
+
+type SubscribeManyOk struct {
+
+    // In: body
+	subscriptionIds []string
+}
+
 // WriteResponse to the client
 func (o SubscribeOk) WriteResponse(rw http.ResponseWriter, producer runtime.Producer) {
 
     rw.WriteHeader(200)
 	if err := producer.Produce(rw, o.subscriptionId); err != nil {
+		panic(err) // let the recovery middleware deal with this
+    }
+}
+
+func (o SubscribeManyOk) WriteResponse(rw http.ResponseWriter, producer runtime.Producer) {
+
+    rw.WriteHeader(200)
+	if err := producer.Produce(rw, o.subscriptionIds); err != nil {
 		panic(err) // let the recovery middleware deal with this
     }
 }
@@ -92,7 +109,7 @@ func injectNewOutput(injStr string) {
 	}
 }
 
-func subscribeEndpoint(endpoint IEndpoint) middleware.Responder {
+func subscribeEndpoint(endpoint IEndpoint) SubscribeOk {
 	subId := strconv.Itoa(rand.Int())
 	injStr := endpoint.getInjectableString(subId)
 	injectNewOutput(injStr)
@@ -110,3 +127,38 @@ func SubscribeRMQ(params subscribers.SubscribeRabbitMQParams) middleware.Respond
 	endpoint := LocalRMQEndpoint(*params.Endpoint)
 	return subscribeEndpoint(endpoint)
 }
+
+func subscribeDefaultEndpoint(ep string, channel string) string {
+    edm_es := os.Getenv("ET_EDM_ELASTICSEARCH_API")
+
+    // Sanity check
+    r, _ := regexp.Compile("http://[^:]+:[0-9]+/")
+    if !(r.MatchString(edm_es)) {
+        return "invalid_EDM_ES"
+    }
+
+
+	edm_es = edm_es[7:len(edm_es)-1]
+	i := strings.Index(edm_es, ":")
+	ip := edm_es[:i]
+	port, _ := strconv.ParseInt(edm_es[i+1:], 10, 64)
+
+    switch ep {
+        case "persistence","dashboard":
+            return subscribeEndpoint(LocalESEndpoint(models.ESEndpoint{channel, ip, "changeme",  port, "elastic"})).subscriptionId
+        default:
+            return "unknown default endpoint"
+    }
+}
+
+func SubscribeElastestEndpoint(params subscribers.SubscribeElastestEndpointsParams) middleware.Responder {
+    channel := params.Endpoints.Channel
+    endpoints := params.Endpoints.Endpoints
+
+	subids := make([]string, len(endpoints))
+    for i, v := range endpoints {
+        subids[i] = subscribeDefaultEndpoint(v, channel)
+    }
+    return SubscribeManyOk{subids}
+}
+
