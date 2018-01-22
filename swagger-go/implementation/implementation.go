@@ -13,6 +13,7 @@ import (
 	"os"
     "regexp"
     "strings"
+    "os/exec"
 )
 
 type LocalESEndpoint models.ESEndpoint
@@ -29,6 +30,9 @@ type SubscribeOk struct {
 }
 
 
+type UnSubscribeOk struct {
+}
+
 type SubscribeManyOk struct {
 
     // In: body
@@ -44,6 +48,14 @@ func (o SubscribeOk) WriteResponse(rw http.ResponseWriter, producer runtime.Prod
     }
 }
 
+func (o UnSubscribeOk) WriteResponse(rw http.ResponseWriter, producer runtime.Producer) {
+
+    rw.WriteHeader(200)
+	if err := producer.Produce(rw, "ok"); err != nil {
+		panic(err) // let the recovery middleware deal with this
+    }
+}
+
 func (o SubscribeManyOk) WriteResponse(rw http.ResponseWriter, producer runtime.Producer) {
 
     rw.WriteHeader(200)
@@ -53,7 +65,8 @@ func (o SubscribeManyOk) WriteResponse(rw http.ResponseWriter, producer runtime.
 }
 
 func (endpoint LocalESEndpoint) getInjectableString(subId string) string {
-	template := `# SUBID %s
+	template := `
+# SUBID %s
   elasticsearch {
     hosts => ["%s:%v"]
     user => %s
@@ -65,7 +78,8 @@ func (endpoint LocalESEndpoint) getInjectableString(subId string) string {
 }
 
 func (endpoint LocalRMQEndpoint) getInjectableString(subId string) string {
-	template := `# SUBID %s
+	template := `
+# SUBID %s
   rabbitmq {
     key => "%s"
     exchange => "%s"
@@ -161,4 +175,16 @@ func SubscribeElastestEndpoint(params subscribers.SubscribeElastestEndpointsPara
     }
     return SubscribeManyOk{subids}
 }
+
+func UnsubscribeHandler(params subscribers.UnsubscribeParams) middleware.Responder {
+    // sed -i '/SUBID 5577006791947779410/,/ENDOF 5577006791947779410/d' testfile.txt
+	cmd := "sed"
+	args := []string{"-i", "/SUBID "+params.SubID+"/,/ENDOF "+params.SubID+"/d", "/usr/share/logstash/pipeline/outlogstash.conf"}
+	if err := exec.Command(cmd, args...).Run(); err != nil {
+		fmt.Fprintln(os.Stderr, err)
+		os.Exit(1)
+	}
+	return UnSubscribeOk{}
+}
+
 
