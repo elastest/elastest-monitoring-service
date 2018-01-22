@@ -73,7 +73,7 @@ func configureAPI(api *operations.MonitoringAsAServiceAPI) http.Handler {
 		return middleware.NotImplemented("operation announcements.Register has not yet been implemented")
 	})
 	api.SubscribersSubscribeElastestEndpointsHandler = subscribers.SubscribeElastestEndpointsHandlerFunc(func(params subscribers.SubscribeElastestEndpointsParams) middleware.Responder {
-		return middleware.NotImplemented("operation subscribers.SubscribeElastestEndpoints has not yet been implemented")
+		return implementation.SubscribeElastestEndpoint(params)
 	})
 	api.SubscribersSubscribeElasticSearchHandler = subscribers.SubscribeElasticSearchHandlerFunc(func(params subscribers.SubscribeElasticSearchParams) middleware.Responder {
 		return implementation.SubscribeES(params)
