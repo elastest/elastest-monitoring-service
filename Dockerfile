@@ -39,4 +39,5 @@ COPY logstashcfgs/* /usr/share/logstash/pipeline/
 COPY logstash.yml /usr/share/logstash/config/logstash.yml
 USER root
 RUN chmod 666 /usr/share/logstash/pipeline/outlogstash.conf
+RUN /usr/share/logstash/bin/logstash-plugin install logstash-output-websocket
 ENTRYPOINT ["/startmeup.sh"]

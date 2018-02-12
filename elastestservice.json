@@ -72,8 +72,14 @@
                         "name": "tcp_sutlogs",
                         "protocol": "tcp",
                         "port": 5001
-                    }
+                    },
+                    {
+                        "name": "websocket_out",
+                        "protocol": "http",
+                        "port": 3232,
+                        "path": "/"
 
+                    }
                 ]
             }
         }

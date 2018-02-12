@@ -14,11 +14,12 @@ RUN go get github.com/jessevdk/go-flags
 COPY vendor /go/src
 RUN CGO_ENABLED=0 GOOS=linux go build -o swagger cmd/monitoring-as-a-service-server/main.go
 
-FROM docker.elastic.co/logstash/logstash:5.4.0
+FROM docker.elastic.co/logstash/logstash:6.2.1
 WORKDIR /root/
 COPY --from=builder /go/swagger /usr/local/bin/swagger
 COPY startmeup_min.sh /startmeup.sh
 COPY logstashcfgs/minlogstash.conf /usr/share/logstash/pipeline/outlogstash.conf
 USER root
 RUN chmod 666 /usr/share/logstash/pipeline/outlogstash.conf
+RUN /usr/share/logstash/bin/logstash-plugin install logstash-output-websocket
 ENTRYPOINT ["/startmeup.sh"]
