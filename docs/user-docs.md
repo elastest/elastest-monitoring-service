@@ -13,28 +13,45 @@ The EMS comes in two flavors: a full-fledged version, which supports the deploym
 
 ## How to run
 
+### Standalone
+
 To run the EMS as a standalone component, you can download the docker-compose file available at https://github.com/elastest/elastest-monitoring-service/blob/master/docker-compose.yml and then run it with the following command line:
 ```
 $ docker-compose up
 ```
+
+### Inside of Elastest
+
+### As an independent service
+
+An EMS instance can be started globally as an independent service opening the Test Support Services tab in the TORM web GUI, selecting EMS as the service, and then clicking on Create Instance.
+The details to access the service can be seen in the newly created entry of the Test Support Services list.
+
+### Per test
+
+An instance of the EMS can be started for each test by selecting the box EMS in the Test Support Services section during the configuration of a TJob.
+The details to access the service will be available for the TJob and the SuT in the environment variable `ET_EMS_LSBEATS_HOST`.
 
 ## Basic usage
 
 ### Subscription
 
 When the EMS is started, a server for managing the monitoring machines and the subscription endpoints, in compliance with the [EMS API](http://elastest.io/docs/api/ems) is started at port 8888.
-As specified by the API, the user can subscribe a new RabbitMQ endpoint by executing the following command:
+Exercising this API, the client can subscribe to events specifying either an ElasticSearch or a RabbitMQ endpoint.
+For example, the user can subscribe a new RabbitMQ endpoint by executing the following command:
 ```
 $ echo '{"channel": "in", "ip": "rabbitHost", "port": 5672, "user": "rabbituser", "password": "passw0rd", "key": "key", "exchange": "exc", "exchange_type": "fanout"}' | curl -i -H "Content-Type: application/json" --data @- http://127.0.0.1:8888/subscriber/rabbitmq
 ```
 
+Alternatively, a user can subscribe to events by connecting a websocket to the EMS host, at port 3232.
+
+In order to make the events flow to the Elastest dashboard and/or persistence services, a user can subscribe it POSTING to the API method ``/subscriber/elastest``.
+
 ### Event feeding
 
-A client can send events to the EMS configuring a beats server to send its output as specified by the following lines in its configuration file:
-```
-output.logstash:
-  hosts: ["logstash:5044"]
-```
+A logstash user can send events to the EMS configuring a metricbeats server to send its output to the EMS host, at port 5044.
+The SuT should feed its events via TCP to the EMS port 5000, while the TJob should do so to port 5001.
+Events can also be fed to the system via HTTP to port 8181.
 
 ### Monitoring machines deployment
 [Full-fledged version only]
