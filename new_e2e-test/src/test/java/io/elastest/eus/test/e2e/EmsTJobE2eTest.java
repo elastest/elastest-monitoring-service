@@ -69,20 +69,19 @@ public class EmsTJobE2eTest extends EmsBaseTest {
                 .click();
         driver.findElement(By.name("tJobName")).sendKeys("my-test-tjob");
         driver.findElement(By.name("tJobImageName"))
-                .sendKeys("elastest/ci-docker-e2e");
-        driver.findElement(By.name("resultsPath")).sendKeys(
-                "/home/jenkins/elastest-monitoring-service/tjob-test/target/surefire-reports/TEST-io.elastest.ems.test.e2e.TJobEmsTest.xml");
+                .sendKeys("imdeasoftware/ems-metricbeat:2");
+        // driver.findElement(By.name("resultsPath")).sendKeys(
+        //         "/home/jenkins/elastest-monitoring-service/tjob-test/target/surefire-reports/TEST-io.elastest.ems.test.e2e.TJobEmsTest.xml");
+        driver.findElement(By.name("toggleCommands")).click();
         driver.findElement(By.className("mat-select-trigger")).click();
         driver.findElement(By.xpath("//md-option[contains(string(), 'None')]"))
                 .click();
-        driver.findElement(By.name("commands")).sendKeys(
-                "git clone https://github.com/fgorostiaga/elastest-monitoring-service; cd elastest-monitoring-service/tjob-test; mvn test;");
-        driver.findElement(By.xpath("//md-checkbox[contains(string(), 'EUS')]"))
+        driver.findElement(By.xpath("//md-checkbox[contains(string(), 'EMS')]"))
                 .click();
         driver.findElement(By.xpath("//button[contains(string(), 'SAVE')]"))
                 .click();
 
-        log.info("Run TJob and wait for EMS GUI");
+        log.info("Run TJob");
         driver.findElement(By.xpath("//button[@title='Run TJob']")).click();
         By eusCard = By
                 .xpath("//md-card-title[contains(string(), 'elastest-eus')]");
