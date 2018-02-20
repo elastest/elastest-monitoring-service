@@ -17,7 +17,6 @@
 package io.elastest.ems.test.base;
 
 import static java.lang.System.getProperty;
-import static java.lang.System.setProperty;
 import static java.lang.invoke.MethodHandles.lookup;
 import static java.util.logging.Level.ALL;
 import static org.openqa.selenium.logging.LogType.BROWSER;
@@ -53,25 +52,14 @@ public class EmsBaseTest {
     final Logger log = getLogger(lookup().lookupClass());
 
     protected String tormUrl = "http://localhost:37000/"; // local by default
-    protected String secureTorm= "http://user:pass@localhost:37000/";
-    
-    protected String eUser = null; 
-    protected String ePassword = null; 
-    
+    protected String secureTorm = "http://user:pass@localhost:37000/";
+
+    protected String eUser = null;
+    protected String ePassword = null;
+
     protected boolean secureElastest = false;
-    
+
     protected WebDriver driver;
-
-    // selenium-jupiter configuration
-    static {
-        // screenshots
-        setProperty("sel.jup.screenshot.at.the.end.of.tests", "whenfailure");
-        setProperty("sel.jup.screenshot.format", "base64");
-
-        // recordings
-        setProperty("sel.jup.recording", "true");
-        setProperty("sel.jup.output.folder", "surefire-reports");
-    }
 
     @DriverCapabilities
     DesiredCapabilities capabilities = chrome();
@@ -90,20 +78,22 @@ public class EmsBaseTest {
         String elastestUser = getProperty("eUser");
         if (elastestUser != null) {
             eUser = elastestUser;
-            
+
             String elastestPassword = getProperty("ePass");
             if (elastestPassword != null) {
                 ePassword = elastestPassword;
                 secureElastest = true;
             }
-        
+
         }
         if (secureElastest) {
             String split_url[] = tormUrl.split("//");
-            secureTorm = split_url[0]+"//"+eUser+":"+ePassword+"@"+split_url[1];
+            secureTorm = split_url[0] + "//" + eUser + ":" + ePassword + "@"
+                    + split_url[1];
         }
-        
-        log.info("Using URL {} to connect to {} TORM", tormUrl, secureElastest? "secure": "unsecure");
+
+        log.info("Using URL {} to connect to {} TORM", tormUrl,
+                secureElastest ? "secure" : "unsecure");
     }
 
     @AfterEach
@@ -124,10 +114,6 @@ public class EmsBaseTest {
         driver.findElement(By.name("project.name")).sendKeys(projectName);
         driver.findElement(By.xpath("//button[contains(string(), 'SAVE')]"))
                 .click();
-        WebDriverWait waitElement = new WebDriverWait(driver, 3);
-        By projectNameElement = By.xpath("//div[.='" + projectName + "']");
-        waitElement.until(visibilityOfElementLocated(projectNameElement));
-        driver.findElement(projectNameElement).click();
     }
 
     protected void startTestSupportService(WebDriver driver,

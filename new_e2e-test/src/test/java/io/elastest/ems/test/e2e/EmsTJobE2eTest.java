@@ -16,6 +16,7 @@
  */
 package io.elastest.ems.test.e2e;
 
+import static io.github.bonigarcia.BrowserType.CHROME;
 import static java.lang.invoke.MethodHandles.lookup;
 import static java.util.concurrent.TimeUnit.SECONDS;
 import static org.openqa.selenium.support.ui.ExpectedConditions.textToBePresentInElementLocated;
@@ -28,29 +29,31 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.openqa.selenium.By;
 import org.openqa.selenium.Dimension;
-import org.openqa.selenium.chrome.ChromeDriver;
+import org.openqa.selenium.remote.RemoteWebDriver;
 import org.openqa.selenium.support.ui.WebDriverWait;
 import org.slf4j.Logger;
 
 import io.elastest.ems.test.base.EmsBaseTest;
+import io.github.bonigarcia.DockerBrowser;
 import io.github.bonigarcia.SeleniumExtension;
 
 /**
- * E2E EMS test.
+ * E2E EmS test.
  *
  * @author Boni Garcia (boni.garcia@urjc.es)
  * @since 0.1.1
  */
 @Tag("e2e")
-@DisplayName("E2E tests of EMS through TORM")
+@DisplayName("E2E tests of EmS through TORM")
 @ExtendWith(SeleniumExtension.class)
 public class EmsTJobE2eTest extends EmsBaseTest {
 
     final Logger log = getLogger(lookup().lookupClass());
 
     @Test
-    @DisplayName("EMS in a TJob")
-    void testTJob(ChromeDriver driver) throws InterruptedException {
+    @DisplayName("EmS in a TJob")
+    void testTJob(@DockerBrowser(type = CHROME) RemoteWebDriver driver)
+            throws InterruptedException {
         this.driver = driver;
 
         log.info("Navigate to TORM and start new project");
@@ -58,24 +61,24 @@ public class EmsTJobE2eTest extends EmsBaseTest {
         driver.manage().timeouts().implicitlyWait(5, SECONDS);
         if (secureElastest) {
             driver.get(secureTorm);
-        }
-        else {
+        } else {
             driver.get(tormUrl);
         }
         createNewProject(driver, "my-test-project");
 
-        log.info("Create new TJob using EMS");
+        log.info("Create new TJob using EmS");
         driver.findElement(By.xpath("//button[contains(string(), 'New TJob')]"))
                 .click();
         driver.findElement(By.name("tJobName")).sendKeys("my-test-tjob");
         driver.findElement(By.name("tJobImageName"))
                 .sendKeys("imdeasoftware/ems-metricbeat:2");
         // driver.findElement(By.name("resultsPath")).sendKeys(
-        //         "/home/jenkins/elastest-monitoring-service/tjob-test/target/surefire-reports/TEST-io.elastest.ems.test.e2e.TJobEmsTest.xml");
-        driver.findElement(By.id("md-slide-toggle-1-input")).click();
+        //        "/home/jenkins/elastest-user-emulator-service/tjob-test/target/surefire-reports/TEST-io.elastest.eus.test.e2e.TJobEusTest.xml");
         driver.findElement(By.className("mat-select-trigger")).click();
         driver.findElement(By.xpath("//md-option[contains(string(), 'None')]"))
                 .click();
+        // driver.findElement(By.name("commands")).sendKeys(
+        //        "git clone https://github.com/elastest/elastest-user-emulator-service; cd elastest-user-emulator-service/tjob-test; mvn test;");
         driver.findElement(By.xpath("//md-checkbox[contains(string(), 'EMS')]"))
                 .click();
         driver.findElement(By.xpath("//button[contains(string(), 'SAVE')]"))
@@ -83,10 +86,6 @@ public class EmsTJobE2eTest extends EmsBaseTest {
 
         log.info("Run TJob");
         driver.findElement(By.xpath("//button[@title='Run TJob']")).click();
-        By eusCard = By
-                .xpath("//md-card-title[contains(string(), 'elastest-eus')]");
-        WebDriverWait waitEus = new WebDriverWait(driver, 60);
-        waitEus.until(visibilityOfElementLocated(eusCard));
 
         log.info("Wait for build sucess traces");
         WebDriverWait waitLogs = new WebDriverWait(driver, 180);
