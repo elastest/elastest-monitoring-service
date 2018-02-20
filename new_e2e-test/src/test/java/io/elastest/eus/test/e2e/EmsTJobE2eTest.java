@@ -72,7 +72,7 @@ public class EmsTJobE2eTest extends EmsBaseTest {
                 .sendKeys("imdeasoftware/ems-metricbeat:2");
         // driver.findElement(By.name("resultsPath")).sendKeys(
         //         "/home/jenkins/elastest-monitoring-service/tjob-test/target/surefire-reports/TEST-io.elastest.ems.test.e2e.TJobEmsTest.xml");
-        driver.findElement(By.name("toggleCommands")).click();
+        driver.findElement(By.id("md-slide-toggle-1-input")).click();
         driver.findElement(By.className("mat-select-trigger")).click();
         driver.findElement(By.xpath("//md-option[contains(string(), 'None')]"))
                 .click();
