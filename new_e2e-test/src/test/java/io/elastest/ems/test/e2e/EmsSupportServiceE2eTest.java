@@ -14,7 +14,7 @@
  * limitations under the License.
  *
  */
-package io.elastest.eus.test.e2e;
+package io.elastest.ems.test.e2e;
 
 import static io.github.bonigarcia.BrowserType.CHROME;
 import static java.lang.Thread.sleep;
@@ -37,25 +37,25 @@ import org.openqa.selenium.remote.RemoteWebDriver;
 import org.openqa.selenium.support.ui.WebDriverWait;
 import org.slf4j.Logger;
 
-import io.elastest.eus.test.base.EusBaseTest;
+import io.elastest.ems.test.base.EmsBaseTest;
 import io.github.bonigarcia.DockerBrowser;
 import io.github.bonigarcia.SeleniumExtension;
 
 /**
- * E2E EUS test.
+ * E2E EmS test.
  *
  * @author Boni Garcia (boni.garcia@urjc.es)
  * @since 0.1.1
  */
 @Tag("e2e")
-@DisplayName("E2E tests of EUS through TORM")
+@DisplayName("E2E tests of EmS through TORM")
 @ExtendWith(SeleniumExtension.class)
-public class EusSupportServiceE2eTest extends EusBaseTest {
+public class EmsSupportServiceE2eTest extends EmsBaseTest {
 
     final Logger log = getLogger(lookup().lookupClass());
 
     @Test
-    @DisplayName("EUS as support service")
+    @DisplayName("EmS as support service")
     void testSupportService(
             @DockerBrowser(type = CHROME) RemoteWebDriver driver)
             throws InterruptedException {
@@ -69,7 +69,7 @@ public class EusSupportServiceE2eTest extends EusBaseTest {
         } else {
             driver.get(tormUrl);
         }
-        startTestSupportService(driver, "EUS");
+        startTestSupportService(driver, "EMS");
 
 //       log.info("Select Chrome as browser and start session");
 //       WebDriverWait waitElement = new WebDriverWait(driver, 60); // seconds
@@ -79,7 +79,7 @@ public class EusSupportServiceE2eTest extends EusBaseTest {
 //       driver.findElement(By.id("start_session")).click();
 //
 //       log.info("Wait to load browser");
-//       By iframe = By.id("eus_iframe");
+//       By iframe = By.id("ems_iframe");
 //       WebDriverWait waitBrowser = new WebDriverWait(driver, 240); // seconds
 //       waitBrowser.until(visibilityOfElementLocated(iframe));
 //       driver.switchTo().frame(driver.findElement(iframe));
