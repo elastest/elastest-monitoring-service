@@ -1,0 +1,48 @@
+node('docker') {
+
+   stage('Preparation') {
+
+      def mycontainer = docker.image('elastest/ci-docker-e2e:latest')
+      mycontainer.pull()
+      mycontainer.inside("-u jenkins -v /var/run/docker.sock:/var/run/docker.sock:rw -v /dev/shm:/dev/shm") {
+         sh '/usr/bin/supervisord -c /etc/supervisor/conf.d/supervisord.conf &'
+         git 'https://github.com/elastest/elastest-monitoring-service.git'
+
+         stage('ElasTest starting'){
+            sh "docker run --rm -v /var/run/docker.sock:/var/run/docker.sock elastest/platform stop" 
+            try {
+               sh "docker rm -f elastest-platform"
+            } catch(e) {
+               echo "Error: $e"
+            }
+
+            sh "docker run --name elastest-platform -d --rm -v /var/run/docker.sock:/var/run/docker.sock elastest/platform:dev start --mode=experimental-lite"
+            sh "docker run --rm -v /var/run/docker.sock:/var/run/docker.sock elastest/platform wait --running=240"
+            sh "docker logs elastest-platform"
+
+            containerId= sh (
+                script: 'cat /proc/self/cgroup | grep "docker" | sed s/\\\\//\\\\n/g | tail -1',
+                returnStdout: true
+            ).trim()
+
+            echo "containerId = ${containerId}"
+            sh "docker network connect elastest_elastest "+ containerId
+            etEmpApi= sh (
+                script: 'docker inspect --format=\\"{{.NetworkSettings.Networks.elastest_elastest.Gateway}}\\" elastest_etm-proxy_1',
+                returnStdout: true
+            ).trim()
+            echo "ETM container IP=${etEmpApi}"
+         }
+
+         stage ("E2E tests") {
+            try {
+               sh "cd e2e-test; mvn -B clean test -DetEmpApi=http://${etEmpApi}:37000/"
+            } catch(e) {
+                sh 'docker ps | awk "{print $NF}" | grep ems | xargs docker logs || true'
+            } finally {
+                step([$class: 'JUnitResultArchiver', testResults: '**/target/surefire-reports/TEST-*.xml'])
+            }
+         }
+     }
+  }
+}
