@@ -14,7 +14,7 @@
  * limitations under the License.
  *
  */
-package io.elastest.ems.test.base;
+package io.elastest.eus.test.base;
 
 import static java.lang.System.getProperty;
 import static java.lang.invoke.MethodHandles.lookup;
@@ -42,12 +42,12 @@ import org.slf4j.Logger;
 import io.github.bonigarcia.DriverCapabilities;
 
 /**
- * Parent for E2E EMS tests.
+ * Parent for E2E EUS tests.
  *
  * @author Boni Garcia (boni.garcia@urjc.es)
  * @since 0.1.1
  */
-public class EmsBaseTest {
+public class EusBaseTest {
 
     final Logger log = getLogger(lookup().lookupClass());
 
@@ -139,7 +139,7 @@ public class EmsBaseTest {
 
             } catch (Exception e) {
                 numRetries++;
-                if (numRetries > 4) {
+                if (numRetries > 6) {
                     log.warn("Max retries ({}) reached ... leaving",
                             numRetries);
                     break;

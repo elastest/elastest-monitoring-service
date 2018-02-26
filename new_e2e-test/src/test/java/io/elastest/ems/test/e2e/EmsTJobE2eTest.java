@@ -71,14 +71,14 @@ public class EmsTJobE2eTest extends EmsBaseTest {
                 .click();
         driver.findElement(By.name("tJobName")).sendKeys("my-test-tjob");
         driver.findElement(By.name("tJobImageName"))
-                .sendKeys("imdeasoftware/ems-metricbeat:2");
-        // driver.findElement(By.name("resultsPath")).sendKeys(
-        //        "/home/jenkins/elastest-user-emulator-service/tjob-test/target/surefire-reports/TEST-io.elastest.eus.test.e2e.TJobEusTest.xml");
+                .sendKeys("elastest/ci-docker-e2e");
+//        driver.findElement(By.name("resultsPath")).sendKeys(
+//                "/home/jenkins/elastest-user-emulator-service/tjob-test/target/surefire-reports/TEST-io.elastest.ems.test.e2e.TJobEmsTest.xml");
         driver.findElement(By.className("mat-select-trigger")).click();
         driver.findElement(By.xpath("//md-option[contains(string(), 'None')]"))
                 .click();
-        // driver.findElement(By.name("commands")).sendKeys(
-        //        "git clone https://github.com/elastest/elastest-user-emulator-service; cd elastest-user-emulator-service/tjob-test; mvn test;");
+//        driver.findElement(By.name("commands")).sendKeys(
+//                "git clone https://github.com/elastest/elastest-user-emulator-service; cd elastest-user-emulator-service/tjob-test; mvn test;");
         driver.findElement(By.xpath("//md-checkbox[contains(string(), 'EMS')]"))
                 .click();
         driver.findElement(By.xpath("//button[contains(string(), 'SAVE')]"))
@@ -86,6 +86,10 @@ public class EmsTJobE2eTest extends EmsBaseTest {
 
         log.info("Run TJob");
         driver.findElement(By.xpath("//button[@title='Run TJob']")).click();
+//        By emsCard = By
+//                .xpath("//md-card-title[contains(string(), 'elastest-ems')]");
+//        WebDriverWait waitEms = new WebDriverWait(driver, 60);
+//        waitEms.until(visibilityOfElementLocated(emsCard));
 
         log.info("Wait for build sucess traces");
         WebDriverWait waitLogs = new WebDriverWait(driver, 180);

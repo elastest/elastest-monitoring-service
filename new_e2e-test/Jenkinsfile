@@ -1,14 +1,12 @@
 node('docker') {
-
    stage('Preparation') {
-
       def mycontainer = docker.image('elastest/ci-docker-e2e:latest')
       mycontainer.pull()
       mycontainer.inside("-u jenkins -v /var/run/docker.sock:/var/run/docker.sock:rw -v /dev/shm:/dev/shm") {
          sh '/usr/bin/supervisord -c /etc/supervisor/conf.d/supervisord.conf &'
          git 'https://github.com/elastest/elastest-monitoring-service.git'
 
-         stage('ElasTest starting'){
+         stage('ElasTest starting') {
             sh "docker run --rm -v /var/run/docker.sock:/var/run/docker.sock elastest/platform stop" 
             try {
                sh "docker rm -f elastest-platform"
@@ -36,13 +34,18 @@ node('docker') {
 
          stage ("E2E tests") {
             try {
-               sh "cd e2e-test; mvn -B clean test -DetEmpApi=http://${etEmpApi}:37000/"
+               sh "cd e2e-test; mvn -B clean test -DetEmpApi=http://${etEmpApi}:37000/ -Dsel.jup.recording=true -Dsel.jup.screenshot.at.the.end.of.tests=true -Dsel.jup.screenshot.format=png -Dsel.jup.output.folder=surefire-reports -Dsel.jup.docker.network=elastest_elastest"
             } catch(e) {
-                sh 'docker ps | awk "{print $NF}" | grep ems | xargs docker logs || true'
+                sh '''\
+                   docker ps --all
+                   docker ps --filter name=eus -q
+                   docker ps --filter name=eus -q | xargs -L 1 docker logs || true
+                   docker ps --filter name=eus -q | xargs -L 1 docker inspect || true
+                '''
             } finally {
-                step([$class: 'JUnitResultArchiver', testResults: '**/target/surefire-reports/TEST-*.xml'])
+                step([$class: 'JUnitResultArchiver', testDataPublishers: [[$class: 'AttachmentPublisher']], testResults: '**/target/surefire-reports/TEST-*.xml'])
             }
          }
-     }
-  }
+      }
+   }
 }
