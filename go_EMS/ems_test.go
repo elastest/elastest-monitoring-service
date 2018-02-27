@@ -35,7 +35,7 @@ func TestSumAggSignal(t *testing.T) {
 	aggSignal := AggregatedSignal{[]Signal{}, aggregatorsMap["avg"]}
 	sample := aggSignal.Sample()
 	if (sample != UNDEFINED) {
-			t.Errorf("Wrong aggregated value, got: %s, wanted nil.", sample)
+			t.Errorf("Wrong aggregated value, got: %s, wanted nil.", (*sample).(int))
 	}
 }
 
