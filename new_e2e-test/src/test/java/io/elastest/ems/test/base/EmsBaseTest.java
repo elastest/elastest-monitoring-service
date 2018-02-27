@@ -14,7 +14,7 @@
  * limitations under the License.
  *
  */
-package io.elastest.eus.test.base;
+package io.elastest.ems.test.base;
 
 import static java.lang.System.getProperty;
 import static java.lang.invoke.MethodHandles.lookup;
@@ -42,12 +42,12 @@ import org.slf4j.Logger;
 import io.github.bonigarcia.DriverCapabilities;
 
 /**
- * Parent for E2E EUS tests.
+ * Parent for E2E EmS tests.
  *
  * @author Boni Garcia (boni.garcia@urjc.es)
  * @since 0.1.1
  */
-public class EusBaseTest {
+public class EmsBaseTest {
 
     final Logger log = getLogger(lookup().lookupClass());
 
