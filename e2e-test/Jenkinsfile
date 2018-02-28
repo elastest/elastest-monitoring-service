@@ -1,48 +1,41 @@
-node('docker') {
+@Library('ciElastestConnect') _
 
-   stage('Preparation') {
+elastest_lib.setVersion('dev')
+//initialization of the context for the library
+elastest_lib.setContext(this)
 
-      def mycontainer = docker.image('elastest/ci-docker-e2e:latest')
-      mycontainer.pull()
-      mycontainer.inside("-u jenkins -v /var/run/docker.sock:/var/run/docker.sock:rw -v /dev/shm:/dev/shm") {
-         sh '/usr/bin/supervisord -c /etc/supervisor/conf.d/supervisord.conf &'
-         git 'https://github.com/elastest/elastest-monitoring-service.git'
+//initialization of the runnable object to access elastest methods inside the pipeline
+def elastest= elastest_lib.getElastestMethods()
 
-         stage('ElasTest starting'){
-            sh "docker run --rm -v /var/run/docker.sock:/var/run/docker.sock elastest/platform stop" 
-            try {
-               sh "docker rm -f elastest-platform"
-            } catch(e) {
-               echo "Error: $e"
-            }
+elastest_lib.setMode('experimental-lite')
+//definition of nodes is managed by the library. Just declare the steps of your pipeline
+//inside the elastest_lib.pipeline({...})
 
-            sh "docker run --name elastest-platform -d --rm -v /var/run/docker.sock:/var/run/docker.sock elastest/platform start --mode experimental-lite"
-            sh "docker run --rm -v /var/run/docker.sock:/var/run/docker.sock elastest/platform wait --running=240"
-            sh "docker logs elastest-platform"
-
-            containerId= sh (
-                script: 'cat /proc/self/cgroup | grep "docker" | sed s/\\\\//\\\\n/g | tail -1',
-                returnStdout: true
-            ).trim()
-
-            echo "containerId = ${containerId}"
-            sh "docker network connect elastest_elastest "+ containerId
-            etEmpApi= sh (
-                script: 'docker inspect --format=\\"{{.NetworkSettings.Networks.elastest_elastest.IPAddress}}\\" elastest_etm_1',
-                returnStdout: true
-            ).trim()
-            echo "ETM container IP=${etEmpApi}"
-            
-            elastestURL= sh(
-                script: 'docker run --rm -v /var/run/docker.sock:/var/run/docker.sock elastest/platform wait --running=240 | grep available | sed "s/.*at //"',
-                returnStdout: true
-            ).trim()
-            echo "Elastest URL=${elastestURL}"
-         }
-
-         stage ("E2E tests") {
-            sh "cd e2e-test; sh ./start-instance.sh ${elastestURL}"
-         }
-     }
-  }
-}
+elastest_lib.pipeline({
+    
+    stage ('docker container')
+        def mycontainer = elastest.ctx.docker.image('elastest/ci-docker-e2e:latest')
+        mycontainer.pull()
+        mycontainer.inside("-u jenkins -v /var/run/docker.sock:/var/run/docker.sock:rw -v /dev/shm:/dev/shm")  {
+            sh '/usr/bin/supervisord -c /etc/supervisor/conf.d/supervisord.conf &'
+          
+            stage ('prepare')
+                git 'https://github.com/elastest/elastest-monitoring-service.git'
+                elastest.connect2ElastestNetwork()
+                def elastestURL = elastest.getEtmUrl()
+                
+            stage ("E2E tests")
+                try {
+                   sh "pwd; cd new_e2e-test; mvn -B clean test -DetEmpApi=http://${etEmpApi}:37000/ -Dsel.jup.recording=true -Dsel.jup.screenshot.at.the.end.of.tests=true -Dsel.jup.screenshot.format=png -Dsel.jup.output.folder=surefire-reports -Dsel.jup.docker.network=elastest_elastest"
+                } catch(e) {
+                    sh '''\
+                       docker ps --all
+                       docker ps --filter name=eus -q
+                       docker ps --filter name=eus -q | xargs -L 1 docker logs || true
+                       docker ps --filter name=eus -q | xargs -L 1 docker inspect || true
+                    ''' 
+                } finally {
+                    step([$class: 'JUnitResultArchiver', testDataPublishers: [[$class: 'AttachmentPublisher']], testResults: '**/target/surefire-reports/TEST-*.xml'])
+                }   
+        }
+  })
