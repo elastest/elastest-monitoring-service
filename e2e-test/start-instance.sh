@@ -26,7 +26,7 @@ echo $PROJ
 
 # SuT creation
 echo Creating SuT
-SUT=$(curl -s -H "Content-Type: application/json" -d '{ "id": 1, "name": "dename", "specification": "williamyeh/dummy", "sutType": "MANAGED", "description": "dedescript", "project": '${PROJ}', "instrumentalize": false, "currentSutExec": 1, "instrumentedBy": "WITHOUT", "port": null, "managedDockerType": "IMAGE", "mainService": "mbeat", "parameters": [] }' "$ELASTESTURL/api/sut")
+SUT=$(curl -s -H "Content-Type: application/json" -d '{"project":'${PROJ}',"eimConfig":null,"parameters":[],"exProject":null,"id":1,"name":"nombredelsut","specification":"williamyeh/dummy","description":"descripciondelsut","sutType":"MANAGED","instrumentalize":false,"currentSutExec":1,"instrumentedBy":"WITHOUT","port":null,"managedDockerType":"IMAGE","mainService":"","commands":"","exTJobs":null,"commandsOption":"DEFAULT"}' "$ELASTESTURL/api/sut")
 echo $SUT
 
 # T-Job creation
