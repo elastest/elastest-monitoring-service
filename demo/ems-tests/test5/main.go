@@ -14,54 +14,54 @@ import (
 
 type message struct {
 	Message string `yaml:"status,omitempty"`
-	System  System `yaml:"system,omitempty"`
+	System  system `yaml:"system,omitempty"`
 }
 
-type System struct {
-	Cpu Cpu `yaml:"cpu,omitempty"`
+type system struct {
+	CPU cpu `yaml:"cpu,omitempty"`
 }
 
-type Cpu struct {
-	User User `yaml:"user,omitempty"`
+type cpu struct {
+	User user `yaml:"user,omitempty"`
 }
 
-type User struct {
+type user struct {
 	Pct float64 `yaml:"pct,omitempty"`
 }
 
 func main() {
 	ems := os.Getenv("ET_EMS_LSBEATS_HOST")
 
-    // Get dashboard's rabbitMQ host and port
+	// Get dashboard's rabbitMQ host and port
 	// etmrq := os.Getenv("ET_ETM_RABBIT_HOST")
 	// etmrqport := os.Getenv("ET_ETM_RABBIT_PORT")
-    // Get EMS's API URL
+	// Get EMS's API URL
 	// emsAPI = fmt.Sprintf("%s:8888", ems)
-    // Subscribe external ElasticSearch instance
-    // emsSubscribeElasticSearch(emsAPI, "#any", "elastest.software.imdea.org", 9202, "elastic", "changeme")
-    // Subscribe dashboard to tjob and sut logs
-    // emsSubscribeRabbitMQ(emsAPI, "#tjobdisplay", etmrq, etmrqport, "elastic", "changeme", "tjobdisplay")
-    // emsSubscribeRabbitMQ(emsAPI, "#sutdisplay", etmrq, etmrqport, "elastic", "changeme",  "sutdisplay")
-    // Add routing rules for sut and tjob logs
-    // emsAddMachine(emsAPI, "WHEN e.source='sutlogs' DO SENDTO '#sutdisplay'")
-    // emsAddMachine(emsAPI, "WHEN e.source='tjoblogs' DO SENDTO '#tjobdisplay'")
+	// Subscribe external ElasticSearch instance
+	// emsSubscribeElasticSearch(emsAPI, "#any", "elastest.software.imdea.org", 9202, "elastic", "changeme")
+	// Subscribe dashboard to tjob and sut logs
+	// emsSubscribeRabbitMQ(emsAPI, "#tjobdisplay", etmrq, etmrqport, "elastic", "changeme", "tjobdisplay")
+	// emsSubscribeRabbitMQ(emsAPI, "#sutdisplay", etmrq, etmrqport, "elastic", "changeme",  "sutdisplay")
+	// Add routing rules for sut and tjob logs
+	// emsAddMachine(emsAPI, "WHEN e.source='sutlogs' DO SENDTO '#sutdisplay'")
+	// emsAddMachine(emsAPI, "WHEN e.source='tjoblogs' DO SENDTO '#tjobdisplay'")
 
 	ems = fmt.Sprintf("%s:3232", ems)
 	u := url.URL{Scheme: "ws", Host: ems, Path: "/"}
-	log.Printf("connecting to %s", u.String())
+	log.Printf("Connecting to %s", u.String())
 
 	c, _, err := websocket.DefaultDialer.Dial(u.String(), nil)
 	if err != nil {
 		log.Fatal("dial:", err)
 	}
 	defer c.Close()
+	log.Printf("Done!")
 
 	done := make(chan message)
 	iterations := 0
 	state := ""
 	cpu := 0.0
 	items := 0.0
-
 
 	go func() {
 		defer close(done)
@@ -83,7 +83,7 @@ func main() {
 						os.Exit(1)
 					}
 					log.Printf("OFF state ok with %f CPU\n", average)
-					iterations += 1
+					iterations++
 					items = 0.0
 					cpu = 0.0
 				}
@@ -99,16 +99,15 @@ func main() {
 						os.Exit(1)
 					}
 					log.Printf("ON state ok with %f CPU\n", average)
-					iterations += 1
+					iterations++
 					items = 0.0
 					cpu = 0.0
 				}
 				log.Println("Starting OFF state")
 			}
-			if m.System.Cpu.User.Pct != 0.0 && state != "" {
-				cpu += m.System.Cpu.User.Pct
-				items += 1
-
+			if m.System.CPU.User.Pct != 0.0 && state != "" {
+				cpu += m.System.CPU.User.Pct
+				items++
 			}
 		}
 	}()
@@ -127,7 +126,6 @@ func main() {
 //     }
 //     return subid
 // }
-
 
 // func emsSubscribeRabbitMQ(url string, channel string, esHost string, esPort int, user string, pass string, exchange string) string {
 //     json := fmt.Sprintf("{ 'channel': '%s', 'ip': '%s', 'port': %d, 'user': '%s', 'password': '%s', 'key': "", 'exchange':'%s', 'exchange_type':'fanout' }", channel, esHost, esPort, user, pass, exchange)

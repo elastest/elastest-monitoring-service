@@ -22,4 +22,4 @@ USER metricbeat
 
 COPY startmeup.sh /startmeup.sh
 COPY stress.sh /stress.sh
-ENTRYPOINT ["/startmeup.sh"]
+CMD ["/startmeup.sh"]
