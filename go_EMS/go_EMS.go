@@ -22,16 +22,35 @@ func openAndLoop(pipename string, callback func(reader io.Reader)) {
 
 	for {
 		callback(file)
+        fmt.Println("RELOADING " + pipename)
 	}
 	panic("leaving!")
 }
 
 func scanStdIn(file io.Reader) {
+    // Opening staticout
+    staticout := os.Args[1]
+    fstatic, err := os.OpenFile(staticout, os.O_APPEND|os.O_WRONLY, 0600)
+    if err != nil {
+        panic(err)
+    }
+    defer fstatic.Close()
+
+    // Opening dynout
+    dynout := os.Args[2]
+    fdyn, err := os.OpenFile(dynout, os.O_APPEND|os.O_WRONLY, 0600)
+    if err != nil {
+        panic(err)
+    }
+    defer fdyn.Close()
+
 	scanner := bufio.NewScanner(file)
     var dasmap map[string]interface{}
+    i:=0
 	for scanner.Scan() {
 		dasmap = nil
 		thetextbytes := []byte(scanner.Text())
+        fmt.Println("Read event ", i)
 
 		if err := json.Unmarshal(thetextbytes, &dasmap); err != nil {
 			fmt.Println("No JSON. Error: " + err.Error())
@@ -45,8 +64,25 @@ func scanStdIn(file io.Reader) {
 				//fmt.Println(string(newJSON))
 			}
 			//newJSON, _ := json.Marshal(dasmap)
-			fmt.Println(string(thetextbytes))
+            evstring := string(thetextbytes)+"\n"
+            if _, err = fstatic.WriteString(evstring); err != nil {
+                panic(err)
+            }
+            if _, err = fdyn.WriteString(evstring); err != nil {
+				fmt.Println("Broken dynamic output. Retrying...")
+                fdyn, err = os.OpenFile(dynout, os.O_APPEND|os.O_WRONLY, 0600)
+                if err != nil {
+                    panic(err)
+                }
+                if _, err = fdyn.WriteString(evstring); err != nil {
+                    fmt.Println("Broken retry, panicking")
+                    panic(err)
+                }
+                fmt.Println("Recovered dyn output")
+            }
 		}
+        fmt.Println("Processed event ", i)
+        i=i+1
 	}
 }
 
