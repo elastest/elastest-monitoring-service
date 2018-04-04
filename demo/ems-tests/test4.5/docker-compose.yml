@@ -1,0 +1,14 @@
+version: "3"
+services:
+  cli:
+    image: imdeasoftware/tjobs:websockets4.5
+    build: .
+    environment:
+      - ET_EMS_LSBEATS_HOST=172.18.0.3
+    networks:
+      - elastest
+
+networks:
+  elastest:
+    external:
+      name: elastest_elastest
