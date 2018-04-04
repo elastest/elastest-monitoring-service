@@ -34,10 +34,21 @@ FROM docker.elastic.co/logstash/logstash:5.4.0
 WORKDIR /root/
 COPY --from=builder /go/src/github.com/elastest/elastest-monitoring-service/ems /usr/local/bin/go_EMS
 COPY --from=builder /go/swagger /usr/local/bin/swagger
-COPY startmeup.sh /startmeup.sh
+COPY new_startmeup.sh /startmeup.sh
 COPY logstashcfgs/* /usr/share/logstash/pipeline/
 COPY logstash.yml /usr/share/logstash/config/logstash.yml
 USER root
 RUN chmod 666 /usr/share/logstash/pipeline/outlogstash.conf
+RUN chmod 666 /usr/share/logstash/pipeline/staticoutlogstash.conf
 RUN /usr/share/logstash/bin/logstash-plugin install logstash-output-websocket
+RUN mkdir /usr/share/logstash/pipes
+RUN mkfifo /usr/share/logstash/pipes/leftpipe
+RUN mkfifo /usr/share/logstash/pipes/staticrightpipe
+RUN mkfifo /usr/share/logstash/pipes/dynamicrightpipe
+RUN mkfifo /usr/share/logstash/pipes/swagpipe
+RUN mkfifo /usr/share/logstash/pipes/swageventspipe
+RUN mkdir /usr/share/logstash/in_data
+RUN mkdir /usr/share/logstash/out_data
+RUN mkdir /usr/share/logstash/outstatic_data
+
 ENTRYPOINT ["/startmeup.sh"]
