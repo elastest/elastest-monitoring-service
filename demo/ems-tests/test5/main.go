@@ -53,6 +53,7 @@ func main() {
 	c, _, err := websocket.DefaultDialer.Dial(u.String(), nil)
 	if err != nil {
 		log.Fatal("dial:", err)
+		time.Sleep(300 * time.Second)
 	}
 	defer c.Close()
 	log.Printf("Done!")
