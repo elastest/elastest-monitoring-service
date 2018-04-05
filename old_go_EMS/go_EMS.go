@@ -1,16 +1,11 @@
 // Note that this version is completely sequential and doesn't use goroutines at all
 package main
 
-import (
-    "encoding/json"
-    "fmt"
-    "os"
-    "bufio"
-    "io"
-	dt "github.com/elastest/elastest-monitoring-service/go_EMS/datatypes"
-    et "github.com/elastest/elastest-monitoring-service/go_EMS/eventproc"
-    "github.com/elastest/elastest-monitoring-service/go_EMS/jsonrw"
-)
+import "encoding/json"
+import "fmt"
+import "os"
+import "bufio"
+import "io"
 
 func main() {
 	go openAndLoop("/usr/share/logstash/pipes/swagpipe",scanAPIPipe)
@@ -50,21 +45,26 @@ func scanStdIn(file io.Reader) {
     defer fdyn.Close()
 
 	scanner := bufio.NewScanner(file)
-    var rawEvent map[string]interface{}
+    var dasmap map[string]interface{}
     i:=0
 	for scanner.Scan() {
-		rawEvent = nil
+		dasmap = nil
 		thetextbytes := []byte(scanner.Text())
         fmt.Println("Read event ", i)
 
-		if err := json.Unmarshal(thetextbytes, &rawEvent); err != nil {
+		if err := json.Unmarshal(thetextbytes, &dasmap); err != nil {
 			fmt.Println("No JSON. Error: " + err.Error())
 		} else {
-            var evt dt.Event = jsonrw.ReadEvent(rawEvent)
-            et.TagEvent(&evt)
-            newJSON, _ := json.Marshal(evt)
-			//newJSON, _ := json.Marshal(rawEvent)
-            evstring := string(newJSON)+"\n"
+			evt := getEvent(dasmap)
+			checkSamples(evt)
+			checkWriteDefs(evt.Timestamp)
+			if (evt.Channel == "undefined") {
+				newJSON, _ := json.Marshal(evt)
+				newJSON = newJSON
+				//fmt.Println(string(newJSON))
+			}
+			//newJSON, _ := json.Marshal(dasmap)
+            evstring := string(thetextbytes)+"\n"
             if _, err = fstatic.WriteString(evstring); err != nil {
                 panic(err)
             }
@@ -96,7 +96,7 @@ func scanAPIPipe(file io.Reader) {
 		if err := json.Unmarshal(thetextbytes, &dasmap); err != nil {
 			panic("No JSON. Error: " + err.Error())
 		} else {
-			// readAndRegister(dasmap)
+			readAndRegister(dasmap)
 		}
 	}
 }

@@ -3,40 +3,34 @@ package main
 import (
 	"testing"
 	"encoding/json"
-	// "fmt"
-	// "os"
-	dt "github.com/elastest/elastest-monitoring-service/go_EMS/datatypes"
-    et "github.com/elastest/elastest-monitoring-service/go_EMS/eventproc"
-    "github.com/elastest/elastest-monitoring-service/go_EMS/jsonrw"
-	sets "github.com/elastest/elastest-monitoring-service/go_EMS/setoperators"
+	"fmt"
+	"os"
 )
 
-var theEvent dt.Event
+var theEvent Event
 
 func TestChannelInference(t *testing.T) {
 
 	tables := []struct {
         json string
-        channels dt.ChannelSet
+        channel string
     }{
-        {"{\"channels\":[\"algo\"]}", sets.SetFromList([]string{"algo"})},
-        {"{\"otherfields\":\"somevals\"}", sets.SetFromList([]string{})},
+        {"{\"channel\":\"algo\"}", "algo"},
+        {"{\"otherfields\":\"somevals\"}", "undefined"},
     }
 
     for _, table := range tables {
 		var rawEvent map[string]interface{} = nil
 		thejson := []byte(table.json)
 		json.Unmarshal(thejson, &rawEvent)
-        theEvent = jsonrw.ReadEvent(rawEvent)
-		et.TagEvent(&theEvent)
-		inferredchan := theEvent.Channels
-		if !sets.SetsAreEqual(inferredchan, table.channels) {
-			t.Errorf("Wrong inferred channel, got: %s, want: %s.", inferredchan, table.channels)
+		theEvent = getEvent(rawEvent)
+		inferredchan := string(theEvent.Channel)
+		if inferredchan != table.channel {
+			t.Errorf("Wrong inferred channel, got: %s, want: %s.", inferredchan, table.channel)
 		}
 	}
 }
 
-/*
 func TestSumAggSignal(t *testing.T) {
 	aggSignal := AggregatedSignal{[]Signal{}, aggregatorsMap["avg"]}
 	sample := aggSignal.Sample()
@@ -167,4 +161,5 @@ func TestGetParams(t *testing.T) {
 	bsdef.getParams()
 }
 
+/*
 */
