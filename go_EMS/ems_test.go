@@ -127,6 +127,7 @@ fmt.Println("")
     if err != nil {
         panic(err)
     }
+    os.Args = []string{"goEMS", "/dev/null", "/dev/null"}
 	scanStdIn(file)
 }
 
