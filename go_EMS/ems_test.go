@@ -4,7 +4,7 @@ import (
 	"testing"
 	"encoding/json"
 	// "fmt"
-	// "os"
+	"os"
 	dt "github.com/elastest/elastest-monitoring-service/go_EMS/datatypes"
     et "github.com/elastest/elastest-monitoring-service/go_EMS/eventproc"
     "github.com/elastest/elastest-monitoring-service/go_EMS/jsonrw"
@@ -34,6 +34,21 @@ func TestChannelInference(t *testing.T) {
 			t.Errorf("Wrong inferred channel, got: %s, want: %s.", inferredchan, table.channels)
 		}
 	}
+}
+
+func TestRest(t *testing.T) {
+	//main()
+	file, err := os.Open("testinputs/testdefs.json")
+    if err != nil {
+        panic(err)
+    }
+	scanAPIPipe(file)
+	file, err = os.Open("testinputs/testEvents.txt")
+    if err != nil {
+        panic(err)
+    }
+    os.Args = []string{"goEMS", "/dev/null", "/dev/null"}
+	scanStdIn(file)
 }
 
 /*

@@ -19,10 +19,13 @@ func SetIn(ch dt.Channel, chans dt.ChannelSet) bool {
 }
 
 func SetMinus(chans dt.ChannelSet, out dt.ChannelSet) dt.ChannelSet {
-    for ch,_ := range out {
-        delete(chans, ch)
+    retchans := dt.ChannelSet(map[dt.Channel]interface{}{})
+    for ch,_ := range chans {
+        if _,ok := out[ch]; !ok {
+            retchans[ch] = nil
+        }
     }
-    return chans
+    return retchans
 }
 
 func SetIsEmpty(chans dt.ChannelSet) bool {
@@ -30,15 +33,23 @@ func SetIsEmpty(chans dt.ChannelSet) bool {
 }
 
 func SetAdd(chans dt.ChannelSet, ch dt.Channel) dt.ChannelSet {
-    chans[ch] = nil
-    return chans
+    retchans := dt.ChannelSet(map[dt.Channel]interface{}{})
+    for ch,_ := range chans {
+        retchans[ch] = nil
+    }
+    retchans[ch] = nil
+    return retchans
 }
 
 func SetUnion(chans1 dt.ChannelSet, chans2 dt.ChannelSet) dt.ChannelSet {
-    for ch,_ := range chans2 {
-        chans1[ch] = nil
+    retchans := dt.ChannelSet(map[dt.Channel]interface{}{})
+    for ch,_ := range chans1 {
+        retchans[ch] = nil
     }
-    return chans1
+    for ch,_ := range chans2 {
+        retchans[ch] = nil
+    }
+    return retchans
 }
 
 func SetIsIncluded(chans1 dt.ChannelSet, chans2 dt.ChannelSet) bool {
