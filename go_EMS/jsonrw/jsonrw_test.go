@@ -1,4 +1,4 @@
-package main
+package jsonrw
 
 import (
 	"testing"
@@ -7,7 +7,6 @@ import (
 	// "os"
 	dt "github.com/elastest/elastest-monitoring-service/go_EMS/datatypes"
     et "github.com/elastest/elastest-monitoring-service/go_EMS/eventproc"
-    "github.com/elastest/elastest-monitoring-service/go_EMS/jsonrw"
 	sets "github.com/elastest/elastest-monitoring-service/go_EMS/setoperators"
 )
 
@@ -27,7 +26,7 @@ func TestChannelInference(t *testing.T) {
 		var rawEvent map[string]interface{} = nil
 		thejson := []byte(table.json)
 		json.Unmarshal(thejson, &rawEvent)
-        theEvent = jsonrw.ReadEvent(rawEvent)
+        theEvent = ReadEvent(rawEvent)
 		et.TagEvent(&theEvent)
 		inferredchan := theEvent.Channels
 		if !sets.SetsAreEqual(inferredchan, table.channels) {
