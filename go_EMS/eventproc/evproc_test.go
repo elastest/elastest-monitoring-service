@@ -1,4 +1,4 @@
-package main
+package eventproc
 
 import (
 	"testing"
@@ -6,7 +6,6 @@ import (
 	// "fmt"
 	// "os"
 	dt "github.com/elastest/elastest-monitoring-service/go_EMS/datatypes"
-    et "github.com/elastest/elastest-monitoring-service/go_EMS/eventproc"
     "github.com/elastest/elastest-monitoring-service/go_EMS/jsonrw"
 	sets "github.com/elastest/elastest-monitoring-service/go_EMS/setoperators"
 )
@@ -28,7 +27,7 @@ func TestChannelInference(t *testing.T) {
 		thejson := []byte(table.json)
 		json.Unmarshal(thejson, &rawEvent)
         theEvent = jsonrw.ReadEvent(rawEvent)
-		et.TagEvent(&theEvent)
+		TagEvent(&theEvent)
 		inferredchan := theEvent.Channels
 		if !sets.SetsAreEqual(inferredchan, table.channels) {
 			t.Errorf("Wrong inferred channel, got: %s, want: %s.", inferredchan, table.channels)
