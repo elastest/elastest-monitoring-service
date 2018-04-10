@@ -12,13 +12,22 @@ import (
 	"github.com/gorilla/websocket"
 )
 
-type message struct {
-	Message string `yaml:"status,omitempty"`
+type event struct {
+	Payload payload `yaml:"payload,omitempty"`
+}
+
+type payload struct {
+	Message string `yaml:"message,omitempty"`
 	System  system `yaml:"system,omitempty"`
 }
 
 type system struct {
-	CPU cpu `yaml:"cpu,omitempty"`
+	Process process `yaml:"process,omitempty"`
+	CPU     cpu     `yaml:"cpu,omitempty"`
+}
+
+type process struct {
+	CWD string `yaml:"cwd,omitempty"`
 }
 
 type cpu struct {
@@ -58,7 +67,7 @@ func main() {
 	defer c.Close()
 	log.Printf("Done!")
 
-	done := make(chan message)
+	done := make(chan event)
 	iterations := 0
 	state := ""
 	cpu := 0.0
@@ -72,16 +81,15 @@ func main() {
 				log.Println("read:", err)
 				return
 			}
-			var m message
-			json.Unmarshal(input, &m)
-			if strings.Contains(m.Message, "STATUS_ON") {
+			var e event
+			json.Unmarshal(input, &e)
+			if strings.Contains(e.Payload.Message, "STATUS_ON") {
 				if state == "" {
 					state = "on"
 				} else {
 					average := cpu / items
-					if average > 0.5 {
-						fmt.Println("High CPU in 'off' state")
-						os.Exit(1)
+					if average > 2.0 {
+						log.Fatalf("High CPU in 'off' state\n")
 					}
 					log.Printf("OFF state ok with %f CPU\n", average)
 					iterations++
@@ -90,14 +98,13 @@ func main() {
 				}
 				log.Println("Starting ON state")
 			}
-			if strings.Contains(m.Message, "STATUS_OFF") {
+			if strings.Contains(e.Payload.Message, "STATUS_OFF") {
 				if state == "" {
 					state = "off"
 				} else {
 					average := cpu / items
-					if average < 0.5 {
-						fmt.Println("Low CPU in 'on' state")
-						os.Exit(1)
+					if average < 2.0 {
+						log.Fatalf("Low CPU in 'on' state\n")
 					}
 					log.Printf("ON state ok with %f CPU\n", average)
 					iterations++
@@ -106,8 +113,9 @@ func main() {
 				}
 				log.Println("Starting OFF state")
 			}
-			if m.System.CPU.User.Pct != 0.0 && state != "" {
-				cpu += m.System.CPU.User.Pct
+			if e.Payload.System.CPU.User.Pct != 0.0 && state != "" {
+				fmt.Printf("CPU: %f\n", e.Payload.System.CPU.User.Pct)
+				cpu += e.Payload.System.CPU.User.Pct
 				items++
 			}
 		}
