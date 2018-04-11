@@ -21,8 +21,14 @@ RUN sh ./convertpaths.sh
 FROM golang:latest as builder
 WORKDIR /go/src/github.com/elastest/elastest-monitoring-service
 COPY . /go/src/github.com/elastest/elastest-monitoring-service
+COPY vendor /go/src
+RUN go get github.com/golang/protobuf/proto
+RUN go get google.golang.org/grpc
+RUN go get google.golang.org/grpc/reflection
 RUN CGO_ENABLED=0 GOOS=linux go build -o ems ./go_EMS
 
+FROM golang:latest as builder2
+COPY . /go/src/github.com/elastest/elastest-monitoring-service
 WORKDIR /go
 COPY --from=swaggerbuilder /go/src/swagger-go ./
 RUN go get github.com/go-openapi/runtime/flagext
@@ -33,7 +39,7 @@ RUN CGO_ENABLED=0 GOOS=linux go build -o swagger cmd/monitoring-as-a-service-ser
 FROM docker.elastic.co/logstash/logstash:5.4.0
 WORKDIR /root/
 COPY --from=builder /go/src/github.com/elastest/elastest-monitoring-service/ems /usr/local/bin/go_EMS
-COPY --from=builder /go/swagger /usr/local/bin/swagger
+COPY --from=builder2 /go/swagger /usr/local/bin/swagger
 COPY new_startmeup.sh /startmeup.sh
 COPY logstashcfgs/* /usr/share/logstash/pipeline/
 COPY logstash.yml /usr/share/logstash/config/logstash.yml
