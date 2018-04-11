@@ -1,0 +1,18 @@
+syntax = "proto3";
+
+package protobuf;
+
+// The greeting service definition.
+service Health {
+  // Requires health
+  rpc GetHealth (HealthRequest) returns (HealthReply) {}
+}
+
+// The request message (it's empty)
+message HealthRequest {}
+
+// The response message containing the health status
+message HealthReply {
+  string healthstatus = 1;
+  int32 processedevents =2;
+}

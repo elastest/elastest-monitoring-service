@@ -10,9 +10,11 @@ import (
 	dt "github.com/elastest/elastest-monitoring-service/go_EMS/datatypes"
     et "github.com/elastest/elastest-monitoring-service/go_EMS/eventproc"
     "github.com/elastest/elastest-monitoring-service/go_EMS/jsonrw"
+    internalsv "github.com/elastest/elastest-monitoring-service/go_EMS/internalapiserver"
 )
 
 func main() {
+    internalsv.Serve()
 	go openAndLoop("/usr/share/logstash/pipes/swagpipe",scanAPIPipe)
 	openAndLoop("/usr/share/logstash/pipes/leftpipe",scanStdIn)
 }
