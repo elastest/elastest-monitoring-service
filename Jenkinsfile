@@ -6,15 +6,11 @@ node('docker') {
         mycontainer.inside("-u jenkins -v /var/run/docker.sock:/var/run/docker.sock:rw -v ${WORKSPACE}:/home/jenkins/.m2") {
             git 'https://github.com/elastest/elastest-monitoring-service'
 
-            stage "Tests"
-                echo ("Starting tests")
-                sh 'docker run -v $(pwd)/go_EMS:/go/src/github.com/elastest/elastest-monitoring-service/go_EMS golang /bin/bash -c "cd src/github.com/elastest/elastest-monitoring-service/go_EMS;go test"'
-                
-            stage "Publish code coverage"
+            stage "Test and publish code coverage"
                 echo ("Publishing code coverage")
                 sh "mkdir shared || true"
                 sh 'export PWD=$(pwd)'
-                sh 'docker run -v ${PWD}/shared:/shared -v ${PWD}/vendor:/go/src -v ${PWD}:/go/src/github.com/elastest/elastest-monitoring-service golang /bin/bash -c "go get github.com/golang/protobuf/proto; go get google.golang.org/grpc; go get google.golang.org/grpc/reflection; cd src/github.com/elastest/elastest-monitoring-service/go_EMS; go test ./... -race -coverprofile=coverage.txt -covermode=atomic; mv coverage.txt /shared"'
+                sh 'docker run -v ${PWD}/shared:/shared -v ${PWD}/vendor:/go/src/vendor -v ${PWD}:/go/src/github.com/elastest/elastest-monitoring-service golang /bin/bash -c "go get github.com/golang/protobuf/proto; go get google.golang.org/grpc; go get google.golang.org/grpc/reflection; cd src/github.com/elastest/elastest-monitoring-service/go_EMS; go test ./... -race -coverprofile=coverage.txt -covermode=atomic; mv coverage.txt /shared"'
                 sh "curl -s https://codecov.io/bash > shared/curlout.txt"
                 sh "cd shared; JENKINS_URL= bash <curlout.txt -s - -t ${COB_EMS_TOKEN}; cd ..; rm -rf shared"
 

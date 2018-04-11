@@ -21,7 +21,6 @@ RUN sh ./convertpaths.sh
 FROM golang:latest as builder
 WORKDIR /go/src/github.com/elastest/elastest-monitoring-service
 COPY . /go/src/github.com/elastest/elastest-monitoring-service
-COPY vendor /go/src
 RUN go get github.com/golang/protobuf/proto
 RUN go get google.golang.org/grpc
 RUN go get google.golang.org/grpc/reflection
