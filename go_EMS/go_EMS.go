@@ -11,6 +11,8 @@ import (
     et "github.com/elastest/elastest-monitoring-service/go_EMS/eventproc"
     "github.com/elastest/elastest-monitoring-service/go_EMS/jsonrw"
     internalsv "github.com/elastest/elastest-monitoring-service/go_EMS/internalapiserver"
+	pe "github.com/elastest/elastest-monitoring-service/go_EMS/eventscounter"
+	sets "github.com/elastest/elastest-monitoring-service/go_EMS/setoperators"
 )
 
 func main() {
@@ -55,19 +57,19 @@ func scanStdIn(file io.Reader) {
 
 	scanner := bufio.NewScanner(file)
     var rawEvent map[string]interface{}
-    i:=0
 	for scanner.Scan() {
 		rawEvent = nil
 		thetextbytes := []byte(scanner.Text())
-        fmt.Println("Read event ", i)
+        fmt.Println("Read event")
 
 		if err := json.Unmarshal(thetextbytes, &rawEvent); err != nil {
 			fmt.Println("No JSON. Error: " + err.Error())
 		} else {
             var evt dt.Event = jsonrw.ReadEvent(rawEvent)
             et.TagEvent(&evt)
-            newJSON, _ := json.Marshal(evt)
-			//newJSON, _ := json.Marshal(rawEvent)
+            evt.Payload["@timestamp"] = evt.Timestamp
+            evt.Payload["channels"] = sets.SetToList(evt.Channels)
+            newJSON, _ := json.Marshal(evt.Payload)
             evstring := string(newJSON)+"\n"
             if _, err = fstatic.WriteString(evstring); err != nil {
                 panic(err)
@@ -85,8 +87,7 @@ func scanStdIn(file io.Reader) {
                 fmt.Println("Recovered dyn output")
             }
 		}
-        fmt.Println("Processed event ", i)
-        i=i+1
+        pe.IncrementProcessedEvents()
 	}
 }
 

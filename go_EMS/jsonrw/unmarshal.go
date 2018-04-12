@@ -22,7 +22,7 @@ func ReadEvent (rawEvent map[string]interface{}) dt.Event {
     // timestamp inference
     var timestamp string = time.Now().UTC().Format("2006-01-02T15:04:05.000") + "Z" // default timestamp: now
     if ts, ok := rawEvent["@timestamp"].(string); ok {
-        ts = ts;
+        timestamp = ts;
     }
 
     return dt.Event{channels, rawEvent, timestamp}

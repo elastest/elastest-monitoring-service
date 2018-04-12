@@ -8,18 +8,25 @@ import (
 	"encoding/json"
     "os"
     "bufio"
+    "log"
+    "time"
+
+    "golang.org/x/net/context"
+    "google.golang.org/grpc"
+    pb "github.com/elastest/elastest-monitoring-service/protobuf"
 )
 
-type HealthIsOk struct {
-	Status string
-    ProcessedEvents int
-}
+const (
+    address     = "localhost:50051"
+)
+
+type HealthStatus pb.HealthReply
 
 // WriteResponse to the client
-func (healthOk HealthIsOk) WriteResponse(rw http.ResponseWriter, producer openapiruntime.Producer) {
+func (healthStatus HealthStatus) WriteResponse(rw http.ResponseWriter, producer openapiruntime.Producer) {
     rw.WriteHeader(200)
-	healthokjson, _ := json.Marshal(healthOk)
-	if err := producer.Produce(rw, string(healthokjson)); err != nil {
+	healthstatusjson, _ := json.Marshal(healthStatus)
+	if err := producer.Produce(rw, string(healthstatusjson)); err != nil {
 		panic(err) // let the recovery middleware deal with this
     }
 }
@@ -38,7 +45,21 @@ func (info EnvironmentInfo) WriteResponse(rw http.ResponseWriter, producer opena
 var evCounter = 0
 
 func GetHealth() middleware.Responder {
-    return HealthIsOk{"up", evCounter}
+	conn, err := grpc.Dial(address, grpc.WithInsecure())
+    if err != nil {
+        log.Fatalf("did not connect: %v", err)
+    }
+    defer conn.Close()
+    c := pb.NewHealthClient(conn)
+
+    ctx, cancel := context.WithTimeout(context.Background(), time.Second)
+    defer cancel()
+    r, err := c.GetHealth(ctx, &pb.HealthRequest{})
+    if err != nil {
+        log.Fatalf("could not greet: %v", err)
+    }
+	return HealthStatus(*r)
+    // return HealthIsOk{"up", evCounter}
 }
 
 func GetEnvironment() middleware.Responder {
