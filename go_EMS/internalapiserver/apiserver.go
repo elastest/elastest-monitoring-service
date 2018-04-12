@@ -8,6 +8,7 @@ import (
     "google.golang.org/grpc"
 	pb "github.com/elastest/elastest-monitoring-service/protobuf"
     "google.golang.org/grpc/reflection"
+	pe "github.com/elastest/elastest-monitoring-service/go_EMS/eventscounter"
 )
 
 const (
@@ -19,7 +20,7 @@ type server struct{}
 
 // SayHello implements protobuf.Health
 func (s *server) GetHealth(ctx context.Context, in *pb.HealthRequest) (*pb.HealthReply, error) {
-    return &pb.HealthReply{Healthstatus: "Ok", Processedevents: 1337}, nil
+    return &pb.HealthReply{Healthstatus: "Ok", Processedevents: int32(pe.GetProcessedEvents())}, nil
 }
 
 func Serve() {
