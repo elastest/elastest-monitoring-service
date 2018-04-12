@@ -14,7 +14,9 @@ import (
 )
 
 func main() {
-    internalsv.Serve()
+    fmt.Println("Serving server")
+    go internalsv.Serve()
+    fmt.Println("Server served. Starting scans")
 	go openAndLoop("/usr/share/logstash/pipes/swagpipe",scanAPIPipe)
 	openAndLoop("/usr/share/logstash/pipes/leftpipe",scanStdIn)
 }
