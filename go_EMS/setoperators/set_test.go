@@ -42,3 +42,9 @@ func TestUnion(t *testing.T) {
         t.Errorf("wrong union: aUb <> ab")
     }
 }
+
+func TestToList(t *testing.T) {
+    if !SetsAreEqual(SetFromList(SetToList(setab)), setab) {
+        t.Errorf("wrong to list")
+    }
+}

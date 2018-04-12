@@ -13,6 +13,16 @@ func SetFromList(channels []string) dt.ChannelSet {
     return chans
 }
 
+func SetToList(channels dt.ChannelSet) []string {
+    keys := make([]string, len(channels))
+    i := 0
+    for k := range channels {
+        keys[i] = string(k)
+        i++
+    }
+    return keys
+}
+
 func SetIn(ch dt.Channel, chans dt.ChannelSet) bool {
     _,ok := chans[ch]
     return ok

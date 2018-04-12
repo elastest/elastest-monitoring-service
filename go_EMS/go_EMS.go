@@ -12,6 +12,7 @@ import (
     "github.com/elastest/elastest-monitoring-service/go_EMS/jsonrw"
     internalsv "github.com/elastest/elastest-monitoring-service/go_EMS/internalapiserver"
 	pe "github.com/elastest/elastest-monitoring-service/go_EMS/eventscounter"
+	sets "github.com/elastest/elastest-monitoring-service/go_EMS/setoperators"
 )
 
 func main() {
@@ -66,8 +67,9 @@ func scanStdIn(file io.Reader) {
 		} else {
             var evt dt.Event = jsonrw.ReadEvent(rawEvent)
             et.TagEvent(&evt)
-            newJSON, _ := json.Marshal(evt)
-			//newJSON, _ := json.Marshal(rawEvent)
+            evt.Payload["@timestamp"] = evt.Timestamp
+            evt.Payload["channels"] = sets.SetToList(evt.Channels)
+            newJSON, _ := json.Marshal(evt.Payload)
             evstring := string(newJSON)+"\n"
             if _, err = fstatic.WriteString(evstring); err != nil {
                 panic(err)
