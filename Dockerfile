@@ -18,6 +18,26 @@ COPY api.yaml ./swagger.yaml
 RUN swagger generate server
 RUN sh ./convertpaths.sh
 
+FROM golang:latest as builder2
+COPY . /go/src/github.com/elastest/elastest-monitoring-service
+WORKDIR /go
+COPY --from=swaggerbuilder /go/src/swagger-go ./
+
+RUN go get github.com/go-openapi/analysis
+RUN go get github.com/go-openapi/errors
+RUN go get github.com/go-openapi/loads
+RUN go get github.com/go-openapi/spec
+RUN go get github.com/go-openapi/strfmt
+RUN go get github.com/go-openapi/swag
+RUN go get github.com/go-openapi/validate
+RUN go get github.com/tylerb/graceful
+RUN go get github.com/go-openapi/runtime/flagext
+RUN go get github.com/jessevdk/go-flags
+RUN go get github.com/golang/protobuf/proto
+RUN go get google.golang.org/grpc
+RUN go get google.golang.org/grpc/reflection
+RUN CGO_ENABLED=0 GOOS=linux go build -o swagger cmd/monitoring-as-a-service-server/main.go
+
 FROM golang:latest as builder
 WORKDIR /go/src/github.com/elastest/elastest-monitoring-service
 COPY . /go/src/github.com/elastest/elastest-monitoring-service
@@ -25,15 +45,6 @@ RUN go get github.com/golang/protobuf/proto
 RUN go get google.golang.org/grpc
 RUN go get google.golang.org/grpc/reflection
 RUN CGO_ENABLED=0 GOOS=linux go build -o ems ./go_EMS
-
-FROM golang:latest as builder2
-COPY . /go/src/github.com/elastest/elastest-monitoring-service
-WORKDIR /go
-COPY --from=swaggerbuilder /go/src/swagger-go ./
-RUN go get github.com/go-openapi/runtime/flagext
-RUN go get github.com/jessevdk/go-flags
-COPY vendor /go/src
-RUN CGO_ENABLED=0 GOOS=linux go build -o swagger cmd/monitoring-as-a-service-server/main.go
 
 FROM docker.elastic.co/logstash/logstash:5.4.0
 WORKDIR /root/
