@@ -5,22 +5,27 @@ import (
 	runtime "github.com/go-openapi/runtime"
 	middleware "github.com/go-openapi/runtime/middleware"
 
+    "log"
+    "time"
+    "golang.org/x/net/context"
+    "google.golang.org/grpc"
 	"../restapi/operations/monitoring_machine"
-	"math/rand"
-	"strconv"
+    pb "github.com/elastest/elastest-monitoring-service/protobuf"
 )
 
-type DeployOk struct {
-
-    // In: body
-	deploymentId string
-}
+type MomPostReply pb.MomPostReply
 
 // WriteResponse to the client
-func (o DeployOk) WriteResponse(rw http.ResponseWriter, producer runtime.Producer) {
-
-    rw.WriteHeader(200)
-	if err := producer.Produce(rw, o.deploymentId); err != nil {
+func (o MomPostReply) WriteResponse(rw http.ResponseWriter, producer runtime.Producer) {
+    var ret string
+    if len(o.Deploymenterror) == 0 {
+        rw.WriteHeader(200)
+        ret = o.Momid
+    } else {
+        rw.WriteHeader(406)
+        ret = o.Deploymenterror
+    }
+	if err := producer.Produce(rw, ret); err != nil {
 		panic(err) // let the recovery middleware deal with this
     }
 }
@@ -55,6 +60,21 @@ func PostMOM(params monitoring_machine.PostMoMParams) middleware.Responder {
         panic(err)
     }
 	fmt.Fprintln(file, string(newJSON))*/
-	deploymentId := strconv.Itoa(rand.Int())
-	return DeployOk{deploymentId}
+    req := pb.MomPostRequest{Momtype:params.Mom.MomType, Momdefinition:params.Mom.Definition}
+	conn, err := grpc.Dial(address, grpc.WithInsecure())
+    if err != nil {
+        log.Fatalf("did not connect: %v", err)
+        // return error instead
+    }
+    defer conn.Close()
+    c := pb.NewEngineClient(conn)
+
+    ctx, cancel := context.WithTimeout(context.Background(), time.Second)
+    defer cancel()
+    r, err := c.PostMoM(ctx, &req)
+    if err != nil {
+        log.Fatalf("could not greet: %v", err)
+        // return error instead
+    }
+	return MomPostReply(*r)
 }

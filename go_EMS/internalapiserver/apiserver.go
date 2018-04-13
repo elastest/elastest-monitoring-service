@@ -18,9 +18,14 @@ const (
 // server is used to implement protobuf.Health
 type server struct{}
 
-// SayHello implements protobuf.Health
+// GetHealth implements protobuf.Health
 func (s *server) GetHealth(ctx context.Context, in *pb.HealthRequest) (*pb.HealthReply, error) {
     return &pb.HealthReply{Healthstatus: "Ok", Processedevents: int32(pe.GetProcessedEvents())}, nil
+}
+
+// PostMom implements protobuf.PostMoM
+func (s *server) PostMoM(ctx context.Context, in *pb.MomPostRequest) (*pb.MomPostReply, error) {
+    return &pb.MomPostReply{Deploymenterror:"Not yet implemented", Momid:""}, nil
 }
 
 func Serve() {
@@ -29,7 +34,7 @@ func Serve() {
         log.Fatalf("failed to listen: %v", err)
     }
     s := grpc.NewServer()
-    pb.RegisterHealthServer(s, &server{})
+    pb.RegisterEngineServer(s, &server{})
     // Register reflection service on gRPC server.
     reflection.Register(s)
     if err := s.Serve(lis); err != nil {

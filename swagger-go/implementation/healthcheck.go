@@ -47,7 +47,7 @@ func GetHealth() middleware.Responder {
         // return error instead
     }
     defer conn.Close()
-    c := pb.NewHealthClient(conn)
+    c := pb.NewEngineClient(conn)
 
     ctx, cancel := context.WithTimeout(context.Background(), time.Second)
     defer cancel()

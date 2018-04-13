@@ -10,6 +10,8 @@ It is generated from these files:
 It has these top-level messages:
 	HealthRequest
 	HealthReply
+	MomPostRequest
+	MomPostReply
 */
 package protobuf
 
@@ -33,7 +35,7 @@ var _ = math.Inf
 // proto package needs to be updated.
 const _ = proto.ProtoPackageIsVersion2 // please upgrade the proto package
 
-// The request message (it's empty)
+// The health request message (it's empty)
 type HealthRequest struct {
 }
 
@@ -42,7 +44,7 @@ func (m *HealthRequest) String() string            { return proto.CompactTextStr
 func (*HealthRequest) ProtoMessage()               {}
 func (*HealthRequest) Descriptor() ([]byte, []int) { return fileDescriptor0, []int{0} }
 
-// The response message containing the health status
+// The health response message containing the health status
 type HealthReply struct {
 	Healthstatus    string `protobuf:"bytes,1,opt,name=healthstatus" json:"healthstatus,omitempty"`
 	Processedevents int32  `protobuf:"varint,2,opt,name=processedevents" json:"processedevents,omitempty"`
@@ -67,9 +69,61 @@ func (m *HealthReply) GetProcessedevents() int32 {
 	return 0
 }
 
+// The mom post request message
+type MomPostRequest struct {
+	Momtype       string `protobuf:"bytes,1,opt,name=momtype" json:"momtype,omitempty"`
+	Momdefinition string `protobuf:"bytes,2,opt,name=momdefinition" json:"momdefinition,omitempty"`
+}
+
+func (m *MomPostRequest) Reset()                    { *m = MomPostRequest{} }
+func (m *MomPostRequest) String() string            { return proto.CompactTextString(m) }
+func (*MomPostRequest) ProtoMessage()               {}
+func (*MomPostRequest) Descriptor() ([]byte, []int) { return fileDescriptor0, []int{2} }
+
+func (m *MomPostRequest) GetMomtype() string {
+	if m != nil {
+		return m.Momtype
+	}
+	return ""
+}
+
+func (m *MomPostRequest) GetMomdefinition() string {
+	if m != nil {
+		return m.Momdefinition
+	}
+	return ""
+}
+
+// The mom post response message
+type MomPostReply struct {
+	Deploymenterror string `protobuf:"bytes,1,opt,name=deploymenterror" json:"deploymenterror,omitempty"`
+	Momid           string `protobuf:"bytes,2,opt,name=momid" json:"momid,omitempty"`
+}
+
+func (m *MomPostReply) Reset()                    { *m = MomPostReply{} }
+func (m *MomPostReply) String() string            { return proto.CompactTextString(m) }
+func (*MomPostReply) ProtoMessage()               {}
+func (*MomPostReply) Descriptor() ([]byte, []int) { return fileDescriptor0, []int{3} }
+
+func (m *MomPostReply) GetDeploymenterror() string {
+	if m != nil {
+		return m.Deploymenterror
+	}
+	return ""
+}
+
+func (m *MomPostReply) GetMomid() string {
+	if m != nil {
+		return m.Momid
+	}
+	return ""
+}
+
 func init() {
 	proto.RegisterType((*HealthRequest)(nil), "protobuf.HealthRequest")
 	proto.RegisterType((*HealthReply)(nil), "protobuf.HealthReply")
+	proto.RegisterType((*MomPostRequest)(nil), "protobuf.MomPostRequest")
+	proto.RegisterType((*MomPostReply)(nil), "protobuf.MomPostReply")
 }
 
 // Reference imports to suppress errors if they are not otherwise used.
@@ -80,66 +134,99 @@ var _ grpc.ClientConn
 // is compatible with the grpc package it is being compiled against.
 const _ = grpc.SupportPackageIsVersion4
 
-// Client API for Health service
+// Client API for Engine service
 
-type HealthClient interface {
+type EngineClient interface {
 	// Requires health
 	GetHealth(ctx context.Context, in *HealthRequest, opts ...grpc.CallOption) (*HealthReply, error)
+	PostMoM(ctx context.Context, in *MomPostRequest, opts ...grpc.CallOption) (*MomPostReply, error)
 }
 
-type healthClient struct {
+type engineClient struct {
 	cc *grpc.ClientConn
 }
 
-func NewHealthClient(cc *grpc.ClientConn) HealthClient {
-	return &healthClient{cc}
+func NewEngineClient(cc *grpc.ClientConn) EngineClient {
+	return &engineClient{cc}
 }
 
-func (c *healthClient) GetHealth(ctx context.Context, in *HealthRequest, opts ...grpc.CallOption) (*HealthReply, error) {
+func (c *engineClient) GetHealth(ctx context.Context, in *HealthRequest, opts ...grpc.CallOption) (*HealthReply, error) {
 	out := new(HealthReply)
-	err := grpc.Invoke(ctx, "/protobuf.Health/GetHealth", in, out, c.cc, opts...)
+	err := grpc.Invoke(ctx, "/protobuf.Engine/GetHealth", in, out, c.cc, opts...)
 	if err != nil {
 		return nil, err
 	}
 	return out, nil
 }
 
-// Server API for Health service
+func (c *engineClient) PostMoM(ctx context.Context, in *MomPostRequest, opts ...grpc.CallOption) (*MomPostReply, error) {
+	out := new(MomPostReply)
+	err := grpc.Invoke(ctx, "/protobuf.Engine/PostMoM", in, out, c.cc, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
 
-type HealthServer interface {
+// Server API for Engine service
+
+type EngineServer interface {
 	// Requires health
 	GetHealth(context.Context, *HealthRequest) (*HealthReply, error)
+	PostMoM(context.Context, *MomPostRequest) (*MomPostReply, error)
 }
 
-func RegisterHealthServer(s *grpc.Server, srv HealthServer) {
-	s.RegisterService(&_Health_serviceDesc, srv)
+func RegisterEngineServer(s *grpc.Server, srv EngineServer) {
+	s.RegisterService(&_Engine_serviceDesc, srv)
 }
 
-func _Health_GetHealth_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+func _Engine_GetHealth_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
 	in := new(HealthRequest)
 	if err := dec(in); err != nil {
 		return nil, err
 	}
 	if interceptor == nil {
-		return srv.(HealthServer).GetHealth(ctx, in)
+		return srv.(EngineServer).GetHealth(ctx, in)
 	}
 	info := &grpc.UnaryServerInfo{
 		Server:     srv,
-		FullMethod: "/protobuf.Health/GetHealth",
+		FullMethod: "/protobuf.Engine/GetHealth",
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(HealthServer).GetHealth(ctx, req.(*HealthRequest))
+		return srv.(EngineServer).GetHealth(ctx, req.(*HealthRequest))
 	}
 	return interceptor(ctx, in, info, handler)
 }
 
-var _Health_serviceDesc = grpc.ServiceDesc{
-	ServiceName: "protobuf.Health",
-	HandlerType: (*HealthServer)(nil),
+func _Engine_PostMoM_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(MomPostRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(EngineServer).PostMoM(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/protobuf.Engine/PostMoM",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(EngineServer).PostMoM(ctx, req.(*MomPostRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+var _Engine_serviceDesc = grpc.ServiceDesc{
+	ServiceName: "protobuf.Engine",
+	HandlerType: (*EngineServer)(nil),
 	Methods: []grpc.MethodDesc{
 		{
 			MethodName: "GetHealth",
-			Handler:    _Health_GetHealth_Handler,
+			Handler:    _Engine_GetHealth_Handler,
+		},
+		{
+			MethodName: "PostMoM",
+			Handler:    _Engine_PostMoM_Handler,
 		},
 	},
 	Streams:  []grpc.StreamDesc{},
@@ -149,16 +236,22 @@ var _Health_serviceDesc = grpc.ServiceDesc{
 func init() { proto.RegisterFile("swag-engine.proto", fileDescriptor0) }
 
 var fileDescriptor0 = []byte{
-	// 162 bytes of a gzipped FileDescriptorProto
-	0x1f, 0x8b, 0x08, 0x00, 0x00, 0x00, 0x00, 0x00, 0x02, 0xff, 0xe2, 0x12, 0x2c, 0x2e, 0x4f, 0x4c,
-	0xd7, 0x4d, 0xcd, 0x4b, 0xcf, 0xcc, 0x4b, 0xd5, 0x2b, 0x28, 0xca, 0x2f, 0xc9, 0x17, 0xe2, 0x00,
-	0x53, 0x49, 0xa5, 0x69, 0x4a, 0xfc, 0x5c, 0xbc, 0x1e, 0xa9, 0x89, 0x39, 0x25, 0x19, 0x41, 0xa9,
-	0x85, 0xa5, 0xa9, 0xc5, 0x25, 0x4a, 0xd1, 0x5c, 0xdc, 0x30, 0x81, 0x82, 0x9c, 0x4a, 0x21, 0x25,
-	0x2e, 0x9e, 0x0c, 0x30, 0xb7, 0xb8, 0x24, 0xb1, 0xa4, 0xb4, 0x58, 0x82, 0x51, 0x81, 0x51, 0x83,
-	0x33, 0x08, 0x45, 0x4c, 0x48, 0x83, 0x8b, 0xbf, 0xa0, 0x28, 0x3f, 0x39, 0xb5, 0xb8, 0x38, 0x35,
-	0x25, 0xb5, 0x2c, 0x35, 0xaf, 0xa4, 0x58, 0x82, 0x49, 0x81, 0x51, 0x83, 0x35, 0x08, 0x5d, 0xd8,
-	0xc8, 0x9d, 0x8b, 0x0d, 0x62, 0xb8, 0x90, 0x2d, 0x17, 0xa7, 0x7b, 0x6a, 0x09, 0x94, 0x23, 0xae,
-	0x07, 0x73, 0x8f, 0x1e, 0x8a, 0x63, 0xa4, 0x44, 0x31, 0x25, 0x0a, 0x72, 0x2a, 0x95, 0x18, 0x92,
-	0xd8, 0xc0, 0xe2, 0xc6, 0x80, 0x00, 0x00, 0x00, 0xff, 0xff, 0xd0, 0x3a, 0x9b, 0xb6, 0xdc, 0x00,
-	0x00, 0x00,
+	// 271 bytes of a gzipped FileDescriptorProto
+	0x1f, 0x8b, 0x08, 0x00, 0x00, 0x00, 0x00, 0x00, 0x02, 0xff, 0x6c, 0x90, 0xbf, 0x4f, 0xfb, 0x30,
+	0x10, 0xc5, 0xbf, 0xf9, 0x4a, 0x6d, 0xc9, 0xd1, 0x12, 0x61, 0xf1, 0x23, 0xea, 0x54, 0x59, 0x0c,
+	0x59, 0xc8, 0x00, 0x73, 0x47, 0x04, 0x4b, 0x50, 0x95, 0x95, 0x29, 0x25, 0xd7, 0x36, 0x52, 0xec,
+	0x33, 0xf6, 0x05, 0x94, 0x7f, 0x80, 0xbf, 0x1b, 0xd5, 0x4d, 0x40, 0x29, 0x4c, 0xd6, 0x7b, 0xcf,
+	0xfe, 0xf8, 0xee, 0xc1, 0xb9, 0xfb, 0x28, 0xb6, 0xb7, 0xa8, 0xb7, 0x95, 0xc6, 0xd4, 0x58, 0x62,
+	0x12, 0x27, 0xfe, 0x58, 0x37, 0x1b, 0x19, 0xc1, 0xec, 0x09, 0x8b, 0x9a, 0x77, 0x39, 0xbe, 0x35,
+	0xe8, 0x58, 0xbe, 0xc0, 0x69, 0x6f, 0x98, 0xba, 0x15, 0x12, 0xa6, 0x3b, 0x2f, 0x1d, 0x17, 0xdc,
+	0xb8, 0x38, 0x58, 0x04, 0x49, 0x98, 0x0f, 0x3c, 0x91, 0x40, 0x64, 0x2c, 0xbd, 0xa2, 0x73, 0x58,
+	0xe2, 0x3b, 0x6a, 0x76, 0xf1, 0xff, 0x45, 0x90, 0x8c, 0xf2, 0x63, 0x5b, 0xae, 0xe0, 0x2c, 0x23,
+	0xb5, 0x22, 0xc7, 0xdd, 0x77, 0x22, 0x86, 0x89, 0x22, 0xc5, 0xad, 0xc1, 0x0e, 0xdd, 0x4b, 0x71,
+	0x03, 0x33, 0x45, 0xaa, 0xc4, 0x4d, 0xa5, 0x2b, 0xae, 0x48, 0x7b, 0x66, 0x98, 0x0f, 0x4d, 0xf9,
+	0x0c, 0xd3, 0x6f, 0xe2, 0x7e, 0xde, 0x04, 0xa2, 0x12, 0x4d, 0x4d, 0xad, 0x42, 0xcd, 0x68, 0x2d,
+	0xd9, 0x8e, 0x7b, 0x6c, 0x8b, 0x0b, 0x18, 0x29, 0x52, 0x55, 0xd9, 0x71, 0x0f, 0xe2, 0xee, 0x33,
+	0x80, 0xf1, 0x83, 0xaf, 0x4a, 0x2c, 0x21, 0x7c, 0x44, 0x3e, 0x94, 0x21, 0xae, 0xd3, 0xbe, 0xb2,
+	0x74, 0xd0, 0xd7, 0xfc, 0xf2, 0x77, 0x60, 0xea, 0x56, 0xfe, 0x13, 0x4b, 0x98, 0xec, 0xc7, 0xca,
+	0x28, 0x13, 0xf1, 0xcf, 0x9d, 0xe1, 0xfa, 0xf3, 0xab, 0x3f, 0x12, 0xff, 0x7c, 0x3d, 0xf6, 0xc1,
+	0xfd, 0x57, 0x00, 0x00, 0x00, 0xff, 0xff, 0x89, 0xd9, 0x99, 0xab, 0xbe, 0x01, 0x00, 0x00,
 }
