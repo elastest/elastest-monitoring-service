@@ -6,29 +6,35 @@ import (
     pb "github.com/elastest/elastest-monitoring-service/protobuf"
     "math/rand"
     "strconv"
+    "encoding/json"
+    "fmt"
 )
 
-var tagConditions []dt.TagCondition = []dt.TagCondition {
-    dt.TagCondition{
-        dt.ChannelSet(map[dt.Channel]interface{}{dt.Channel("a"):nil,}),
-        func(ev dt.Event) bool {return true},
-        dt.Channel("C"),
-    },
-    dt.TagCondition{
-        dt.ChannelSet(map[dt.Channel]interface{}{dt.Channel("C"):nil,}),
-        func(ev dt.Event) bool {return true},
-        dt.Channel("D"),
-    },
-    dt.TagCondition{
-        dt.ChannelSet(map[dt.Channel]interface{}{dt.Channel("D"):nil,dt.Channel("b"):nil}),
-        func(ev dt.Event) bool {return true},
-        dt.Channel("E"),
-    },
-}
+var tagConditions map[int]dt.TagCondition = make(map[int]dt.TagCondition)
 
 func DeployTaggerv01(taggerDef string) *pb.MomPostReply {
+    fmt.Println("Deploying def: ", taggerDef)
+    var td dt.TaggerDefinition
+    if err := json.Unmarshal([]byte(taggerDef), &td); err != nil {
+        fmt.Println("It was an invalid definition because the JSON was malformed: ", err.Error())
+        return &pb.MomPostReply{Deploymenterror:err.Error(), Momid:""}
+    }
+    if !validTD(td) {
+        fmt.Println("Missing or empty filter or out channel")
+        return &pb.MomPostReply{Deploymenterror:"Missing or empty filter or out channel", Momid:""}
+    }
     momid := rand.Int()
+    fmt.Println("with momid: ", momid)
+    tagConditions[momid] = dt.TagCondition{
+        sets.SetFromList(td.InChannels),
+        func(ev dt.Event) bool {return true},
+        dt.Channel(td.OutChannel),
+    }
     return &pb.MomPostReply{Deploymenterror:"", Momid:strconv.Itoa(momid)}
+}
+
+func validTD(td dt.TaggerDefinition) bool {
+    return (td.Filter != "" && td.OutChannel != "")
 }
 
 func TagEvent(ev *dt.Event) {
@@ -39,16 +45,18 @@ func TagEvent(ev *dt.Event) {
             checkConditions = append(checkConditions, tc)
         }
     }
-
     checkChans := (*ev).Channels
-    for (len(checkConditions) > 0 && len(checkChans) > 0) {
 
+    dirty:=true
+    for (dirty) {
+        dirty=false
         newconds := checkConditions[:0]
         var nextCheckChans dt.ChannelSet = make(dt.ChannelSet)
         for _,cond := range checkConditions {
             if !(sets.SetIn(cond.OutChannel, checkChans)) { // if it's not tagged yet
                 cond.InChannels = sets.SetMinus(cond.InChannels, checkChans)
                 if (sets.SetIsEmpty(cond.InChannels)) { // triggered
+                    dirty=true
                     nextCheckChans = sets.SetAdd(nextCheckChans, cond.OutChannel)
                     checkChans = sets.SetAdd(checkChans, cond.OutChannel)
                 } else {

@@ -3,7 +3,6 @@ package eventproc
 import (
 	"testing"
 	"encoding/json"
-	// "fmt"
 	// "os"
 	dt "github.com/elastest/elastest-monitoring-service/go_EMS/datatypes"
     "github.com/elastest/elastest-monitoring-service/go_EMS/jsonrw"
@@ -14,6 +13,14 @@ var theEvent dt.Event
 
 func TestChannelInference(t *testing.T) {
 
+    correctdef0 := `{"inchannels":["a"], "filter":"true", "outchannel":"C"}`
+    correctdef1 := `{"inchannels":["C","a"], "filter":"true", "outchannel":"D"}`
+    if reply := DeployTaggerv01(correctdef0); reply.Deploymenterror != "" {
+        t.Errorf("Expected no error for %s, got %s", correctdef0, reply.Deploymenterror)
+    }
+    if reply := DeployTaggerv01(correctdef1); reply.Deploymenterror != "" {
+        t.Errorf("Expected no error for %s, got %s", correctdef1, reply.Deploymenterror)
+    }
 	tables := []struct {
         json string
         channels dt.ChannelSet
