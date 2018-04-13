@@ -9,6 +9,7 @@ import (
 	pb "github.com/elastest/elastest-monitoring-service/protobuf"
     "google.golang.org/grpc/reflection"
 	pe "github.com/elastest/elastest-monitoring-service/go_EMS/eventscounter"
+	ep "github.com/elastest/elastest-monitoring-service/go_EMS/eventproc"
 )
 
 const (
@@ -25,7 +26,11 @@ func (s *server) GetHealth(ctx context.Context, in *pb.HealthRequest) (*pb.Healt
 
 // PostMom implements protobuf.PostMoM
 func (s *server) PostMoM(ctx context.Context, in *pb.MomPostRequest) (*pb.MomPostReply, error) {
-    return &pb.MomPostReply{Deploymenterror:"Not yet implemented", Momid:""}, nil
+    switch in.Momtype {
+    case "tag0.1":
+        return ep.DeployTaggerv01(in.Momdefinition), nil
+    }
+    return &pb.MomPostReply{Deploymenterror:"Unrecognized tag "+in.Momtype, Momid:""}, nil
 }
 
 func Serve() {

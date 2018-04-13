@@ -3,6 +3,9 @@ package eventproc
 import (
 	dt "github.com/elastest/elastest-monitoring-service/go_EMS/datatypes"
 	sets "github.com/elastest/elastest-monitoring-service/go_EMS/setoperators"
+    pb "github.com/elastest/elastest-monitoring-service/protobuf"
+    "math/rand"
+    "strconv"
 )
 
 var tagConditions []dt.TagCondition = []dt.TagCondition {
@@ -21,6 +24,11 @@ var tagConditions []dt.TagCondition = []dt.TagCondition {
         func(ev dt.Event) bool {return true},
         dt.Channel("E"),
     },
+}
+
+func DeployTaggerv01(taggerDef string) *pb.MomPostReply {
+    momid := rand.Int()
+    return &pb.MomPostReply{Deploymenterror:"", Momid:strconv.Itoa(momid)}
 }
 
 func TagEvent(ev *dt.Event) {
