@@ -6,8 +6,6 @@ import (
 	middleware "github.com/go-openapi/runtime/middleware"
 	"runtime"
 	"encoding/json"
-    "os"
-    "bufio"
     "log"
     "time"
 
@@ -42,24 +40,23 @@ func (info EnvironmentInfo) WriteResponse(rw http.ResponseWriter, producer opena
     }
 }
 
-var evCounter = 0
-
 func GetHealth() middleware.Responder {
 	conn, err := grpc.Dial(address, grpc.WithInsecure())
     if err != nil {
         log.Fatalf("did not connect: %v", err)
+        // return error instead
     }
     defer conn.Close()
-    c := pb.NewHealthClient(conn)
+    c := pb.NewEngineClient(conn)
 
     ctx, cancel := context.WithTimeout(context.Background(), time.Second)
     defer cancel()
     r, err := c.GetHealth(ctx, &pb.HealthRequest{})
     if err != nil {
         log.Fatalf("could not greet: %v", err)
+        // return error instead
     }
 	return HealthStatus(*r)
-    // return HealthIsOk{"up", evCounter}
 }
 
 func GetEnvironment() middleware.Responder {
@@ -69,21 +66,4 @@ func GetEnvironment() middleware.Responder {
 		"Architecture" : runtime.GOARCH,
 	}
 	return EnvironmentInfo {info}
-}
-
-
-func OpenAndLoop() {
-    file, err := os.Open("/usr/share/logstash/pipes/swageventspipe")
-    if err != nil {
-        panic(err)
-    }
-    defer file.Close()
-
-    for {
-        scanner := bufio.NewScanner(file)
-        for scanner.Scan()  {
-            evCounter++;
-        }
-    }
-    panic("leaving!")
 }

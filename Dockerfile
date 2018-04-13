@@ -61,8 +61,6 @@ RUN mkdir /usr/share/logstash/pipes
 RUN mkfifo /usr/share/logstash/pipes/leftpipe
 RUN mkfifo /usr/share/logstash/pipes/staticrightpipe
 RUN mkfifo /usr/share/logstash/pipes/dynamicrightpipe
-RUN mkfifo /usr/share/logstash/pipes/swagpipe
-RUN mkfifo /usr/share/logstash/pipes/swageventspipe
 RUN mkdir /usr/share/logstash/in_data
 RUN mkdir /usr/share/logstash/out_data
 RUN mkdir /usr/share/logstash/outstatic_data

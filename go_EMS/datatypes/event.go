@@ -9,9 +9,3 @@ type Event struct {
     Payload map[string]interface{}
     Timestamp string
 }
-
-type TagCondition struct {
-    InChannels ChannelSet
-    EventCondition func(ev Event) bool
-    OutChannel Channel
-}

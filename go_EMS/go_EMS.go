@@ -19,7 +19,6 @@ func main() {
     fmt.Println("Serving server")
     go internalsv.Serve()
     fmt.Println("Server served. Starting scans")
-	go openAndLoop("/usr/share/logstash/pipes/swagpipe",scanAPIPipe)
 	openAndLoop("/usr/share/logstash/pipes/leftpipe",scanStdIn)
 }
 
@@ -88,20 +87,5 @@ func scanStdIn(file io.Reader) {
             }
 		}
         pe.IncrementProcessedEvents()
-	}
-}
-
-func scanAPIPipe(file io.Reader) {
-	scanner := bufio.NewScanner(file)
-    var dasmap map[string]interface{}
-	for scanner.Scan()  {
-		dasmap = nil
-		thetextbytes := []byte(scanner.Text())
-
-		if err := json.Unmarshal(thetextbytes, &dasmap); err != nil {
-			panic("No JSON. Error: " + err.Error())
-		} else {
-			// readAndRegister(dasmap)
-		}
 	}
 }

@@ -3,16 +3,29 @@ syntax = "proto3";
 package protobuf;
 
 // The greeting service definition.
-service Health {
+service Engine {
   // Requires health
   rpc GetHealth (HealthRequest) returns (HealthReply) {}
+  rpc PostMoM (MomPostRequest) returns (MomPostReply) {}
 }
 
-// The request message (it's empty)
+// The health request message (it's empty)
 message HealthRequest {}
 
-// The response message containing the health status
+// The health response message containing the health status
 message HealthReply {
   string healthstatus = 1;
-  int32 processedevents =2;
+  int32 processedevents = 2;
+}
+
+// The mom post request message
+message MomPostRequest {
+  string momtype = 1;
+  string momdefinition = 2;
+}
+
+// The mom post response message
+message MomPostReply {
+  string deploymenterror = 1;
+  string momid = 2;
 }
