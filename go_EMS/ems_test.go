@@ -42,7 +42,6 @@ func TestRest(t *testing.T) {
     if err != nil {
         panic(err)
     }
-	scanAPIPipe(file)
 	file, err = os.Open("testinputs/testEvents.txt")
     if err != nil {
         panic(err)

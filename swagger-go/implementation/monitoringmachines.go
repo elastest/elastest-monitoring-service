@@ -6,11 +6,8 @@ import (
 	middleware "github.com/go-openapi/runtime/middleware"
 
 	"../restapi/operations/monitoring_machine"
-	"fmt"
 	"math/rand"
 	"strconv"
-	"encoding/json"
-	"os"
 )
 
 type DeployOk struct {
@@ -40,13 +37,12 @@ func (o DeployNotAllowed) WriteResponse(rw http.ResponseWriter, producer runtime
 }
 
 func PostMOM(params monitoring_machine.PostMoMParams) middleware.Responder {
-	if _, err := os.Stat("/usr/share/logstash/pipes/swagpipe"); os.IsNotExist(err) {
+	/*if _, err := os.Stat("/usr/share/logstash/pipes/swagpipe"); os.IsNotExist(err) {
 		return DeployNotAllowed{}
 	}
 	definition := params.Mom.Definition
 	momType := params.Mom.MomType
     var dasmap map[string]interface{} = nil
-	deploymentId := strconv.Itoa(rand.Int())
 	if err := json.Unmarshal([]byte(definition), &dasmap); err != nil {
 		fmt.Println("No JSON. Error: " + err.Error())
 	} else {
@@ -54,11 +50,11 @@ func PostMOM(params monitoring_machine.PostMoMParams) middleware.Responder {
 		dasmap["deploymentId"] = deploymentId
 	}
 	newJSON, _ := json.Marshal(dasmap)
-	fmt.Println("JSON: " + string(newJSON))
 	file, err := os.Create("/usr/share/logstash/pipes/swagpipe")
     if err != nil {
         panic(err)
     }
-	fmt.Fprintln(file, string(newJSON))
+	fmt.Fprintln(file, string(newJSON))*/
+	deploymentId := strconv.Itoa(rand.Int())
 	return DeployOk{deploymentId}
 }
