@@ -13,10 +13,6 @@ import (
 )
 
 type event struct {
-	Payload payload `yaml:"payload,omitempty"`
-}
-
-type payload struct {
 	Message string `yaml:"message,omitempty"`
 	System  system `yaml:"system,omitempty"`
 }
@@ -83,7 +79,7 @@ func main() {
 			}
 			var e event
 			json.Unmarshal(input, &e)
-			if strings.Contains(e.Payload.Message, "STATUS_ON") {
+			if strings.Contains(e.Message, "STATUS_ON") {
 				if state == "" {
 					state = "on"
 				} else {
@@ -98,7 +94,7 @@ func main() {
 				}
 				log.Println("Starting ON state")
 			}
-			if strings.Contains(e.Payload.Message, "STATUS_OFF") {
+			if strings.Contains(e.Message, "STATUS_OFF") {
 				if state == "" {
 					state = "off"
 				} else {
@@ -113,9 +109,9 @@ func main() {
 				}
 				log.Println("Starting OFF state")
 			}
-			if e.Payload.System.CPU.User.Pct != 0.0 && state != "" {
-				fmt.Printf("CPU: %f\n", e.Payload.System.CPU.User.Pct)
-				cpu += e.Payload.System.CPU.User.Pct
+			if e.System.CPU.User.Pct != 0.0 && state != "" {
+				fmt.Printf("CPU: %f\n", e.System.CPU.User.Pct)
+				cpu += e.System.CPU.User.Pct
 				items++
 			}
 		}
