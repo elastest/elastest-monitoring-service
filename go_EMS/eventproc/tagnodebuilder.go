@@ -16,7 +16,7 @@ func getNodeFromFilter(thejson map[string]interface{}) (dt.TagNode,error) {
     case "AND":
         return getAndNode(thejson)
     case "OR":
-        //return getOrNode(thejson)
+        return getOrNode(thejson)
     case "PATHFUN":
         return getPathFunNode(thejson)
     }
@@ -38,6 +38,23 @@ func getAndNode(thejson map[string]interface{}) (dt.TagNode,error) {
         memberNodes[i] = memberNode
     }
     return dt.AndNode{memberNodes},nil
+}
+
+func getOrNode(thejson map[string]interface{}) (dt.TagNode,error) {
+    members, ok := thejson["members"].([]map[string]interface{})
+    if !ok {
+        err := errors.New("No valid field 'members' in OR node definition")
+        return nil,err
+    }
+    memberNodes := make([]dt.TagNode, len(members))
+    for i,member := range members {
+        memberNode, err := getNodeFromFilter(member)
+        if err!=nil {
+            return nil, err
+        }
+        memberNodes[i] = memberNode
+    }
+    return dt.OrNode{memberNodes},nil
 }
 
 func getPathFunNode(thejson map[string]interface{}) (dt.TagNode,error) {
