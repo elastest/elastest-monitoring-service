@@ -13,6 +13,15 @@ func (andNode AndNode) Eval(payload map[string]interface{}) bool {
     return true
 }
 
+func (orNode OrNode) Eval(payload map[string]interface{}) bool {
+    for _,node := range orNode.Members {
+        if node.Eval(payload) {
+            return true
+        }
+    }
+    return false
+}
+
 func (pathfunNode PathFunNode) Eval(payload map[string]interface{}) bool {
     theVal, err := extractFromMap(payload, pathfunNode.Path)
     if err != nil {
