@@ -23,25 +23,32 @@ func DeployTaggerv01(taggerDef string) *pb.MomPostReply {
         fmt.Println("Missing or empty filter or out channel")
         return &pb.MomPostReply{Deploymenterror:"Missing or empty filter or out channel", Momid:""}
     }
+    var thejson map[string]interface{}
+    filterbytes := []byte(td.Filter)
+    if err := json.Unmarshal(filterbytes, &thejson); err != nil {
+        errtext := "Filter is not a JSON. Error: "+ err.Error()
+        return &pb.MomPostReply{Deploymenterror:errtext, Momid:""}
+    }
+    tagNode, err := getNodeFromFilter(thejson)
+    if err != nil {
+        fmt.Println("Error in filter definition: ", err.Error())
+        return &pb.MomPostReply{Deploymenterror:err.Error(), Momid:""}
+    }
     momid := rand.Int()
     fmt.Println("with momid: ", momid)
     tagConditions[momid] = dt.TagCondition{
         sets.SetFromList(td.InChannels),
-        func(ev dt.Event) bool {return true},
+        tagNode.Eval,
         dt.Channel(td.OutChannel),
     }
     return &pb.MomPostReply{Deploymenterror:"", Momid:strconv.Itoa(momid)}
-}
-
-func validTD(td dt.TaggerDefinition) bool {
-    return (td.Filter != "" && td.OutChannel != "")
 }
 
 func TagEvent(ev *dt.Event) {
     var checkConditions []dt.TagCondition
     // filter out unsatisfiable conditions
     for _,tc := range tagConditions {
-        if tc.EventCondition(*ev) {
+        if tc.EventCondition(ev.Payload) {
             checkConditions = append(checkConditions, tc)
         }
     }
@@ -69,4 +76,8 @@ func TagEvent(ev *dt.Event) {
         checkConditions = newconds
     }
 
+}
+
+func validTD(td dt.TaggerDefinition) bool {
+    return (td.Filter != "" && td.OutChannel != "")
 }
