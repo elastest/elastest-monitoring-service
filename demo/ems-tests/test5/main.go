@@ -13,21 +13,13 @@ import (
 )
 
 type event struct {
+	Type    string `yaml:"type,omitempty"`
 	Message string `yaml:"message,omitempty"`
-	System  system `yaml:"system,omitempty"`
-}
-
-type system struct {
-	Process process `yaml:"process,omitempty"`
-	CPU     cpu     `yaml:"cpu,omitempty"`
-}
-
-type process struct {
-	CWD string `yaml:"cwd,omitempty"`
+	CPU     cpu    `yaml:"cpu,omitempty"`
 }
 
 type cpu struct {
-	User user `yaml:"user,omitempty"`
+	TotalUsage float64 `yaml:"totalUsage,omitempty"`
 }
 
 type user struct {
@@ -79,7 +71,7 @@ func main() {
 			}
 			var e event
 			json.Unmarshal(input, &e)
-			if strings.Contains(e.Message, "STATUS_ON") {
+			if e.Type == "sutlogs" && strings.Contains(e.Message, "STATUS_ON") {
 				if state == "" {
 					state = "on"
 				} else {
@@ -94,7 +86,7 @@ func main() {
 				}
 				log.Println("Starting ON state")
 			}
-			if strings.Contains(e.Message, "STATUS_OFF") {
+			if e.Type == "sutlogs" && strings.Contains(e.Message, "STATUS_OFF") {
 				if state == "" {
 					state = "off"
 				} else {
@@ -109,9 +101,9 @@ func main() {
 				}
 				log.Println("Starting OFF state")
 			}
-			if e.System.CPU.User.Pct != 0.0 && state != "" {
-				fmt.Printf("CPU: %f\n", e.System.CPU.User.Pct)
-				cpu += e.System.CPU.User.Pct
+			if e.Type == "cpu" {
+				fmt.Printf("CPU: %f\n", e.CPU.TotalUsage)
+				cpu += e.CPU.TotalUsage
 				items++
 			}
 		}
