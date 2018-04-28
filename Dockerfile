@@ -9,7 +9,7 @@ ARG COMMIT_DATE=unspecified
 LABEL commit_date=$COMMIT_DATE
 
 ARG VERSION=unspecified
-LABEL version=$VERSION 
+LABEL version=$VERSION
 
 WORKDIR /go/src/swagger-go
 ENV GOPATH /go
@@ -49,13 +49,13 @@ RUN CGO_ENABLED=0 GOOS=linux go build -o ems ./go_EMS
 
 FROM docker.elastic.co/logstash/logstash:5.4.0
 WORKDIR /root/
+USER root
+RUN /usr/share/logstash/bin/logstash-plugin install logstash-output-websocket
 COPY new_startmeup.sh /startmeup.sh
 COPY logstashcfgs/* /usr/share/logstash/pipeline/
 COPY logstash.yml /usr/share/logstash/config/logstash.yml
-USER root
 RUN chmod 666 /usr/share/logstash/pipeline/outlogstash.conf
 RUN chmod 666 /usr/share/logstash/pipeline/staticoutlogstash.conf
-RUN /usr/share/logstash/bin/logstash-plugin install logstash-output-websocket
 RUN mkdir /usr/share/logstash/pipes
 RUN mkfifo /usr/share/logstash/pipes/leftpipe
 RUN mkfifo /usr/share/logstash/pipes/staticrightpipe
