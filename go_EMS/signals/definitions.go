@@ -1,15 +1,20 @@
-package definitions
+package signals
+
+import (
+	dt "github.com/elastest/elastest-monitoring-service/go_EMS/datatypes"
+    //"fmt"
+)
 
 type SampledSignalDefinition struct {
-    Name SignalName
-    InChannel Channel
-    ValuePath JSONPath
+    Name dt.SignalName
+    InChannel dt.Channel
+    ValuePath dt.JSONPath
 }
 
 type ConditionalSignalDefinition struct {
-    Name SignalName
-    SourceSignal SignalName
-    Condition SignalName
+    Name dt.SignalName
+    SourceSignal dt.SignalName
+    Condition dt.SignalName
 }
 
 type WriteValue struct {
@@ -18,10 +23,9 @@ type WriteValue struct {
 }
 
 type SignalWriteDefinition struct {
-    SourceSignal SignalName
-    OutChannel Channel
-    FieldsAndValues map[JSONPath]WriteValue
+    SourceSignal dt.SignalName
+    OutChannel dt.Channel
+    //FieldsAndValues map[dt.JSONPath]dt.WriteValue
     // This is stringly typed. Actually, value could be either a Param, a
     // literal or "value". Maybe every Param should be present at least once.
-    Triggerer SNameAndRebound // Those params not present can be any
 }

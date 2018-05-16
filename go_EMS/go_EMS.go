@@ -13,11 +13,13 @@ import (
     internalsv "github.com/elastest/elastest-monitoring-service/go_EMS/internalapiserver"
 	pe "github.com/elastest/elastest-monitoring-service/go_EMS/eventscounter"
 	sets "github.com/elastest/elastest-monitoring-service/go_EMS/setoperators"
+	"github.com/elastest/elastest-monitoring-service/go_EMS/moms"
 )
 
 func main() {
     fmt.Println("Serving server")
     go internalsv.Serve()
+    moms.StartEngine()
     fmt.Println("Server served. Starting scans")
 	openAndLoop("/usr/share/logstash/pipes/leftpipe",scanStdIn)
 }
@@ -66,6 +68,7 @@ func scanStdIn(file io.Reader) {
 		} else {
             var evt dt.Event = jsonrw.ReadEvent(rawEvent)
             et.TagEvent(&evt)
+            moms.ProcessEvent(evt)
             evt.Payload["@timestamp"] = evt.Timestamp
             evt.Payload["channels"] = sets.SetToList(evt.Channels)
             newJSON, _ := json.Marshal(evt.Payload)
