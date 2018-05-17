@@ -33,8 +33,20 @@ var samplers []Sampler
 func StartEngine(sendchan chan dt.Event) {
 	signalchan := make(chan striverdt.Event)
 	writechan := make(chan striverdt.FlowingEvent)
-	samplers = []Sampler{Sampler{defs.SampledSignalDefinition{"signalname", "chan", "system.load.1"}, signalchan}}
-	theSampler := striverdt.InStream{"signalname", &striverdt.InFromChannel{signalchan, nil}}
+	samplers = []Sampler{Sampler{defs.SampledSignalDefinition{"cpuload", "chan", "system.load.1"}, signalchan}}
+	theSampler := striverdt.InStream{"cpuload", &striverdt.InFromChannel{signalchan, nil}}
+
+    plusone := func (args...striverdt.EvPayload) striverdt.EvPayload{
+        myprev := args[0]
+        prev := 0
+        if myprev.IsSet {
+            prev = myprev.Val.(striverdt.EvPayload).Val.(int)
+        }
+        return striverdt.Some(prev+1)
+    }
+    plusOneVal := striverdt.FuncNode{[]striverdt.ValNode{&striverdt.PrevValNode{striverdt.TNode{}, "cpuevcount", []striverdt.Event{}}}, plusone}
+
+    cpuloadcounter := striverdt.OutStream{"cpuevcount", striverdt.SrcTickerNode{"cpuload"}, plusOneVal}
 
     loc := time.FixedZone("fakeplace", 0)
 
@@ -48,7 +60,7 @@ func StartEngine(sendchan chan dt.Event) {
             }
         }
     }()
-	go strivercp.Start([]striverdt.InStream{theSampler}, []striverdt.OutStream{}, writechan)
+	go strivercp.Start([]striverdt.InStream{theSampler}, []striverdt.OutStream{cpuloadcounter}, writechan)
 }
 
 func ProcessEvent(evt dt.Event) {
