@@ -71,7 +71,7 @@ func main() {
 			}
 			var e event
 			json.Unmarshal(input, &e)
-			if e.Type == "sutlogs" && strings.Contains(e.Message, "STATUS_ON") {
+			if e.Type == "et_logs" && strings.Contains(e.Message, "STATUS_ON") {
 				if state == "" {
 					state = "on"
 				} else {
@@ -86,7 +86,7 @@ func main() {
 				}
 				log.Println("Starting ON state")
 			}
-			if e.Type == "sutlogs" && strings.Contains(e.Message, "STATUS_OFF") {
+			if e.Type == "et_logs" && strings.Contains(e.Message, "STATUS_OFF") {
 				if state == "" {
 					state = "off"
 				} else {
@@ -109,7 +109,7 @@ func main() {
 		}
 	}()
 
-	for iterations < 10 {
+	for iterations < 4 {
 		time.Sleep(1 * time.Second)
 	}
 	log.Println("Test finished successfully!")
