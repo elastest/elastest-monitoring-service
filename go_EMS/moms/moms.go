@@ -8,7 +8,6 @@ import (
     sets "github.com/elastest/elastest-monitoring-service/go_EMS/setoperators"
     "strings"
 	"time"
-	"fmt"
 )
 
 type Sampler struct {
@@ -17,7 +16,6 @@ type Sampler struct {
 }
 
 func (s Sampler) processEvent(evt dt.Event) {
-	fmt.Println("PROCESSING!")
     if sets.SetIn(s.Def.InChannel, evt.Channels) {
         payload := striverdt.Some(extractFromMap(evt.Payload, s.Def.ValuePath))
 		t, err := time.Parse(time.RFC3339Nano,evt.Timestamp)
@@ -31,11 +29,25 @@ func (s Sampler) processEvent(evt dt.Event) {
 
 var samplers []Sampler
 
-func StartEngine() {
+func StartEngine(sendchan chan dt.Event) {
 	signalchan := make(chan striverdt.Event)
+	writechan := make(chan striverdt.FlowingEvent)
 	samplers = []Sampler{Sampler{defs.SampledSignalDefinition{"signalname", "chan", "system.load.1"}, signalchan}}
 	theSampler := striverdt.InStream{"signalname", &striverdt.InFromChannel{signalchan, nil}}
-	go strivercp.Start([]striverdt.InStream{theSampler}, []striverdt.OutStream{})
+
+    loc := time.FixedZone("fakeplace", 0)
+
+    go func () {
+        for {
+            flowev := <-writechan
+            sendchan <- dt.Event{
+                sets.SetFromList([]string{string(flowev.Name)}),
+                map[string]interface{}{"value": flowev.Event.Payload.Val},
+                time.Unix(int64(flowev.Event.Time),0).In(loc).Format("2006-01-02T15:04:05.000Z"),
+            }
+        }
+    }()
+	go strivercp.Start([]striverdt.InStream{theSampler}, []striverdt.OutStream{}, writechan)
 }
 
 func ProcessEvent(evt dt.Event) {

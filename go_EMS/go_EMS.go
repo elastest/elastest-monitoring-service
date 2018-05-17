@@ -12,50 +12,38 @@ import (
     "github.com/elastest/elastest-monitoring-service/go_EMS/jsonrw"
     internalsv "github.com/elastest/elastest-monitoring-service/go_EMS/internalapiserver"
 	pe "github.com/elastest/elastest-monitoring-service/go_EMS/eventscounter"
-	sets "github.com/elastest/elastest-monitoring-service/go_EMS/setoperators"
 	"github.com/elastest/elastest-monitoring-service/go_EMS/moms"
+	"github.com/elastest/elastest-monitoring-service/go_EMS/eventout"
 )
 
 func main() {
     fmt.Println("Serving server")
     go internalsv.Serve()
-    moms.StartEngine()
     fmt.Println("Server served. Starting scans")
-	openAndLoop("/usr/share/logstash/pipes/leftpipe",scanStdIn)
-}
 
+    sendchan := make(chan dt.Event)
+    moms.StartEngine(sendchan)
 
-func openAndLoop(pipename string, callback func(reader io.Reader)) {
+    // Opening staticout
+    staticout := os.Args[1]
+    // Opening dynout
+    dynout := os.Args[2]
+    go eventout.StartSender(sendchan, staticout, dynout)
+
+    pipename := "/usr/share/logstash/pipes/leftpipe"
 	file, err := os.Open(pipename)
     if err != nil {
         panic(err)
     }
     defer file.Close()
-
 	for {
-		callback(file)
+		scanStdIn(file, sendchan)
         fmt.Println("RELOADING " + pipename)
 	}
 	panic("leaving!")
 }
 
-func scanStdIn(file io.Reader) {
-    // Opening staticout
-    staticout := os.Args[1]
-    fstatic, err := os.OpenFile(staticout, os.O_APPEND|os.O_WRONLY, 0600)
-    if err != nil {
-        panic(err)
-    }
-    defer fstatic.Close()
-
-    // Opening dynout
-    dynout := os.Args[2]
-    fdyn, err := os.OpenFile(dynout, os.O_APPEND|os.O_WRONLY, 0600)
-    if err != nil {
-        panic(err)
-    }
-    defer fdyn.Close()
-
+func scanStdIn(file io.Reader, sendchan chan dt.Event) {
 	scanner := bufio.NewScanner(file)
     var rawEvent map[string]interface{}
 	for scanner.Scan() {
@@ -69,25 +57,7 @@ func scanStdIn(file io.Reader) {
             var evt dt.Event = jsonrw.ReadEvent(rawEvent)
             et.TagEvent(&evt)
             moms.ProcessEvent(evt)
-            evt.Payload["@timestamp"] = evt.Timestamp
-            evt.Payload["channels"] = sets.SetToList(evt.Channels)
-            newJSON, _ := json.Marshal(evt.Payload)
-            evstring := string(newJSON)+"\n"
-            if _, err = fstatic.WriteString(evstring); err != nil {
-                panic(err)
-            }
-            if _, err = fdyn.WriteString(evstring); err != nil {
-				fmt.Println("Broken dynamic output. Retrying...")
-                fdyn, err = os.OpenFile(dynout, os.O_APPEND|os.O_WRONLY, 0600)
-                if err != nil {
-                    panic(err)
-                }
-                if _, err = fdyn.WriteString(evstring); err != nil {
-                    fmt.Println("Broken retry, panicking")
-                    panic(err)
-                }
-                fmt.Println("Recovered dyn output")
-            }
+            sendchan <- evt
 		}
         pe.IncrementProcessedEvents()
 	}
