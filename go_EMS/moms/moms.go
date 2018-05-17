@@ -16,15 +16,16 @@ type Sampler struct {
 }
 
 func (s Sampler) processEvent(evt dt.Event) {
+    payload := striverdt.NothingPayload
     if sets.SetIn(s.Def.InChannel, evt.Channels) {
-        payload := striverdt.Some(extractFromMap(evt.Payload, s.Def.ValuePath))
-		t, err := time.Parse(time.RFC3339Nano,evt.Timestamp)
-		if err != nil {
-			panic(err)
-		}
-        striverEvent := striverdt.Event{striverdt.Time(t.Unix()), payload}
-        s.OutChan <- striverEvent
+        payload = striverdt.Some(extractFromMap(evt.Payload, s.Def.ValuePath))
     }
+    t, err := time.Parse(time.RFC3339Nano,evt.Timestamp)
+    if err != nil {
+        panic(err)
+    }
+    striverEvent := striverdt.Event{striverdt.Time(t.Unix()), payload}
+    s.OutChan <- striverEvent
 }
 
 var samplers []Sampler
