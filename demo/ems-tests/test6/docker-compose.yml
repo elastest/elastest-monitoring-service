@@ -1,0 +1,16 @@
+version: "3"
+services:
+  cli:
+    image: golang:1.9.0-alpine3.6
+    environment:
+      - ET_EMS_LSBEATS_HOST=172.19.0.12
+    networks:
+      - elastest
+    volumes:
+      - ./tjob.sh:/usr/local/bin/tjob.sh
+    command: sh /usr/local/bin/tjob.sh
+
+networks:
+  elastest:
+    external:
+      name: elastest_elastest
