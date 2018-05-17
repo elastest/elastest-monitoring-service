@@ -34,7 +34,7 @@ func StartEngine(sendchan chan dt.Event) {
 	signalchan := make(chan striverdt.Event)
 	writechan := make(chan striverdt.FlowingEvent)
 	samplers = []Sampler{Sampler{defs.SampledSignalDefinition{"cpuload", "chan", "system.load.1"}, signalchan}}
-	theSampler := striverdt.InStream{"cpuload", &striverdt.InFromChannel{signalchan, nil}}
+	theSampler := striverdt.InStream{"cpuload", &striverdt.InFromChannel{signalchan, nil, 0}}
 
     plusone := func (args...striverdt.EvPayload) striverdt.EvPayload{
         myprev := args[0]
