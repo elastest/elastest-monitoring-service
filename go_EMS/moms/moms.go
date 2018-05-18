@@ -38,7 +38,7 @@ func startWriter(writechan chan striverdt.FlowingEvent, sendchan chan dt.Event) 
         for {
             flowev := <-writechan
             sendchan <- dt.Event{
-                sets.SetFromList([]string{string(flowev.Name)}),
+                sets.SetFromList([]string{string(flowev.Name), "striver"}),
                 map[string]interface{}{"value": flowev.Event.Payload.Val},
                 time.Unix(int64(flowev.Event.Time),0).In(loc).Format("2006-01-02T15:04:05.000Z"),
             }

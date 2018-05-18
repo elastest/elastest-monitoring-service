@@ -6,6 +6,7 @@ import (
     "os"
 	dt "github.com/elastest/elastest-monitoring-service/go_EMS/datatypes"
 	sets "github.com/elastest/elastest-monitoring-service/go_EMS/setoperators"
+    et "github.com/elastest/elastest-monitoring-service/go_EMS/eventproc"
 )
 
 func StartSender(sendchan chan dt.Event, staticout string, dynout string) {
@@ -25,7 +26,8 @@ func StartSender(sendchan chan dt.Event, staticout string, dynout string) {
 
 
     for {
-        evt := <- sendchan
+        evt := <-sendchan
+        et.TagEvent(&evt)
         evt.Payload["@timestamp"] = evt.Timestamp
         evt.Payload["channels"] = sets.SetToList(evt.Channels)
         newJSON, _ := json.Marshal(evt.Payload)
