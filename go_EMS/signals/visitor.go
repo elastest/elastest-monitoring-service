@@ -45,11 +45,19 @@ func (visitor *SignalToStriverVisitor) visitSampled(sampledsignal SampledSignalD
 
 func (visitor *SignalToStriverVisitor) visitFuncSignal(funcsignal FuncSignalDefinition) {
     generalfun := func (args...striverdt.EvPayload) striverdt.EvPayload {
-        sourceval := args[0].Val.(striverdt.EvPayload).Val
-        return striverdt.Some(funcsignal.FuncDef.getFunction()(sourceval))
+
+        castedargs := make([]interface{}, len(args))
+        for i,arg := range args {
+            castedargs[i] = arg.Val.(striverdt.EvPayload).Val
+        }
+        return striverdt.Some(funcsignal.FuncDef.getFunction()(castedargs...))
     }
-    valnode := striverdt.FuncNode{[]striverdt.ValNode{&striverdt.PrevEqValNode{striverdt.TNode{}, funcsignal.SourceName, []striverdt.Event{}}}, generalfun}
-    outStream := striverdt.OutStream{funcsignal.Name, striverdt.SrcTickerNode{funcsignal.SourceName}, valnode}
+    sourcesValNodes := make([]striverdt.ValNode, len(funcsignal.SourcesNames))
+    for i,name := range funcsignal.SourcesNames {
+        sourcesValNodes[i] = &striverdt.PrevEqValNode{striverdt.TNode{}, name, []striverdt.Event{}}
+    }
+    valnode := striverdt.FuncNode{sourcesValNodes, generalfun}
+    outStream := striverdt.OutStream{funcsignal.Name, striverdt.SrcTickerNode{funcsignal.SourcesNames[0]}, valnode}
 
     visitor.OutStreams = append(visitor.OutStreams, outStream)
 }

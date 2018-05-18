@@ -22,43 +22,6 @@ func StartEngine(sendchan chan dt.Event, signaldefs []signals.SignalDefinition) 
 
     samplers = signaltostrivervisitor.Samplers
     go strivercp.Start(signaltostrivervisitor.InStreams, signaltostrivervisitor.OutStreams, writechan)
-
-    // Ad hoc
-
-	/*signalchan := make(chan striverdt.Event)
-	samplers = []signals.Sampler{signals.Sampler{"chan", "system.load.1", signalchan}}
-	inStream := striverdt.InStream{"cpuload", &striverdt.InFromChannel{signalchan, nil, 0}}
-
-    plusone := func (args...striverdt.EvPayload) striverdt.EvPayload{
-        myprev := args[0]
-        prev := 0
-        if myprev.IsSet {
-            prev = myprev.Val.(striverdt.EvPayload).Val.(int)
-        }
-        return striverdt.Some(prev+1)
-    }
-    plusOneVal := striverdt.FuncNode{[]striverdt.ValNode{&striverdt.PrevValNode{striverdt.TNode{}, "cpuevcount", []striverdt.Event{}}}, plusone}
-
-    cpuloadcounter := striverdt.OutStream{"cpuevcount", striverdt.SrcTickerNode{"cpuload"}, plusOneVal}
-
-    acc := func (args...striverdt.EvPayload) striverdt.EvPayload{
-        myprev := args[0]
-        accval := args[1]
-        prev := 0.0
-        if myprev.IsSet {
-            prev = myprev.Val.(striverdt.EvPayload).Val.(float64)
-        }
-        return striverdt.Some(prev+accval.Val.(striverdt.EvPayload).Val.(float64))
-    }
-    accVal := striverdt.FuncNode{[]striverdt.ValNode{
-        &striverdt.PrevValNode{striverdt.TNode{}, "cpuacc", []striverdt.Event{}},
-        &striverdt.PrevEqValNode{striverdt.TNode{}, "cpuload", []striverdt.Event{}},
-    }, acc}
-
-    cpuacc := striverdt.OutStream{"cpuacc", striverdt.SrcTickerNode{"cpuload"}, accVal}
-
-    // endof ad hoc
-	go strivercp.Start([]striverdt.InStream{inStream}, []striverdt.OutStream{cpuloadcounter, cpuacc}, writechan)*/
 }
 
 func ProcessEvent(evt dt.Event) {

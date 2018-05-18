@@ -15,6 +15,7 @@ import (
 	"github.com/elastest/elastest-monitoring-service/go_EMS/moms"
 	"github.com/elastest/elastest-monitoring-service/go_EMS/eventout"
 	"github.com/elastest/elastest-monitoring-service/go_EMS/signals"
+    striverdt "gitlab.software.imdea.org/felipe.gorostiaga/striver-go/datatypes"
 )
 
 func main() {
@@ -26,8 +27,9 @@ func main() {
     defs := []signals.SignalDefinition{
         signals.SampledSignalDefinition{"cpuload", "chan", "system.load.1"},
         signals.SampledSignalDefinition{"hostname", "chan", "beat.hostname"},
-        signals.FuncSignalDefinition{"hostnameiselastest", "hostname", signals.SignalEqualsLiteral{"host_elastest"}},
+        signals.FuncSignalDefinition{"hostnameiselastest", []striverdt.StreamName{"hostname"}, signals.SignalEqualsLiteral{"host_elastest"}},
         signals.ConditionalAvgSignalDefinition{"condavg", "cpuload", "hostnameiselastest"},
+        signals.FuncSignalDefinition{"increasing", []striverdt.StreamName{"condavg", "cpuload"}, signals.SignalsLT64{}},
     }
     moms.StartEngine(sendchan,defs)
 

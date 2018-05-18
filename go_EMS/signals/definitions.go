@@ -2,7 +2,6 @@ package signals
 
 import (
 	dt "github.com/elastest/elastest-monitoring-service/go_EMS/datatypes"
-    //"fmt"
     striverdt "gitlab.software.imdea.org/felipe.gorostiaga/striver-go/datatypes"
 )
 
@@ -14,7 +13,7 @@ type SampledSignalDefinition struct {
 
 type FuncSignalDefinition struct {
     Name striverdt.StreamName
-    SourceName striverdt.StreamName
+    SourcesNames []striverdt.StreamName
     FuncDef FunctionDefinition
 }
 
@@ -64,13 +63,23 @@ func (this ConditionalAvgSignalDefinition) Accept(visitor SignalDefVisitor) {
 // FunDefs
 
 type FunctionDefinition interface {
-    getFunction() (func(interface{}) interface{})
+    getFunction() (func(...interface{}) interface{})
 }
 
 type SignalEqualsLiteral struct {
     Literal string
 }
 
-func (def SignalEqualsLiteral) getFunction() (func(interface{}) interface{}) {
-    return func(arg interface{}) interface{} { return arg.(string) == def.Literal}
+func (def SignalEqualsLiteral) getFunction() (func(...interface{}) interface{}) {
+    return func(args...interface{}) interface{} {
+        return args[0].(string) == def.Literal
+    }
+}
+
+type SignalsLT64 struct {}
+
+func (def SignalsLT64) getFunction() (func(...interface{}) interface{}) {
+    return func(args...interface{}) interface{} {
+        return args[0].(float64) < args[1].(float64)
+    }
 }
