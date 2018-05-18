@@ -14,6 +14,7 @@ import (
 	pe "github.com/elastest/elastest-monitoring-service/go_EMS/eventscounter"
 	"github.com/elastest/elastest-monitoring-service/go_EMS/moms"
 	"github.com/elastest/elastest-monitoring-service/go_EMS/eventout"
+	"github.com/elastest/elastest-monitoring-service/go_EMS/signals"
 )
 
 func main() {
@@ -22,7 +23,11 @@ func main() {
     fmt.Println("Server served. Starting scans")
 
     sendchan := make(chan dt.Event)
-    moms.StartEngine(sendchan)
+    defs := []signals.SignalDefinition{
+        signals.SampledSignalDefinition{"cpuload", "chan", "system.load.1"},
+        signals.SampledSignalDefinition{"hostname", "chan", "beat.hostname"},
+        signals.FuncSignalDefinition{"hostnameisfeli", "hostname", signals.SignalEqualsLiteral{"felihost"}}}
+    moms.StartEngine(sendchan,defs)
 
     // Opening staticout
     staticout := os.Args[1]
