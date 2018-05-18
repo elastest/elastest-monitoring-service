@@ -26,7 +26,9 @@ func main() {
     defs := []signals.SignalDefinition{
         signals.SampledSignalDefinition{"cpuload", "chan", "system.load.1"},
         signals.SampledSignalDefinition{"hostname", "chan", "beat.hostname"},
-        signals.FuncSignalDefinition{"hostnameisfeli", "hostname", signals.SignalEqualsLiteral{"felihost"}}}
+        signals.FuncSignalDefinition{"hostnameiselastest", "hostname", signals.SignalEqualsLiteral{"host_elastest"}},
+        signals.ConditionalAvgSignalDefinition{"condavg", "cpuload", "hostnameiselastest"},
+    }
     moms.StartEngine(sendchan,defs)
 
     // Opening staticout

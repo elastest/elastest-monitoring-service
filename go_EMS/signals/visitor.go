@@ -53,3 +53,49 @@ func (visitor *SignalToStriverVisitor) visitFuncSignal(funcsignal FuncSignalDefi
 
     visitor.OutStreams = append(visitor.OutStreams, outStream)
 }
+
+func (visitor *SignalToStriverVisitor) visitConditionalAvgSignal(funcsignal ConditionalAvgSignalDefinition) {
+    condCounterName := "condcounter::"+funcsignal.Name
+    condCounterFun := func (args...striverdt.EvPayload) striverdt.EvPayload {
+        cond := args[0]
+        if !cond.IsSet || !cond.Val.(striverdt.EvPayload).Val.(bool) {
+            return striverdt.NothingPayload
+        }
+        myprev := args[1]
+        prev := 0
+        if myprev.IsSet {
+            prev = myprev.Val.(striverdt.EvPayload).Val.(int)
+        }
+        return striverdt.Some(prev+1)
+    }
+    condCounterVal := striverdt.FuncNode{[]striverdt.ValNode{
+        &striverdt.PrevEqValNode{striverdt.TNode{}, funcsignal.Condition, []striverdt.Event{}},
+        &striverdt.PrevValNode{striverdt.TNode{}, condCounterName, []striverdt.Event{}},
+    }, condCounterFun}
+    condCounterStream := striverdt.OutStream{condCounterName, striverdt.SrcTickerNode{funcsignal.SourceSignal}, condCounterVal}
+    visitor.OutStreams = append(visitor.OutStreams, condCounterStream)
+
+    condAvgFun := func (args...striverdt.EvPayload) striverdt.EvPayload {
+        cond := args[0]
+        if !cond.IsSet || !cond.Val.(striverdt.EvPayload).Val.(bool) {
+            return striverdt.NothingPayload
+        }
+        myprev := args[1]
+        cpuval := args[2].Val.(striverdt.EvPayload).Val.(float64)
+        kplusone := float64(args[3].Val.(striverdt.EvPayload).Val.(int))
+        prev := 0.0
+        if myprev.IsSet {
+            prev = myprev.Val.(striverdt.EvPayload).Val.(float64)
+        }
+        res := (prev*(kplusone-1)+cpuval)/kplusone
+        return striverdt.Some(res)
+    }
+    condAvgVal := striverdt.FuncNode{[]striverdt.ValNode{
+        &striverdt.PrevEqValNode{striverdt.TNode{}, funcsignal.Condition, []striverdt.Event{}},
+        &striverdt.PrevValNode{striverdt.TNode{}, funcsignal.Name, []striverdt.Event{}},
+        &striverdt.PrevEqValNode{striverdt.TNode{}, funcsignal.SourceSignal, []striverdt.Event{}},
+        &striverdt.PrevEqValNode{striverdt.TNode{}, condCounterName, []striverdt.Event{}},
+    }, condAvgFun}
+    condAvgStream := striverdt.OutStream{funcsignal.Name, striverdt.SrcTickerNode{funcsignal.SourceSignal}, condAvgVal}
+    visitor.OutStreams = append(visitor.OutStreams, condAvgStream)
+}

@@ -18,7 +18,7 @@ type FuncSignalDefinition struct {
     FuncDef FunctionDefinition
 }
 
-type ConditionalSignalDefinition struct {
+type ConditionalAvgSignalDefinition struct {
     Name striverdt.StreamName
     SourceSignal striverdt.StreamName
     Condition striverdt.StreamName
@@ -42,6 +42,7 @@ type SignalWriteDefinition struct {
 type SignalDefVisitor interface {
     visitSampled(SampledSignalDefinition)
     visitFuncSignal(FuncSignalDefinition)
+    visitConditionalAvgSignal(ConditionalAvgSignalDefinition)
 }
 
 type SignalDefinition interface {
@@ -54,6 +55,10 @@ func (this SampledSignalDefinition) Accept(visitor SignalDefVisitor) {
 
 func (this FuncSignalDefinition) Accept(visitor SignalDefVisitor) {
     visitor.visitFuncSignal(this)
+}
+
+func (this ConditionalAvgSignalDefinition) Accept(visitor SignalDefVisitor) {
+    visitor.visitConditionalAvgSignal(this)
 }
 
 // FunDefs
