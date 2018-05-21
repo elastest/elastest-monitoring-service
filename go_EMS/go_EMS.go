@@ -23,8 +23,8 @@ func main() {
     go internalsv.Serve()
     fmt.Println("Server served. Starting scans")
 
-    sendchan := make(chan dt.Event)
-    defs := []signals.SignalDefinition{
+    // Remove this
+    defs := []signals.SignalDefinition {
         signals.SampledSignalDefinition{"cpuload", "chan", "system.load.1"},
         signals.SampledSignalDefinition{"hostname", "chan", "beat.hostname"},
         signals.FuncSignalDefinition{"hostnameiselastest", []striverdt.StreamName{"hostname"}, signals.SignalEqualsLiteral{"host_elastest"}},
@@ -32,12 +32,11 @@ func main() {
         signals.FuncSignalDefinition{"increasing", []striverdt.StreamName{"condavg", "cpuload"}, signals.SignalsLT64{}},
     }
     moms.StartEngine(sendchan,defs)
+    // Up to here
 
-    // Opening staticout
     staticout := os.Args[1]
-    // Opening dynout
     dynout := os.Args[2]
-    go eventout.StartSender(sendchan, staticout, dynout)
+    go eventout.StartSender(staticout, dynout)
 
     pipename := "/usr/share/logstash/pipes/leftpipe"
 	file, err := os.Open(pipename)

@@ -9,7 +9,10 @@ import (
     et "github.com/elastest/elastest-monitoring-service/go_EMS/eventproc"
 )
 
-func StartSender(sendchan chan dt.Event, staticout string, dynout string) {
+var sendchan chan dt.Event
+
+func StartSender(staticout string, dynout string) {
+    sendchan := make(chan dt.Event)
     // Opening staticout
     fstatic, err := os.OpenFile(staticout, os.O_APPEND|os.O_WRONLY, 0600)
     if err != nil {
@@ -48,4 +51,8 @@ func StartSender(sendchan chan dt.Event, staticout string, dynout string) {
             fmt.Println("Recovered dyn output")
         }
     }
+}
+
+func getSendChannel() chan dt.Event {
+    return senchan
 }

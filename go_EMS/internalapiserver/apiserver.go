@@ -29,6 +29,8 @@ func (s *server) PostMoM(ctx context.Context, in *pb.MomPostRequest) (*pb.MomPos
     switch in.Momtype {
     case "tag0.1":
         return ep.DeployTaggerv01(in.Momdefinition), nil
+    case "signals0.1":
+        return ep.DeploySignals01(in.Momdefinition), nil
     }
     return &pb.MomPostReply{Deploymenterror:"Unrecognized tag "+in.Momtype, Momid:""}, nil
 }

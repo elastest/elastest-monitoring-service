@@ -11,9 +11,9 @@ import (
 
 var samplers []signals.Sampler
 
-func StartEngine(sendchan chan dt.Event, signaldefs []signals.SignalDefinition) {
+func StartEngine(signaldefs []signals.SignalDefinition) {
 	writechan := make(chan striverdt.FlowingEvent)
-    startWriter(writechan, sendchan)
+    startWriter(writechan)
 
     signaltostrivervisitor := signals.SignalToStriverVisitor{[]signals.Sampler{}, []striverdt.OutStream{}, []striverdt.InStream{}}
     for _,signaldef := range signaldefs {
@@ -31,8 +31,10 @@ func ProcessEvent(evt dt.Event) {
 }
 
 
-func startWriter(writechan chan striverdt.FlowingEvent, sendchan chan dt.Event) {
+func startWriter(writechan chan striverdt.FlowingEvent) {
     loc := time.FixedZone("fakeplace", 0)
+
+    sendchan := eventout.GetSendChannel()
 
     go func () {
         for {
