@@ -1,4 +1,4 @@
-package eventproc
+package eventtag
 
 import (
 	dt "github.com/elastest/elastest-monitoring-service/go_EMS/datatypes"

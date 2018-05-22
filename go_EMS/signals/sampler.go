@@ -9,13 +9,7 @@ import (
     "strings"
 )
 
-type Sampler struct {
-    InChannel dt.Channel
-    ValuePath dt.JSONPath
-    OutChan chan striverdt.Event
-}
-
-func (s Sampler) ProcessEvent(evt dt.Event) {
+func SamplerProcessEvent(s dt.Sampler, evt dt.Event) {
     payload := striverdt.NothingPayload
     if sets.SetIn(s.InChannel, evt.Channels) {
         payload = striverdt.Some(extractFromMap(evt.Payload, s.ValuePath))

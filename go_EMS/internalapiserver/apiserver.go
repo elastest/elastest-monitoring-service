@@ -10,6 +10,7 @@ import (
     "google.golang.org/grpc/reflection"
 	pe "github.com/elastest/elastest-monitoring-service/go_EMS/eventscounter"
 	ep "github.com/elastest/elastest-monitoring-service/go_EMS/eventproc"
+	et "github.com/elastest/elastest-monitoring-service/go_EMS/eventtag"
 )
 
 const (
@@ -28,7 +29,7 @@ func (s *server) GetHealth(ctx context.Context, in *pb.HealthRequest) (*pb.Healt
 func (s *server) PostMoM(ctx context.Context, in *pb.MomPostRequest) (*pb.MomPostReply, error) {
     switch in.Momtype {
     case "tag0.1":
-        return ep.DeployTaggerv01(in.Momdefinition), nil
+        return et.DeployTaggerv01(in.Momdefinition), nil
     case "signals0.1":
         return ep.DeploySignals01(in.Momdefinition), nil
     }

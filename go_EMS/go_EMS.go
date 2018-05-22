@@ -8,12 +8,13 @@ import (
     "bufio"
     "io"
 	dt "github.com/elastest/elastest-monitoring-service/go_EMS/datatypes"
-    et "github.com/elastest/elastest-monitoring-service/go_EMS/eventproc"
+    et "github.com/elastest/elastest-monitoring-service/go_EMS/eventtag"
     "github.com/elastest/elastest-monitoring-service/go_EMS/jsonrw"
     internalsv "github.com/elastest/elastest-monitoring-service/go_EMS/internalapiserver"
 	pe "github.com/elastest/elastest-monitoring-service/go_EMS/eventscounter"
 	"github.com/elastest/elastest-monitoring-service/go_EMS/moms"
 	"github.com/elastest/elastest-monitoring-service/go_EMS/eventout"
+	"github.com/elastest/elastest-monitoring-service/go_EMS/eventproc"
 	"github.com/elastest/elastest-monitoring-service/go_EMS/signals"
     striverdt "gitlab.software.imdea.org/felipe.gorostiaga/striver-go/datatypes"
 )
@@ -23,6 +24,10 @@ func main() {
     go internalsv.Serve()
     fmt.Println("Server served. Starting scans")
 
+    staticout := os.Args[1]
+    dynout := os.Args[2]
+    eventout.StartSender(staticout, dynout)
+
     // Remove this
     defs := []signals.SignalDefinition {
         signals.SampledSignalDefinition{"cpuload", "chan", "system.load.1"},
@@ -31,12 +36,8 @@ func main() {
         signals.ConditionalAvgSignalDefinition{"condavg", "cpuload", "hostnameiselastest"},
         signals.FuncSignalDefinition{"increasing", []striverdt.StreamName{"condavg", "cpuload"}, signals.SignalsLT64{}},
     }
-    moms.StartEngine(sendchan,defs)
+    ek := moms.StartEngine(defs)
     // Up to here
-
-    staticout := os.Args[1]
-    dynout := os.Args[2]
-    go eventout.StartSender(staticout, dynout)
 
     pipename := "/usr/share/logstash/pipes/leftpipe"
 	file, err := os.Open(pipename)
@@ -45,27 +46,35 @@ func main() {
     }
     defer file.Close()
 	for {
-		scanStdIn(file, sendchan)
+		scanStdIn(file, ek)
         fmt.Println("RELOADING " + pipename)
 	}
 	panic("leaving!")
 }
 
-func scanStdIn(file io.Reader, sendchan chan dt.Event) {
+func scanStdIn(file io.Reader, ek dt.MoMEngine01) {
 	scanner := bufio.NewScanner(file)
     var rawEvent map[string]interface{}
+    sendchan := eventout.GetSendChannel()
 	for scanner.Scan() {
+        i := pe.GetProcessedEvents()
+        if i==5 {
+            ek.Kill()
+        }
 		rawEvent = nil
 		thetextbytes := []byte(scanner.Text())
-        fmt.Println("Read event")
+        fmt.Println("Read event ",i)
 
 		if err := json.Unmarshal(thetextbytes, &rawEvent); err != nil {
 			fmt.Println("No JSON. Error: " + err.Error())
 		} else {
             var evt dt.Event = jsonrw.ReadEvent(rawEvent)
             et.TagEvent(&evt)
-            moms.ProcessEvent(evt)
+            fmt.Println("Tagged event ",i)
+            eventproc.ProcessEvent(evt)
+            fmt.Println("Processing event ",i)
             sendchan <- evt
+            fmt.Println("Processed event ",i)
 		}
         pe.IncrementProcessedEvents()
 	}

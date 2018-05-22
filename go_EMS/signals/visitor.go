@@ -2,6 +2,7 @@ package signals
 
 import (
     striverdt "gitlab.software.imdea.org/felipe.gorostiaga/striver-go/datatypes"
+	dt "github.com/elastest/elastest-monitoring-service/go_EMS/datatypes"
 )
 
 /*type SampledSignalDefinition struct {
@@ -30,7 +31,7 @@ type SignalWriteDefinition struct {
 }*/
 
 type SignalToStriverVisitor struct {
-    Samplers []Sampler
+    Samplers []dt.Sampler
     OutStreams []striverdt.OutStream
     InStreams []striverdt.InStream
 }
@@ -38,8 +39,8 @@ type SignalToStriverVisitor struct {
 
 func (visitor *SignalToStriverVisitor) visitSampled(sampledsignal SampledSignalDefinition) {
 	signalchan := make(chan striverdt.Event)
-    visitor.Samplers = append(visitor.Samplers, Sampler{sampledsignal.InChannel, sampledsignal.ValuePath, signalchan})
-	inStream := striverdt.InStream{striverdt.StreamName(sampledsignal.Name), &striverdt.InFromChannel{signalchan, nil, 0}}
+    visitor.Samplers = append(visitor.Samplers, dt.Sampler{sampledsignal.InChannel, sampledsignal.ValuePath, signalchan})
+	inStream := striverdt.InStream{striverdt.StreamName(sampledsignal.Name), &striverdt.InFromChannel{signalchan, nil, 0, false}}
     visitor.InStreams = append(visitor.InStreams, inStream)
 }
 

@@ -8,8 +8,10 @@ import (
     "encoding/json"
     "fmt"
 	"github.com/elastest/elastest-monitoring-service/go_EMS/signals"
-	"github.com/elastest/elastest-monitoring-service/go_EMS/eventout"
+	"github.com/elastest/elastest-monitoring-service/go_EMS/moms"
 )
+
+var momengines map[int]dt.MoMEngine01 = make(map[int]dt.MoMEngine01)
 
 func DeploySignals01(signalsDef string) *pb.MomPostReply {
     fmt.Println("Deploying signal defs: ", signalsDef)
@@ -33,8 +35,27 @@ func DeploySignals01(signalsDef string) *pb.MomPostReply {
             return &pb.MomPostReply{Deploymenterror:"Unrecognized signal type", Momid:""}
         }
     }
-    moms.StartEngine(sendchan,defs)
     momid := rand.Int()
+    momengines[momid] = moms.StartEngine(realdefs)
     fmt.Println("with momid: ", momid)
     return &pb.MomPostReply{Deploymenterror:"", Momid:strconv.Itoa(momid)}
 }
+
+func UndeploySignals01(momid int) *pb.MomPostReply {
+    if ek,ok := momengines[momid]; ok {
+        delete(momengines, momid)
+        ek.Kill()
+        return &pb.MomPostReply{Deploymenterror:"", Momid:strconv.Itoa(momid)} // TODO change
+    }
+    return &pb.MomPostReply{Deploymenterror:"No such id", Momid:"momid"} // change
+}
+
+func ProcessEvent(evt dt.Event) {
+    for _,engine := range momengines {
+        samplers := engine.Samplers
+        for _,sampler := range samplers {
+            signals.SamplerProcessEvent(sampler, evt)
+        }
+    }
+}
+
