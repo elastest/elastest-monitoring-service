@@ -8,7 +8,6 @@ import (
     "github.com/elastest/elastest-monitoring-service/go_EMS/signals"
     "github.com/elastest/elastest-monitoring-service/go_EMS/eventout"
 	"time"
-    "fmt"
 )
 
 func StartEngine(signaldefs []signals.SignalDefinition) dt.MoMEngine01 {
@@ -23,7 +22,7 @@ func StartEngine(signaldefs []signals.SignalDefinition) dt.MoMEngine01 {
     samplers := signaltostrivervisitor.Samplers
     kchan := make (chan bool)
     go strivercp.Start(signaltostrivervisitor.InStreams, signaltostrivervisitor.OutStreams, writechan, kchan)
-    return dt.MoMEngine01{samplers, writechan, kchan}
+    return dt.MoMEngine01{samplers, kchan}
 }
 
 func startWriter(writechan chan striverdt.FlowingEvent) {
@@ -43,6 +42,5 @@ func startWriter(writechan chan striverdt.FlowingEvent) {
             }
             sendchan <- theEv
         }
-        fmt.Println("KILLING WRITER")
     }()
 }

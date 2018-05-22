@@ -36,15 +36,20 @@ func DeploySignals01(signalsDef string) *pb.MomPostReply {
         }
     }
     momid := rand.Int()
-    momengines[momid] = moms.StartEngine(realdefs)
+    DeployRealSignals01(realdefs, momid)
     fmt.Println("with momid: ", momid)
     return &pb.MomPostReply{Deploymenterror:"", Momid:strconv.Itoa(momid)}
 }
 
+func DeployRealSignals01(signaldefs []signals.SignalDefinition, momid int) {
+    // TODO make this method private in the future
+    momengines[momid] = moms.StartEngine(signaldefs)
+}
+
 func UndeploySignals01(momid int) *pb.MomPostReply {
-    if ek,ok := momengines[momid]; ok {
+    if engine,ok := momengines[momid]; ok {
         delete(momengines, momid)
-        ek.Kill()
+        engine.Kill()
         return &pb.MomPostReply{Deploymenterror:"", Momid:strconv.Itoa(momid)} // TODO change
     }
     return &pb.MomPostReply{Deploymenterror:"No such id", Momid:"momid"} // change

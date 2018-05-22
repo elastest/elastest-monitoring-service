@@ -12,7 +12,6 @@ import (
     "github.com/elastest/elastest-monitoring-service/go_EMS/jsonrw"
     internalsv "github.com/elastest/elastest-monitoring-service/go_EMS/internalapiserver"
 	pe "github.com/elastest/elastest-monitoring-service/go_EMS/eventscounter"
-	"github.com/elastest/elastest-monitoring-service/go_EMS/moms"
 	"github.com/elastest/elastest-monitoring-service/go_EMS/eventout"
 	"github.com/elastest/elastest-monitoring-service/go_EMS/eventproc"
 	"github.com/elastest/elastest-monitoring-service/go_EMS/signals"
@@ -36,7 +35,7 @@ func main() {
         signals.ConditionalAvgSignalDefinition{"condavg", "cpuload", "hostnameiselastest"},
         signals.FuncSignalDefinition{"increasing", []striverdt.StreamName{"condavg", "cpuload"}, signals.SignalsLT64{}},
     }
-    ek := moms.StartEngine(defs)
+    eventproc.DeployRealSignals01(defs,444)
     // Up to here
 
     pipename := "/usr/share/logstash/pipes/leftpipe"
@@ -46,21 +45,23 @@ func main() {
     }
     defer file.Close()
 	for {
-		scanStdIn(file, ek)
+		scanStdIn(file)
         fmt.Println("RELOADING " + pipename)
 	}
 	panic("leaving!")
 }
 
-func scanStdIn(file io.Reader, ek dt.MoMEngine01) {
+func scanStdIn(file io.Reader) {
 	scanner := bufio.NewScanner(file)
     var rawEvent map[string]interface{}
     sendchan := eventout.GetSendChannel()
 	for scanner.Scan() {
+        // Remove this
         i := pe.GetProcessedEvents()
         if i==5 {
-            ek.Kill()
+            eventproc.UndeploySignals01(444)
         }
+        // Up to here
 		rawEvent = nil
 		thetextbytes := []byte(scanner.Text())
         fmt.Println("Read event ",i)
@@ -70,11 +71,8 @@ func scanStdIn(file io.Reader, ek dt.MoMEngine01) {
 		} else {
             var evt dt.Event = jsonrw.ReadEvent(rawEvent)
             et.TagEvent(&evt)
-            fmt.Println("Tagged event ",i)
             eventproc.ProcessEvent(evt)
-            fmt.Println("Processing event ",i)
             sendchan <- evt
-            fmt.Println("Processed event ",i)
 		}
         pe.IncrementProcessedEvents()
 	}

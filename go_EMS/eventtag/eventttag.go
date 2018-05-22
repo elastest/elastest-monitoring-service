@@ -35,13 +35,19 @@ func DeployTaggerv01(taggerDef string) *pb.MomPostReply {
         return &pb.MomPostReply{Deploymenterror:err.Error(), Momid:""}
     }
     momid := rand.Int()
-    fmt.Println("with momid: ", momid)
-    tagConditions[momid] = dt.TagCondition{
+    tagCond := dt.TagCondition{
         sets.SetFromList(td.InChannels),
         tagNode.Eval,
         dt.Channel(td.OutChannel),
     }
+    DeployRealSamplerv01(tagCond, momid)
+    fmt.Println("with momid: ", momid)
     return &pb.MomPostReply{Deploymenterror:"", Momid:strconv.Itoa(momid)}
+}
+
+func DeployRealSamplerv01(tagcondition dt.TagCondition, momid int) {
+    // TODO make this method private in the future
+    tagConditions[momid] = tagcondition
 }
 
 func TagEvent(ev *dt.Event) {
