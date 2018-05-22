@@ -1,0 +1,132 @@
+{
+package session
+
+import(
+//	"stamp"
+)
+
+}
+
+Input  <- _? v:Version d:(Declaration*) EOF {
+       // returns a []interface{} where all elements are Filter,Session,Stream or Trigger
+       return d,nil
+       }
+
+
+Version <- VERSION ver:VersionNum _?  { return ver,nil //TODO, check for version number
+}
+
+VersionNum <- ([0-9'.']+) {
+  	   return Version{string(c.text)},nil
+}
+
+VERSION <- "version" _? {
+	  return Keyword{string(c.text)},nil
+}
+
+
+
+Declaration <- f:Filter { return f,nil }
+	    / s:Session { return s,nil }
+	    / s:Stream  { return s,nil }
+	    / t:Trigger { return t,nil }
+
+
+SESSION <- "session" _?
+BEGIN   <- "begin" _?
+END     <- "end" _?  
+
+Session <- SESSION n:Name ":=" _? "(" _? BEGIN "=>" _? beg:Predicate "," _?
+                                         END   "=>" _? end:Predicate ")" _? {
+		return newSessionDeclaration(n,beg,end),nil
+	}
+
+Stream <- "stream" _? t:Type n:Name ":=" _? e:StreamExpr {
+       return newStreamDeclaration(t,n,e),nil
+}
+
+Type <- "int" _?     { return Int, nil  }
+     /  "bool" _?    { return Bool, nil }
+     /  "string" _?  { return String,nil}
+
+StreamExpr <- b:Builtin "(" _? s:Name "within" w:Name _? ")" {
+       	  return newAggregatorExpr(b,s,w), nil
+       } / "if" _ p:Predicate "then" _ e:PathExpr {
+	  return newIfExpr(p,e),nil
+       }
+       
+Builtin <- "avg" _? { return "avg",nil }
+	/ "count" _? { return "count",nil }
+
+PathExpr <- "e.get(" _? p:JSONPath _? ")" _? {
+      return newIntPathExpr(p),nil		
+}
+
+Trigger <- "trigger" _ p:Predicate "do" _ a:Action _? {
+	return newTrigger(p,a),nil
+}
+
+Action <- "emit" _ n:Name "on" _ t:Tag _? {
+       return newEmitAction(n,t),nil
+}
+
+Name <- n:Identifier _? { return n.(Identifier),nil }
+
+Filters  <- fs:Filter+ {
+	 return newFiltersNode(fs),nil
+	 }
+
+Filter <- "when" _ p:Predicate "do" _ t:Tag _? {
+       return Filter{p.(Predicate),t.(Tag).Tag},nil
+       }
+
+Predicate <- a:Ands    b:(OrExpr*)  { return newOrPredicate(a,b),nil }
+Ands      <- a:NegExpr b:(AndExpr*) { return newAndPredicate(a,b),nil }
+AndExpr   <- "/\\" _? p:NegExpr      { return p,nil }
+OrExpr    <- "\\/" _? p:Ands         { return p,nil }
+NegExpr   <- "~" _? p:NegExpr        { return newNotPredicate(p),nil }
+	 /  p:Primary             { return p,nil }
+Primary   <- '(' _? p:Predicate ')' _?  { return p,nil }
+         / a:AtomicPredicate	 { return a,nil }
+AtomicPredicate <- p:PathPredicate _? { return p,nil }
+	  / p:StrPredicate   _?  { return p,nil }
+	  / p:HasTagPredicate _? { return p,nil }
+	  / p:"true" _? { return True,nil }
+	  / p:"false" _? { return False,nil }
+PathPredicate <- "e.path(" _? p:JSONPath _? ")" _? {
+	      return newPathPredicate(p),nil		
+}
+
+StrPredicate <- "e.strcmp(" _? p:JSONPath _? "," _? s:QuotedString _?")" _? {
+	     return newStrPredicate(p,s),nil
+}
+HasTagPredicate <- "e.tag(" _? t:Tag _? ")" _? {
+		return newTagPredicate(t),nil
+}
+
+QuotedString <- '"' String '"' {
+	     return newQuotedString(string(c.text)),nil
+}
+	
+JSONPath <- ([a-zA-Z0-9]+('.'[a-zA-Z0-9]+)*) {
+	 return newPathName(string(c.text)),nil
+	 }	 
+
+Identifier <- ([a-zA-Z][a-zA-Z0-9]*) {
+	   return Identifier{string(c.text)}, nil
+	   }
+
+String   <- ([a-zA-Z0-9'#''_''-''@']+) 
+
+Alphanum <- ([a-zA-Z0-9]+) { return Alphanum{string(c.text)},nil }
+
+Tag  "tag"      <- ( '#'[a-zA-Z]('-''_'[a-zA-Z0-9])* )    { return Tag{string(c.text)},nil }
+
+_ "whitespace" <- [ \t\n\r]+
+
+//EOL     <- _? Comment? ("\r\n" / "\n\r" / "\r" / "\n" / EOF)
+EOL     <- ("\r\n" / "\n\r" / "\r" / "\n")
+
+Comment <- "//" [^\r\n]*
+
+EOF     <- !.
