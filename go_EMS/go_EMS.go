@@ -28,6 +28,15 @@ func main() {
     eventout.StartSender(staticout, dynout)
 
     // Remove this
+
+    tagdef := `version 1.0
+    when true do #EDS
+    when e.path(sender) /\ e.path(sender) do #TJob
+    when e.path(sender) /\ e.strcmp(sender,"tjob") do #TJob
+    when e.tag(#TJob) do #TORM`
+    et.DeployTaggerv01(tagdef)
+
+
     defs := []signals.SignalDefinition {
         signals.SampledSignalDefinition{"cpuload", "chan", "system.load.1"},
         signals.SampledSignalDefinition{"hostname", "chan", "beat.hostname"},

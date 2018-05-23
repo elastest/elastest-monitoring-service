@@ -44,7 +44,7 @@ type StrPredicate struct {
 }
 
 type TagPredicate struct {
-	Tag string
+	Tag dt.Channel
 }
 
 type Predicate interface {
@@ -99,7 +99,7 @@ func (p StrPredicate) Eval(e dt.Event) bool {
 	return true // FIXME
 }
 func (p TagPredicate) Eval(e dt.Event) bool {
-    return sets.SetIn(dt.Channel(p.Tag), e.Channels)
+    return sets.SetIn(p.Tag, e.Channels)
 }
 func (p TruePredicate) Eval(e dt.Event) bool {
 	return true
@@ -161,7 +161,7 @@ func newTagPredicate(t interface{}) (TagPredicate) {
 }
 
 type Tag struct {
-	Tag string
+	Tag dt.Channel
 }
 
 

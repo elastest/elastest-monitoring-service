@@ -2,6 +2,7 @@
 package stamp
 
 import(
+    dt "github.com/elastest/elastest-monitoring-service/go_EMS/datatypes"
 )
 
 }
@@ -70,7 +71,7 @@ Identifier <- ([a-zA-Z][a-zA-Z0-9]*) {
 String   <- ([a-zA-Z0-9'#''_''-''@']+)
 Alphanum <- ([a-zA-Z0-9]+) { return Alphanum{string(c.text)},nil }
 
-Tag  "tag"      <- ( '#' [a-zA-Z] [a-zA-Z0-9]* )    { return Tag{string(c.text)},nil }
+Tag  "tag"      <- ( '#' [a-zA-Z] [a-zA-Z0-9]* )    { return Tag{dt.Channel(c.text)},nil }
 
 _ "whitespace" <- [ \t\n\r]+
 

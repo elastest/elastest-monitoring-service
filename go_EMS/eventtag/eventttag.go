@@ -4,86 +4,56 @@ import (
 	dt "github.com/elastest/elastest-monitoring-service/go_EMS/datatypes"
 	sets "github.com/elastest/elastest-monitoring-service/go_EMS/setoperators"
     pb "github.com/elastest/elastest-monitoring-service/protobuf"
+    "github.com/elastest/elastest-monitoring-service/go_EMS/parsers/stamp"
     "math/rand"
     "strconv"
-    "encoding/json"
     "fmt"
+    "strings"
 )
 
-var tagConditions map[int]dt.TagCondition = make(map[int]dt.TagCondition)
+var tagMonitors map[int]stamp.Filters = make(map[int]stamp.Filters)
 
 func DeployTaggerv01(taggerDef string) *pb.MomPostReply {
     fmt.Println("Deploying def: ", taggerDef)
-    var td dt.TaggerDefinition
-    if err := json.Unmarshal([]byte(taggerDef), &td); err != nil {
-        fmt.Println("It was an invalid definition because the JSON was malformed: ", err.Error())
-        return &pb.MomPostReply{Deploymenterror:err.Error(), Momid:""}
-    }
-    if !validTD(td) {
-        fmt.Println("Missing or empty filter or out channel")
-        return &pb.MomPostReply{Deploymenterror:"Missing or empty filter or out channel", Momid:""}
-    }
-    var thejson map[string]interface{}
-    filterbytes := []byte(td.Filter)
-    if err := json.Unmarshal(filterbytes, &thejson); err != nil {
-        errtext := "Filter is not a JSON. Error: "+ err.Error()
-        return &pb.MomPostReply{Deploymenterror:errtext, Momid:""}
-    }
-    tagNode, err := getNodeFromFilter(thejson)
+    reader := strings.NewReader(taggerDef)
+    monitorif, err := stamp.ParseReader("Tagger", reader)
     if err != nil {
-        fmt.Println("Error in filter definition: ", err.Error())
+        fmt.Println("deployment error: ", err.Error())
         return &pb.MomPostReply{Deploymenterror:err.Error(), Momid:""}
     }
+    monitor := monitorif.(stamp.Filters)
     momid := rand.Int()
-    tagCond := dt.TagCondition{
-        sets.SetFromList(td.InChannels),
-        tagNode.Eval,
-        dt.Channel(td.OutChannel),
-    }
-    DeployRealSamplerv01(tagCond, momid)
+    DeployRealSamplerv01(monitor, momid)
     fmt.Println("with momid: ", momid)
     return &pb.MomPostReply{Deploymenterror:"", Momid:strconv.Itoa(momid)}
 }
 
-func DeployRealSamplerv01(tagcondition dt.TagCondition, momid int) {
+func DeployRealSamplerv01(monitor stamp.Filters, momid int) {
     // TODO make this method private in the future
-    tagConditions[momid] = tagcondition
+    tagMonitors[momid] = monitor
 }
 
 func TagEvent(ev *dt.Event) {
-    var checkConditions []dt.TagCondition
-    // filter out unsatisfiable conditions
-    for _,tc := range tagConditions {
-        if tc.EventCondition(ev.Payload) {
-            checkConditions = append(checkConditions, tc)
+    checkDefs := []stamp.Filter{}
+    for _,monitor := range tagMonitors {
+        for _,def := range monitor.Defs {
+            checkDefs = append(checkDefs, def)
         }
     }
-    checkChans := (*ev).Channels
-
     dirty:=true
+
     for (dirty) {
         dirty=false
-        newconds := checkConditions[:0]
-        var nextCheckChans dt.ChannelSet = make(dt.ChannelSet)
-        for _,cond := range checkConditions {
-            if !(sets.SetIn(cond.OutChannel, checkChans)) { // if it's not tagged yet
-                cond.InChannels = sets.SetMinus(cond.InChannels, checkChans)
-                if (sets.SetIsEmpty(cond.InChannels)) { // triggered
-                    dirty=true
-                    nextCheckChans = sets.SetAdd(nextCheckChans, cond.OutChannel)
-                    checkChans = sets.SetAdd(checkChans, cond.OutChannel)
-                } else {
-                    newconds = append(newconds, cond) // check on next iteration
-                }
+
+		tmp := checkDefs[:0]
+        for _,def := range checkDefs {
+            if def.Pred.Eval(*ev) {
+                dirty = true
+                (*ev).Channels = sets.SetAdd(ev.Channels, def.Tag.Tag)
+            } else if !sets.SetIn(def.Tag.Tag, ev.Channels) {
+                tmp = append(tmp, def)
             }
         }
-        (*ev).Channels = sets.SetUnion((*ev).Channels, nextCheckChans) // add new triggered channels
-        checkChans = nextCheckChans
-        checkConditions = newconds
+		checkDefs = tmp
     }
-
-}
-
-func validTD(td dt.TaggerDefinition) bool {
-    return (td.Filter != "" && td.OutChannel != "")
 }

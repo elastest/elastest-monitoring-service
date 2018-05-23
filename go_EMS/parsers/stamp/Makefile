@@ -10,7 +10,7 @@ parser:
 
 build:
 #	go build stamp.go
-	go build && go install
+	go build #&& go install
 
 clean:
 	rm -f ${OUTPUT}
