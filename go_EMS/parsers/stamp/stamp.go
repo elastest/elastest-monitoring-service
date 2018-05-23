@@ -1,11 +1,9 @@
 package stamp
 
 import(
-//	"errors"
 	"fmt"
-//	"log"
-	//	"strconv"
-	"strings"
+    dt "github.com/elastest/elastest-monitoring-service/go_EMS/datatypes"
+    sets "github.com/elastest/elastest-monitoring-service/go_EMS/setoperators"
 )
 
 var (
@@ -49,14 +47,9 @@ type TagPredicate struct {
 	Tag string
 }
 
-type Event struct {
-	Payload string // changeme
-	Stamp []Tag
-}
-
 type Predicate interface {
 	Sprint() string
-	Eval(e Event) bool
+	Eval(e dt.Event) bool
 }
 
 //
@@ -88,35 +81,30 @@ func (p FalsePredicate) Sprint() string {
 }
 
 //
-// eval(Event e) bool
+// eval(dt.Event e) bool
 //
-func (p AndPredicate) Eval(e Event) bool {
+func (p AndPredicate) Eval(e dt.Event) bool {
 	return p.Left.Eval(e) && p.Right.Eval(e)
 }
-func (p OrPredicate) Eval(e Event) bool {
+func (p OrPredicate) Eval(e dt.Event) bool {
 	return p.Left.Eval(e) || p.Right.Eval(e)
 }
-func (p NotPredicate) Eval(e Event) bool {
+func (p NotPredicate) Eval(e dt.Event) bool {
 	return !p.Inner.Eval(e)
 }
-func (p PathPredicate) Eval(e Event) bool {
+func (p PathPredicate) Eval(e dt.Event) bool {
 	return true // FIXME
 }
-func (p StrPredicate) Eval(e Event) bool {
+func (p StrPredicate) Eval(e dt.Event) bool {
 	return true // FIXME
 }
-func (p TagPredicate) Eval(e Event) bool {
-	for _,v := range e.Stamp {
-		if strings.Compare(v.Tag,p.Tag)==0 {
-			return true
-		}
-	}
-	return false
+func (p TagPredicate) Eval(e dt.Event) bool {
+    return sets.SetIn(dt.Channel(p.Tag), e.Channels)
 }
-func (p TruePredicate) Eval(e Event) bool {
+func (p TruePredicate) Eval(e dt.Event) bool {
 	return true
 }
-func (p FalsePredicate) Eval(e Event) bool {
+func (p FalsePredicate) Eval(e dt.Event) bool {
 	return false
 }
 
@@ -202,7 +190,7 @@ type PathName struct {
 type QuotedString struct {
 	Val string
 }
-	
+
 type Alphanum struct {
 	Val string
 }
