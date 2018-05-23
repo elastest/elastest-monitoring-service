@@ -31,8 +31,8 @@ func main() {
 
     tagdef := `version 1.0
     when true do #EDS
-    when e.path(sender) /\ e.path(sender) do #TJob
-    when e.path(sender) /\ e.strcmp(sender,"tjob") do #TJob
+    when e.path(beat.version) do #TJob
+    when e.strcmp(beat.version,"5.4.0") do #GoodVersion
     when e.tag(#TJob) do #TORM`
     et.DeployTaggerv01(tagdef)
 

@@ -68,7 +68,7 @@ Identifier <- ([a-zA-Z][a-zA-Z0-9]*) {
 	   return Identifier{string(c.text)}, nil
 	   }
 
-String   <- ([a-zA-Z0-9'#''_''-''@']+)
+String   <- ([a-zA-Z0-9'#''_''-''@''.']+)
 Alphanum <- ([a-zA-Z0-9]+) { return Alphanum{string(c.text)},nil }
 
 Tag  "tag"      <- ( '#' [a-zA-Z] [a-zA-Z0-9]* )    { return Tag{dt.Channel(c.text)},nil }

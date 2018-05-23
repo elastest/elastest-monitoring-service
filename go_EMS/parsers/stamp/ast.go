@@ -4,6 +4,7 @@ import(
 	"fmt"
     dt "github.com/elastest/elastest-monitoring-service/go_EMS/datatypes"
     sets "github.com/elastest/elastest-monitoring-service/go_EMS/setoperators"
+    "github.com/elastest/elastest-monitoring-service/go_EMS/jsonrw"
 )
 
 var (
@@ -93,10 +94,16 @@ func (p NotPredicate) Eval(e dt.Event) bool {
 	return !p.Inner.Eval(e)
 }
 func (p PathPredicate) Eval(e dt.Event) bool {
-	return true // FIXME
+    _,err := jsonrw.ExtractFromMap(e.Payload, dt.JSONPath(p.Path))
+	return err == nil
 }
 func (p StrPredicate) Eval(e dt.Event) bool {
-	return true // FIXME
+    strif,err := jsonrw.ExtractFromMap(e.Payload, dt.JSONPath(p.Path))
+    if err != nil {
+        return false
+    }
+    fmt.Println("Comparing",strif, "with", p.Expected)
+    return strif.(string) == p.Expected
 }
 func (p TagPredicate) Eval(e dt.Event) bool {
     return sets.SetIn(p.Tag, e.Channels)
