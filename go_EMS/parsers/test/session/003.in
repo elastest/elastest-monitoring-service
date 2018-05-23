@@ -1,0 +1,22 @@
+version 1.1
+
+pred  high_begin  := e.path("msg") /\ e.strcmp("msg","BEGIN HIGH")
+pred  high_end    := e.path("msg") /\ e.strcmp("msg","END HIGH")
+pred  low_begin   := e.path("msg") /\ e.strcmp("msg","BEGIN LOW")
+pred  low_end     := e.path("msg") /\ e.strcmp("msg","END LOW")
+
+when e.strcmp("from","SuT") /\ e.strcmp("kind","netstat") /\ e.path("network.load") do #SuT-Net
+
+session fst := [ high_begin, high_end ]
+session snd := [ low_begin,  low_end  ]
+
+stream int load      := if e.tag(#SuT-Net) then e.get("network.load")
+stream int high_load := avg(load within fst)
+stream int low_load  := avg(load within snd)
+stream bool outcome  := low_end /\ low_load  < (high_load * 0.7)
+
+stream bool end_of_test := e.tag(#TJob) /\ e.strcmp("msg","END TEST")
+
+trigger end_of_test emit outcome
+
+ 

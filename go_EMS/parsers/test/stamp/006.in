@@ -1,0 +1,9 @@
+version 1.0
+
+pred p := e.path(sender) /\ e.strcmp(sender,"tjob") \/ true /\ false
+when p  do #TJob
+when e.tag(#TJob) do #TORM
+when true do #EDS
+
+
+

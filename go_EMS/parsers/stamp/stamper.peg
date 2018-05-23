@@ -1,0 +1,82 @@
+{
+package stamp
+
+import(
+)
+
+}
+
+Input  <- v:Version s:Filters EOF {
+       return s,nil
+       }
+
+Version <- _? "version" _ ver:VersionNum _?  {
+	return ver,nil
+	}
+
+VersionNum <- ([0-9'.']+) {
+  	   return Version{string(c.text)},nil
+}
+
+kwVersion <- "version" {
+	  return Keyword{string(c.text)},nil
+	  }
+
+Filters  <- fs:Filter+ {
+	 return newFiltersNode(fs),nil
+	 }
+
+Filter <- "when" _? p:Predicate "do" _ t:Tag _? {
+       return Filter{p.(Predicate),t.(Tag)},nil
+       }
+
+
+Predicate <- a:Ands    b:(OrExpr*)  { return newOrPredicate(a,b),nil }
+Ands      <- a:NegExpr b:(AndExpr*) { return newAndPredicate(a,b),nil }
+AndExpr   <- "/\\" _? p:NegExpr      { return p,nil }
+OrExpr    <- "\\/" _? p:Ands         { return p,nil }
+NegExpr   <- "~" _? p:NegExpr        { return newNotPredicate(p),nil }
+	 /  p:Primary             { return p,nil }
+Primary   <- '(' _? p:Predicate ')' _?  { return p,nil }
+         / a:AtomicPredicate	 { return a,nil }
+AtomicPredicate <- p:PathPredicate _? { return p,nil }
+	  / p:StrPredicate   _?  { return p,nil }
+	  / p:HasTagPredicate _? { return p,nil }
+	  / p:"true" _? { return True,nil }
+	  / p:"false" _? { return False,nil }
+PathPredicate <- "e.path(" _? p:JSONPath _? ")" _? {
+	      return newPathPredicate(p),nil		
+}
+
+StrPredicate <- "e.strcmp(" _? p:JSONPath _? "," _? s:QuotedString _?")" _? {
+	     return newStrPredicate(p,s),nil
+}
+HasTagPredicate <- "e.tag(" _? t:Tag _? ")" _? {
+		return newTagPredicate(t),nil
+}
+
+QuotedString <- '"' String '"' {
+	     return newQuotedString(string(c.text)),nil
+}
+	
+JSONPath <- ([a-zA-Z0-9]+('.'[a-zA-Z0-9]+)*) {
+	 return newPathName(string(c.text)),nil
+	 }	 
+
+Identifier <- ([a-zA-Z][a-zA-Z0-9]*) {
+	   return Identifier{string(c.text)}, nil
+	   }
+
+String   <- ([a-zA-Z0-9'#''_''-''@']+)
+Alphanum <- ([a-zA-Z0-9]+) { return Alphanum{string(c.text)},nil }
+
+Tag  "tag"      <- ( '#' [a-zA-Z] [a-zA-Z0-9]* )    { return Tag{string(c.text)},nil }
+
+_ "whitespace" <- [ \t\n\r]+
+
+//EOL     <- _? Comment? ("\r\n" / "\n\r" / "\r" / "\n" / EOF)
+EOL     <- ("\r\n" / "\n\r" / "\r" / "\n")
+
+Comment <- "//" [^\r\n]*
+
+EOF     <- !.
