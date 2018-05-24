@@ -12,11 +12,11 @@ import (
 	graceful "github.com/tylerb/graceful"
 
 	"../restapi/operations"
-	"../restapi/operations/announcements"
 	"../restapi/operations/flush"
 	"../restapi/operations/health"
 	"../restapi/operations/monitoring_machine"
 	"../restapi/operations/publishers"
+	"../restapi/operations/stamper"
 	"../restapi/operations/subscribers"
 	"../implementation"
 )
@@ -48,11 +48,17 @@ func configureAPI(api *operations.MonitoringAsAServiceAPI) http.Handler {
 	api.MonitoringMachineDeleteMoMHandler = monitoring_machine.DeleteMoMHandlerFunc(func(params monitoring_machine.DeleteMoMParams) middleware.Responder {
 		return middleware.NotImplemented("operation monitoring_machine.DeleteMoM has not yet been implemented")
 	})
+	api.StamperDeleteStamperHandler = stamper.DeleteStamperHandlerFunc(func(params stamper.DeleteStamperParams) middleware.Responder {
+		return middleware.NotImplemented("operation stamper.DeleteStamper has not yet been implemented")
+	})
 	api.FlushFlushHandler = flush.FlushHandlerFunc(func(params flush.FlushParams) middleware.Responder {
 		return middleware.NotImplemented("operation flush.Flush has not yet been implemented")
 	})
 	api.MonitoringMachineGetDeployedMoMsHandler = monitoring_machine.GetDeployedMoMsHandlerFunc(func(params monitoring_machine.GetDeployedMoMsParams) middleware.Responder {
 		return middleware.NotImplemented("operation monitoring_machine.GetDeployedMoMs has not yet been implemented")
+	})
+	api.StamperGetDeployedStampersHandler = stamper.GetDeployedStampersHandlerFunc(func(params stamper.GetDeployedStampersParams) middleware.Responder {
+		return middleware.NotImplemented("operation stamper.GetDeployedStampers has not yet been implemented")
 	})
 	api.HealthGetEnvironmentHandler = health.GetEnvironmentHandlerFunc(func(params health.GetEnvironmentParams) middleware.Responder {
 		return implementation.GetEnvironment()
@@ -63,14 +69,17 @@ func configureAPI(api *operations.MonitoringAsAServiceAPI) http.Handler {
 	api.MonitoringMachineGetMoMByIDHandler = monitoring_machine.GetMoMByIDHandlerFunc(func(params monitoring_machine.GetMoMByIDParams) middleware.Responder {
 		return middleware.NotImplemented("operation monitoring_machine.GetMoMByID has not yet been implemented")
 	})
+	api.StamperGetStamperByIDHandler = stamper.GetStamperByIDHandlerFunc(func(params stamper.GetStamperByIDParams) middleware.Responder {
+		return middleware.NotImplemented("operation stamper.GetStamperByID has not yet been implemented")
+	})
 	api.MonitoringMachinePostMoMHandler = monitoring_machine.PostMoMHandlerFunc(func(params monitoring_machine.PostMoMParams) middleware.Responder {
 		return implementation.PostMOM(params)
 	})
+	api.StamperPostStamperHandler = stamper.PostStamperHandlerFunc(func(params stamper.PostStamperParams) middleware.Responder {
+		return middleware.NotImplemented("operation stamper.PostStamper has not yet been implemented")
+	})
 	api.PublishersPublishEventsHandler = publishers.PublishEventsHandlerFunc(func(params publishers.PublishEventsParams) middleware.Responder {
 		return middleware.NotImplemented("operation publishers.PublishEvents has not yet been implemented")
-	})
-	api.AnnouncementsRegisterHandler = announcements.RegisterHandlerFunc(func(params announcements.RegisterParams) middleware.Responder {
-		return middleware.NotImplemented("operation announcements.Register has not yet been implemented")
 	})
 	api.SubscribersSubscribeElastestEndpointsHandler = subscribers.SubscribeElastestEndpointsHandlerFunc(func(params subscribers.SubscribeElastestEndpointsParams) middleware.Responder {
 		return implementation.SubscribeElastestEndpoint(params)
@@ -81,14 +90,14 @@ func configureAPI(api *operations.MonitoringAsAServiceAPI) http.Handler {
 	api.SubscribersSubscribeRabbitMQHandler = subscribers.SubscribeRabbitMQHandlerFunc(func(params subscribers.SubscribeRabbitMQParams) middleware.Responder {
 		return implementation.SubscribeRMQ(params)
 	})
-	api.AnnouncementsUnregisterHandler = announcements.UnregisterHandlerFunc(func(params announcements.UnregisterParams) middleware.Responder {
-		return middleware.NotImplemented("operation announcements.Unregister has not yet been implemented")
-	})
 	api.SubscribersUnsubscribeHandler = subscribers.UnsubscribeHandlerFunc(func(params subscribers.UnsubscribeParams) middleware.Responder {
         return implementation.UnsubscribeHandler(params)
 	})
 	api.MonitoringMachineUpdateMoMHandler = monitoring_machine.UpdateMoMHandlerFunc(func(params monitoring_machine.UpdateMoMParams) middleware.Responder {
 		return middleware.NotImplemented("operation monitoring_machine.UpdateMoM has not yet been implemented")
+	})
+	api.StamperUpdateStamperHandler = stamper.UpdateStamperHandlerFunc(func(params stamper.UpdateStamperParams) middleware.Responder {
+		return middleware.NotImplemented("operation stamper.UpdateStamper has not yet been implemented")
 	})
 
 	api.ServerShutdown = func() {}
