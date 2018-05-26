@@ -4,4 +4,83 @@ when e.tag(#TJob) do #TORM
 when true do #EDS
 
 
+stream bool finished_low := ...
+
+stream bool this_event_is_P := P
+stream bool Q := e.has(...) /\ e.strcmp(...,...) 
+
+stream bool finished_high := Previously(Q)
+
+stream bool finished_high := (this_Event_is P)
+
+
+stream bool outcome := finished_high /\ finished_low /\ ( avg_low < 0.7 * avh_high )
+
+
+
+
+
+
+
+
+//
+
+session high   := [ high_begin , high_end ]
+session before := [ high_end , low_begin ]
+
+
+
+
+stream bool outcome := ("values are ok")
+
+trigger (high'error) emit high to #Tjob,#EDS
+
+
+EventPredicates
+
+Predicates
+
+stream bool bar := e.strcmp(message,"bar")
+stream bool urg := e.strcmp(msg_type,"urgent")
+
+stream bool foo := bar /\ urg
+
+trigger fooemit
+
+//
+// STAMPER 
+when e.strcmp(sender,"TJob") do #InTJob
+when e.strcmp(sender,"Tjob") /\ e.path(network.packets) do #SutNet
+
+// MONITOR
+pred begin_high := e.strcmp(msg,"BEGIN HIGH") /\ e.tag(#InTJob)
+pred end_high   := e.strcmp(msg,"END HIGH")   /\ e.tag(#InTJob)
+pred begin_low  := e.strcmp(msg,"BEGIN LOW")  /\ e.tag(#InTJob)
+pred end_low    := e.strcmp(msg,"END LOW")    /\ e.tag(#InTJob)
+pred ent_test_event := e.strcmp(msg,"FINISH TEST") /\ e.tag(#InTJob)
+pred net_packets := e.tag(#SutNet)
+
+session high := [ begin_high, end_high ]
+session low  := [ begin_low , end_low  ]
+
+// ALTERNATIVE
+// stream bool high := Prev begin_high /\ ~Prev end_high
+// stream bool low  := Prev begin_low  /\ ~Prev end_low
+
+stream int total_packets := if net_packet then e.get(network.packets)
+stream int avg_packets := grad(total_packets)
+
+stream int avg_high := avg(avg_packets within high)
+stream int avg_low  := avg(avg_packets within low)
+
+//stream int avg_high := avg(avg_packets when high)
+//stream int avg_low  := avg(avg_packets when low)
+
+
+stream bool high_after := Prev end_high
+stream bool low_after  := Prev end_low
+
+stream bool outcome := high_after /\ low_after /\ avg_low < avg_high * 7 / 10
+
+trigger end_test_event emit outcome
 

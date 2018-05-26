@@ -3,82 +3,101 @@ package session
 
 import(
 //	"stamp"
+	"strconv"
 )
 
 }
 
-Input  <- _? v:Version d:(Declaration*) EOF {
+Input  <- _? d:(Declaration*)  EOF {
        // returns a []interface{} where all elements are Filter,Session,Stream or Trigger
        return d,nil
        }
 
-
-Version <- VERSION ver:VersionNum _?  { return ver,nil //TODO, check for version number
-}
+Version <- VERSION ver:VersionNum _?  { return ver,nil //TODO, check for version number}
 
 VersionNum <- ([0-9'.']+) {
   	   return Version{string(c.text)},nil
 }
 
-VERSION <- "version" _? {
-	  return Keyword{string(c.text)},nil
-}
-
-
-
 Declaration <- f:Filter { return f,nil }
 	    / s:Session { return s,nil }
 	    / s:Stream  { return s,nil }
 	    / t:Trigger { return t,nil }
+	    / p:PredDef { return p,nil }
 
 
-SESSION <- "session" _?
-BEGIN   <- "begin" _?
-END     <- "end" _?  
+PredDef <- PRED n:Name ":=" p:Predicate {
+	return newPredicateDeclaration(n,p),nil
+}
 
-Session <- SESSION n:Name ":=" _? "(" _? BEGIN "=>" _? beg:Predicate "," _?
-                                         END   "=>" _? end:Predicate ")" _? {
-		return newSessionDeclaration(n,beg,end),nil
-	}
 
-Stream <- "stream" _? t:Type n:Name ":=" _? e:StreamExpr {
+
+Session <- SESSION n:Name ":" _? "[" _? beg:Predicate "," _? end:Predicate "]" _? {
+	return newSessionDeclaration(n,beg,end),nil
+}
+
+Stream <- STREAM t:Type n:Name ":=" _? e:StreamExpr {
        return newStreamDeclaration(t,n,e),nil
 }
 
-Type <- "int" _?     { return Int, nil  }
-     /  "bool" _?    { return Bool, nil }
-     /  "string" _?  { return String,nil}
+Type <- INT     { return IntT, nil  }
+     /  BOOL    { return BoolT, nil }
+     /  STRING  { return StringT,nil}
 
-StreamExpr <- b:Builtin "(" _? s:Name "within" w:Name _? ")" {
-       	  return newAggregatorExpr(b,s,w), nil
-       } / "if" _ p:Predicate "then" _ e:PathExpr {
-	  return newIfExpr(p,e),nil
+StreamExpr <- '(' _? s:StreamExpr ')' _? {
+	   return s,nil
+       }	   
+       / b:Builtin "(" _? s:Name WITHIN w:Name _? ")" _? {
+          return newAggregatorExpr(b,s,w), nil
        }
-       
-Builtin <- "avg" _? { return "avg",nil }
-	/ "count" _? { return "count",nil }
+       / IF p:Predicate THEN a:StreamExpr ELSE b:StreamExpr {
+       	 return newIfThenElseExpr(p,a,b),nil
+       }
+       / i:IntPathExpr { return i,nil }
+       / s:StrPathExpr { return s,nil }
+       / IF p:Predicate THEN s:StreamExpr {
+          return newIfThenExpr(p,s),nil
+       }
+       / p:Predicate { //Boolean Expression
+       	 return newPredExpr(p),nil
+       }
+       / n:NumExpr {
+       	 return n,nil
+       }
 
-PathExpr <- "e.get(" _? p:JSONPath _? ")" _? {
+Builtin <- AVG { return "avg",nil }
+	/ COUNT { return "count",nil }
+
+IntPathExpr <- "e.getint(" _? p:JSONPath _? ")" _? {
       return newIntPathExpr(p),nil		
 }
+StrPathExpr <- "e.getstr" _? '(' _? p:JSONPath _? ")" _? {
+      return newStringPathExpr(p),nil		
+}
 
-Trigger <- "trigger" _ p:Predicate "do" _ a:Action _? {
+
+
+Trigger <-TRIGGER p:Predicate DO a:Action _? {
 	return newTrigger(p,a),nil
 }
 
-Action <- "emit" _ n:Name "on" _ t:Tag _? {
+Action <- EMIT n:Name ON t:Tag _? {
        return newEmitAction(n,t),nil
 }
 
 Name <- n:Identifier _? { return n.(Identifier),nil }
 
-Filters  <- fs:Filter+ {
-	 return newFiltersNode(fs),nil
-	 }
-
-Filter <- "when" _ p:Predicate "do" _ t:Tag _? {
+Filter <- WHEN p:Predicate DO t:Tag _? {
        return Filter{p.(Predicate),t.(Tag).Tag},nil
        }
+
+//
+// IDEA: Instead of replicating all Boolean expressions for
+//       stream declarations of type Boolean (from preds on events)
+//       it is better to just have a larger expression parser for
+//       the Boolean type and reject semantically expressions for
+//       event predicates that fetch streams
+//
 
 Predicate <- a:Ands    b:(OrExpr*)  { return newOrPredicate(a,b),nil }
 Ands      <- a:NegExpr b:(AndExpr*) { return newAndPredicate(a,b),nil }
@@ -88,12 +107,49 @@ NegExpr   <- "~" _? p:NegExpr        { return newNotPredicate(p),nil }
 	 /  p:Primary             { return p,nil }
 Primary   <- '(' _? p:Predicate ')' _?  { return p,nil }
          / a:AtomicPredicate	 { return a,nil }
-AtomicPredicate <- p:PathPredicate _? { return p,nil }
-	  / p:StrPredicate   _?  { return p,nil }
-	  / p:HasTagPredicate _? { return p,nil }
+AtomicPredicate <- p:PathPredicate  { return p,nil }
+	  / p:StrPredicate     { return p,nil }
+	  / p:HasTagPredicate  { return p,nil }
 	  / p:"true" _? { return True,nil }
 	  / p:"false" _? { return False,nil }
-PathPredicate <- "e.path(" _? p:JSONPath _? ")" _? {
+	  / n:NumComparison  { return n,nil }
+          / n:NamedPredicate  { return n,nil }   
+
+//
+// NumericComparison and Expressions
+//
+NumComparison <- a:NumExpr "<"  _? b:NumExpr { return newNumLess(a,b),nil }
+              /  a:NumExpr "<=" _? b:NumExpr { return newNumLessEq(a,b),nil }
+              /  a:NumExpr "="  _? b:NumExpr { return newNumEq(a,b),nil }
+              /  a:NumExpr ">"  _? b:NumExpr { return newNumGreater(a,b),nil }
+              /  a:NumExpr ">=" _? b:NumExpr { return newNumGreaterEq(a,b),nil }
+	      /	 a:NumExpr "!=" _? b:NumExpr { return newNumNotEq(a,b),nil }
+
+NumExpr  <- a:Mults "+" _? b:Mults { return newPlusExpr(a,b),nil  }
+          / a:Mults "-" _? b:Mults { return newMinusExpr(a,b),nil }
+	  / a:Mults                { return a,nil}
+Mults    <- a:BasicNumExpr "*" _? b:Mults { return newMulExpr(a,b),nil }
+          / a:BasicNumExpr "/" _? b:Mults { return newDivExpr(a,b),nil }
+	  / a:BasicNumExpr { return a,nil}
+BasicNumExpr <- '(' _? n:NumExpr ')' _?   { return n,nil }
+           / a:AtomicNumExpr { return a,nil }
+AtomicNumExpr <- n:NumStream { return newNumStreamExpr(n),nil }
+	      / l:IntLiteral { return l,nil }
+
+NumStream <- n:Name { return n,nil }
+
+NumLiteral <- p:([0-9]+('.'[0-9]+)?) {
+	      x,err := strconv.ParseFloat(p.(string),32)
+	      return newFloatLiteralExpr(x), err
+	   }
+IntLiteral <- p:('-'?[0-9]+) {
+              n,err := strconv.Atoi(p.(string))
+	      return newIntLiteralExpr(n),err
+	   }
+
+NamedPredicate <- n:Name _? { return newNamedPredicate(n),nil  } 
+
+PathPredicate <- "e.path" _? "(" _? p:JSONPath _? ")" _? {
 	      return newPathPredicate(p),nil		
 }
 
@@ -104,15 +160,18 @@ HasTagPredicate <- "e.tag(" _? t:Tag _? ")" _? {
 		return newTagPredicate(t),nil
 }
 
-QuotedString <- '"' String '"' {
-	     return newQuotedString(string(c.text)),nil
-}
+QuotedString <- ('"'(([^'"''\\']*('\\'.[^'"''\\']*)*))'"')  {
+	        str := string(c.text)
+	     	inner := str[1:len(str)-1]
+     	        return newQuotedString(inner),nil
+        }
 	
 JSONPath <- ([a-zA-Z0-9]+('.'[a-zA-Z0-9]+)*) {
 	 return newPathName(string(c.text)),nil
 	 }	 
 
-Identifier <- ([a-zA-Z][a-zA-Z0-9]*) {
+Identifier <- ([a-zA-Z]['_''-''@'a-zA-Z0-9]*) {
+	   // IMPORTANT: cannot have '.' to distinguish from "e.path" "e.strcmp"
 	   return Identifier{string(c.text)}, nil
 	   }
 
@@ -120,7 +179,7 @@ String   <- ([a-zA-Z0-9'#''_''-''@']+)
 
 Alphanum <- ([a-zA-Z0-9]+) { return Alphanum{string(c.text)},nil }
 
-Tag  "tag"      <- ( '#'[a-zA-Z]('-''_'[a-zA-Z0-9])* )    { return Tag{string(c.text)},nil }
+Tag  "tag"      <- ( '#'[a-zA-Z](['_''-''.'a-zA-Z0-9])* )    { return Tag{string(c.text)},nil }
 
 _ "whitespace" <- [ \t\n\r]+
 
@@ -130,3 +189,27 @@ EOL     <- ("\r\n" / "\n\r" / "\r" / "\n")
 Comment <- "//" [^\r\n]*
 
 EOF     <- !.
+
+// Keywords
+
+SESSION <- "session" _
+BEGIN   <- "begin" _
+END     <- "end" _
+PRED    <- "pred" _
+WITHIN  <- "within" _
+VERSION <- "version" _
+STREAM <- "stream" _
+INT    <- "int" _
+BOOL   <- "bool" _
+STRING <- "string" _
+AVG <- "avg" _?
+COUNT   <- "count" _?
+TRIGGER <- "trigger" _
+DO      <- "do" _
+EMIT    <- "emit" _
+ON      <- "on" _
+WHEN <- "when" _ 
+DO   <- "do" _ 
+IF   <- "if" _
+THEN <- "then" _
+ELSE <- "else" _
