@@ -5,23 +5,24 @@ import (
     striverdt "gitlab.software.imdea.org/felipe.gorostiaga/striver-go/datatypes"
     strivercp "gitlab.software.imdea.org/felipe.gorostiaga/striver-go/controlplane"
     sets "github.com/elastest/elastest-monitoring-service/go_EMS/setoperators"
-    "github.com/elastest/elastest-monitoring-service/go_EMS/signals"
     "github.com/elastest/elastest-monitoring-service/go_EMS/eventout"
 	"time"
+    "github.com/elastest/elastest-monitoring-service/go_EMS/parsers/session"
 )
 
-func StartEngine(signaldefs []signals.SignalDefinition) dt.MoMEngine01 {
+func StartEngine(signaldefs []session.MoM) dt.MoMEngine01 {
 	writechan := make(chan striverdt.FlowingEvent)
     startWriter(writechan)
 
-    signaltostrivervisitor := signals.SignalToStriverVisitor{[]dt.Sampler{}, []striverdt.OutStream{}, []striverdt.InStream{}}
+    momtostrivervisitor := session.MoMToStriverVisitor{[]dt.Sampler{}, []striverdt.OutStream{}, []striverdt.InStream{}}
+
     for _,signaldef := range signaldefs {
-        signaldef.Accept(&signaltostrivervisitor)
+        signaldef.Accept(&momtostrivervisitor)
     }
 
-    samplers := signaltostrivervisitor.Samplers
+    samplers := momtostrivervisitor.Samplers
     kchan := make (chan bool)
-    go strivercp.Start(signaltostrivervisitor.InStreams, signaltostrivervisitor.OutStreams, writechan, kchan)
+    go strivercp.Start(momtostrivervisitor.InStreams, momtostrivervisitor.OutStreams, writechan, kchan)
     return dt.MoMEngine01{samplers, kchan}
 }
 

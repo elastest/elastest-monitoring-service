@@ -5,43 +5,35 @@ import (
     pb "github.com/elastest/elastest-monitoring-service/protobuf"
     "math/rand"
     "strconv"
-    "encoding/json"
     "fmt"
 	"github.com/elastest/elastest-monitoring-service/go_EMS/signals"
 	"github.com/elastest/elastest-monitoring-service/go_EMS/moms"
+    "github.com/elastest/elastest-monitoring-service/go_EMS/parsers/session"
+    "strings"
 )
 
 var momengines map[int]dt.MoMEngine01 = make(map[int]dt.MoMEngine01)
 
 func DeploySignals01(signalsDef string) *pb.MomPostReply {
     fmt.Println("Deploying signal defs: ", signalsDef)
-    var sds []dt.SignalsDefinitions
-    if err := json.Unmarshal([]byte(signalsDef), &sds); err != nil {
-        fmt.Println("It was an invalid array of signal definitions because the JSON was malformed: ", err.Error())
+    reader := strings.NewReader(signalsDef)
+    monitorif, err := session.ParseReader("Monitoring Machine", reader)
+    if err != nil {
+        fmt.Println("deployment error: ", err.Error())
         return &pb.MomPostReply{Deploymenterror:err.Error(), Momid:""}
     }
-    realdefs := make([]signals.SignalDefinition,len(sds))
-    for i,sdef := range sds {
-        switch(sdef.Type) {
-        case "sampled":
-            var realsampled signals.SampledSignalDefinition
-            if err := json.Unmarshal([]byte(sdef.Def), &realsampled); err != nil {
-                fmt.Println("It was an invalid real sampled signal definition because the JSON was malformed: ", err.Error())
-                return &pb.MomPostReply{Deploymenterror:err.Error(), Momid:""}
-            }
-            realdefs[i] = realsampled
-        default:
-            fmt.Println("It was an invalid signal definition because the type was not recognized: ", sdef.Type)
-            return &pb.MomPostReply{Deploymenterror:"Unrecognized signal type", Momid:""}
-        }
+    momifs := monitorif.([]interface{})
+    moms := make([]session.MoM, len(momifs))
+    for i,momif := range momifs {
+        moms[i] = momif.(session.MoM)
     }
     momid := rand.Int()
-    DeployRealSignals01(realdefs, momid)
+    DeployRealMoM01(moms, momid)
     fmt.Println("with momid: ", momid)
     return &pb.MomPostReply{Deploymenterror:"", Momid:strconv.Itoa(momid)}
 }
 
-func DeployRealSignals01(signaldefs []signals.SignalDefinition, momid int) {
+func DeployRealMoM01(signaldefs []session.MoM, momid int) {
     // TODO make this method private in the future
     momengines[momid] = moms.StartEngine(signaldefs)
 }

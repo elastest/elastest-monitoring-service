@@ -7,6 +7,7 @@ import(
 	"strconv"
     "github.com/elastest/elastest-monitoring-service/go_EMS/parsers/common"
     dt "github.com/elastest/elastest-monitoring-service/go_EMS/datatypes"
+    striverdt "gitlab.software.imdea.org/felipe.gorostiaga/striver-go/datatypes"
 )
 
 type Filter struct {
@@ -48,7 +49,7 @@ type MoM interface {
 // Action
 //
 type EmitAction struct {
-	StreamName string
+	StreamName striverdt.StreamName
 	TagName    common.Tag
 }
 func (a EmitAction) Sprint() string {
@@ -68,7 +69,7 @@ func newEmitAction(n, t interface{}) (EmitAction) {
 	name := n.(common.Identifier).Val
 	tag  := t.(common.Tag)
 
-	return EmitAction{name,tag}
+	return EmitAction{striverdt.StreamName(name),tag}
 }
 
 func newTrigger(p, a interface{}) (Trigger) {
@@ -112,7 +113,7 @@ func (t StreamType) Sprint() string {
 //
 type Stream struct { // a Stream is a Name:=Expr
 	Type StreamType
-	Name string
+	Name striverdt.StreamName
 	Expr StreamExpr
 }
 
@@ -121,7 +122,7 @@ func (this Stream) Accept(visitor MoMVisitor) {
 }
 
 type Session struct {
-	Name  string
+	Name  striverdt.StreamName
 	Begin common.Predicate
 	End   common.Predicate
 }
@@ -151,17 +152,31 @@ type StreamExpr interface {
 
 type AggregatorExpr struct {
 	Operation string
-	Stream    string //StreamName
-	Session   string //StreamName
+	Stream    striverdt.StreamName //StreamName
+	Session   striverdt.StreamName //StreamName
 }
+
+func (this AggregatorExpr) Accept(visitor StreamExprVisitor) {
+    visitor.visitAggregatorExpr(this)
+}
+
 type IfThenExpr struct {
 	If   common.Predicate
 	Then StreamExpr
 }
+
+func (this IfThenExpr) Accept(visitor StreamExprVisitor) {
+    visitor.visitIfThenExpr(this)
+}
+
 type IfThenElseExpr struct {
 	If   common.Predicate
 	Then StreamExpr
 	Else StreamExpr
+}
+
+func (this IfThenElseExpr) Accept(visitor StreamExprVisitor) {
+    visitor.visitIfThenElseExpr(this)
 }
 
 // Is this ever used?
@@ -211,7 +226,7 @@ func newAggregatorExpr(op, str, ses interface{}) AggregatorExpr {
 	stream    := str.(common.Identifier).Val
 	session   := ses.(common.Identifier).Val
 
-	return AggregatorExpr{operation,stream,session}
+	return AggregatorExpr{operation,striverdt.StreamName(stream),striverdt.StreamName(session)}
 }
 
 func newIfThenExpr(p,e interface{}) IfThenExpr {
@@ -332,7 +347,7 @@ type FloatLiteralExpr struct {
 	Num float32
 }
 type NumStreamExpr struct {
-	StreamName string
+	StreamName striverdt.StreamName
 }
 type NumMulExpr struct {
 	Left  NumExpr
@@ -364,7 +379,7 @@ func newMinusExpr(a,b interface{}) NumMinusExpr {
 	return NumMinusExpr{a.(NumExpr),b.(NumExpr)}
 }
 func newNumStreamExpr(a interface{}) NumStreamExpr {
-	return NumStreamExpr{a.(common.Identifier).Val}
+	return NumStreamExpr{striverdt.StreamName(a.(common.Identifier).Val)}
 }
 func newIntLiteralExpr(a interface{}) IntLiteralExpr {
 	return IntLiteralExpr{a.(int)}
@@ -386,7 +401,7 @@ func (e NumMinusExpr) Sprint() string {
 	return fmt.Sprintf("(%s)%s(%s)",e.Left.Sprint(),'-',e.Right.Sprint())
 }
 func (e NumStreamExpr) Sprint() string {
-	return e.StreamName
+	return string(e.StreamName)
 }
 func (e IntLiteralExpr) Sprint() string {
 	return strconv.Itoa(e.Num)
@@ -403,14 +418,14 @@ func newStreamDeclaration(t,n,e interface{}) Stream {
 	the_type := t.(StreamType)
 	name     := n.(common.Identifier).Val
 	expr     := e.(StreamExpr)
-	return Stream{the_type,name,expr}
+	return Stream{the_type,striverdt.StreamName(name),expr}
 }
 
 func newSessionDeclaration(n,b,e interface{}) Session {
 	name  := n.(common.Identifier).Val
 	begin := b.(common.Predicate)
 	end   := e.(common.Predicate)
-	return Session{name,begin,end}
+	return Session{striverdt.StreamName(name),begin,end}
 }
 
 func newPredicateDeclaration(n,p interface{}) PredicateDecl {

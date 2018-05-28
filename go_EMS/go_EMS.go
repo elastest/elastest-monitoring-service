@@ -14,8 +14,6 @@ import (
 	pe "github.com/elastest/elastest-monitoring-service/go_EMS/eventscounter"
 	"github.com/elastest/elastest-monitoring-service/go_EMS/eventout"
 	"github.com/elastest/elastest-monitoring-service/go_EMS/eventproc"
-	"github.com/elastest/elastest-monitoring-service/go_EMS/signals"
-    striverdt "gitlab.software.imdea.org/felipe.gorostiaga/striver-go/datatypes"
 )
 
 func main() {
@@ -37,14 +35,15 @@ func main() {
     et.DeployTaggerv01(tagdef)
 
 
-    defs := []signals.SignalDefinition {
+    /*defs := []signals.SignalDefinition {
         signals.SampledSignalDefinition{"cpuload", "chan", "system.load.1"},
         signals.SampledSignalDefinition{"hostname", "chan", "beat.hostname"},
         signals.FuncSignalDefinition{"hostnameiselastest", []striverdt.StreamName{"hostname"}, signals.SignalEqualsLiteral{"host_elastest"}},
         signals.ConditionalAvgSignalDefinition{"condavg", "cpuload", "hostnameiselastest"},
         signals.FuncSignalDefinition{"increasing", []striverdt.StreamName{"condavg", "cpuload"}, signals.SignalsLT64{}},
-    }
-    eventproc.DeployRealSignals01(defs,444)
+    }*/
+    defs := `stream int high_load := avg(load within fst)`
+    eventproc.DeploySignals01(defs)
     // Up to here
 
     pipename := "/usr/share/logstash/pipes/leftpipe"
