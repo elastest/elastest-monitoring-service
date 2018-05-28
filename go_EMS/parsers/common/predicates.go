@@ -1,23 +1,44 @@
 package common
 
 import(
-	"fmt"
     dt "github.com/elastest/elastest-monitoring-service/go_EMS/datatypes"
-    sets "github.com/elastest/elastest-monitoring-service/go_EMS/setoperators"
-    "github.com/elastest/elastest-monitoring-service/go_EMS/jsonrw"
 )
 
+type PredicateVisitor interface {
+    visitTruePredicate(TruePredicate)
+    visitFalsePredicate(FalsePredicate)
+    visitNotPredicate(NotPredicate)
+    visitAndPredicate(AndPredicate)
+    visitOrPredicate(OrPredicate)
+    visitPathPredicate(PathPredicate)
+    visitStrPredicate(StrPredicate)
+    visitTagPredicate(TagPredicate)
+    visitNamedPredicate(NamedPredicate)
+}
 
 type Predicate interface {
-	Sprint() string
-	Eval(e dt.Event) bool
+    Accept (PredicateVisitor)
+	Sprint() string // TODO remove later on
 }
 
 type TruePredicate  struct {}
+
+func (this TruePredicate) Accept (visitor PredicateVisitor) {
+    visitor.visitTruePredicate(this)
+}
+
 type FalsePredicate struct {}
+
+func (this FalsePredicate) Accept (visitor PredicateVisitor) {
+    visitor.visitFalsePredicate(this)
+}
 
 type NotPredicate struct {
 	Inner Predicate
+}
+
+func (this NotPredicate) Accept (visitor PredicateVisitor) {
+    visitor.visitNotPredicate(this)
 }
 
 type AndPredicate struct {
@@ -25,20 +46,42 @@ type AndPredicate struct {
 	Right Predicate
 }
 
+func (this AndPredicate) Accept (visitor PredicateVisitor) {
+    visitor.visitAndPredicate(this)
+}
+
 type OrPredicate struct {
 	Left  Predicate
 	Right Predicate
 }
+
+func (this OrPredicate) Accept (visitor PredicateVisitor) {
+    visitor.visitOrPredicate(this)
+}
+
 type PathPredicate struct {
 	Path string
 }
+
+func (this PathPredicate) Accept (visitor PredicateVisitor) {
+    visitor.visitPathPredicate(this)
+}
+
 type StrPredicate struct {
 	Path string
 	Expected string
 }
 
+func (this StrPredicate) Accept (visitor PredicateVisitor) {
+    visitor.visitStrPredicate(this)
+}
+
 type TagPredicate struct {
 	Tag dt.Channel
+}
+
+func (this TagPredicate) Accept (visitor PredicateVisitor) {
+    visitor.visitTagPredicate(this)
 }
 
 type NamedPredicate struct {
@@ -47,82 +90,14 @@ type NamedPredicate struct {
 	Name string
 }
 
+func (this NamedPredicate) Accept (visitor PredicateVisitor) {
+    visitor.visitNamedPredicate(this)
+}
+
 var (
 	True  TruePredicate
 	False FalsePredicate
 )
-
-//
-// sprint() functions of the different Predicates
-//
-func (p AndPredicate) Sprint() string {
-	return fmt.Sprintf("(%s /\\ %s)",p.Left.Sprint(),p.Right.Sprint())
-}
-func (p OrPredicate) Sprint() string {
-	return fmt.Sprintf("(%s \\/  %s)",p.Left.Sprint(),p.Right.Sprint())
-}
-func (p NotPredicate) Sprint() string {
-	return fmt.Sprintf("~ %s",p.Inner.Sprint())
-}
-func (p PathPredicate) Sprint() string {
-	return fmt.Sprintf("e.path(%s)",p.Path)
-}
-func (p StrPredicate) Sprint() string {
-	return fmt.Sprintf("e.strcmp(%s,\"%s\")",p.Path,p.Expected)
-}
-func (p TagPredicate) Sprint() string {
-	return fmt.Sprintf("e.tag(%s)",p.Tag)
-}
-func (p TruePredicate) Sprint() string {
-	return fmt.Sprintf("true");
-}
-func (p FalsePredicate) Sprint() string {
-	return fmt.Sprintf("false")
-}
-func (p NamedPredicate) Sprint() string {
-	return p.Name
-}
-
-//
-// eval(dt.Event e) bool
-//
-func (p AndPredicate) Eval(e dt.Event) bool {
-	return p.Left.Eval(e) && p.Right.Eval(e)
-}
-func (p OrPredicate) Eval(e dt.Event) bool {
-	return p.Left.Eval(e) || p.Right.Eval(e)
-}
-func (p NotPredicate) Eval(e dt.Event) bool {
-	return !p.Inner.Eval(e)
-}
-func (p PathPredicate) Eval(e dt.Event) bool {
-    _,err := jsonrw.ExtractFromMap(e.Payload, dt.JSONPath(p.Path))
-	return err == nil
-}
-func (p StrPredicate) Eval(e dt.Event) bool {
-    strif,err := jsonrw.ExtractFromMap(e.Payload, dt.JSONPath(p.Path))
-    if err != nil {
-        return false
-    }
-    fmt.Println("Comparing",strif, "with", p.Expected)
-    return strif.(string) == p.Expected
-}
-func (p TagPredicate) Eval(e dt.Event) bool {
-    return sets.SetIn(p.Tag, e.Channels)
-}
-func (p TruePredicate) Eval(e dt.Event) bool {
-	return true
-}
-func (p FalsePredicate) Eval(e dt.Event) bool {
-	return false
-}
-func (p NamedPredicate) Eval(e dt.Event) bool {
-	//
-	// Need to access the mathine to get the body of the predicate
-	// or stream and evaluate
-	//
-	return false
-}
 
 
 // Constructors
@@ -188,4 +163,5 @@ func ToSlice(v interface{}) []interface{} {
 		return nil
 	}
 	return v.([]interface{})
+
 }
