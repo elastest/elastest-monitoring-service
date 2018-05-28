@@ -1,3 +1,2 @@
-version 1.1
 session fst := (begin => e.tag(#TJob) , end => e.tag(#SuT))
 session snd := (begin => e.tag(#SuT) , end => e.tag(#TJob))

@@ -121,7 +121,7 @@ func (t StreamType) Sprint() string {
 type Stream struct { // a Stream is a Name:=Expr
 	Type StreamType
 	Name string
-	Expr StreamExpr 
+	Expr StreamExpr
 }
 type Session struct {
 	Name  string
@@ -132,9 +132,20 @@ type Session struct {
 //
 // Expressions
 //
+
+type StreamExprVisitor interface {
+    visitAggregatorExpr(AggregatorExpr)
+    visitIfThenExpr(IfThenExpr)
+    visitIfThenElseExpr(IfThenElseExpr)
+    // visitStringExpr(StringExpr)
+    visitNumExpr(NumExpr)
+    visitPredExpr(PredExpr)
+}
+
 type StreamExpr interface {
 	// add functions here
 	Sprint() string
+    Accept (StreamExprVisitor)
 }
 
 type AggregatorExpr struct {
@@ -151,15 +162,16 @@ type IfThenElseExpr struct {
 	Then StreamExpr
 	Else StreamExpr
 }
-type StringExpr struct {
-	Path string// so far only e.get(path) claiming to return a string
-}
-type NumExpr interface { // See cases below
-	Sprint() string
-}
+
+// Is this ever used?
+//type StringExpr struct {
+//	Path string// so far only e.get(path) claiming to return a string
+//}
 type PredExpr struct {
 	Pred common.Predicate 
 }
+
+// TODO: Make this a visitor
 func (p AggregatorExpr) Sprint() string {
 	return fmt.Sprintf("%s(%s within %s)",p.Operation,p.Stream,p.Session)
 }
@@ -175,7 +187,6 @@ func (p PredExpr) Sprint() string {
 	return p.Pred.Sprint()
 }
 
-
 //
 // Expression Node constructors
 //
@@ -183,7 +194,7 @@ func newAggregatorExpr(op, str, ses interface{}) AggregatorExpr {
 	operation := op.(string)
 	stream    := str.(common.Identifier).Val
 	session   := ses.(common.Identifier).Val
-	
+
 	return AggregatorExpr{operation,stream,session}
 }
 
@@ -206,8 +217,18 @@ func newPredExpr(p interface{}) PredExpr {
 // Numeric:
 //  NumExpressions and NumComparison
 //
+type NumComparisonVisitor interface {
+    visitNumLess(NumLess)
+    visitNumLessEq(NumLessEq)
+    visitNumEq(NumEq)
+    visitNumGreater(NumGreater)
+    visitNumGreaterEq(NumGreaterEq)
+    visitNumNotEq(NumNotEq)
+}
+
 type NumComparison interface {
 	Sprint() string
+    Accept (NumComparisonVisitor)
 //	Eval() bool // miss context to perform the evaluation
 }
 
@@ -263,6 +284,21 @@ func newNumNotEq(a,b interface{}) NumNotEq {
 //
 // Numeric Expressions
 // 
+
+type NumExprVisitor interface {
+    visitIntLiteralExpr(IntLiteralExpr)
+    visitFloatLiteralExpr(FloatLiteralExpr)
+    visitNumStreamExpr(NumStreamExpr)
+    visitNumMulExpr(NumMulExpr)
+    visitNumDivExpr(NumDivExpr)
+    visitNumPlusExpr(NumPlusExpr)
+    visitNumMinusExpr(NumMinusExpr)
+}
+type NumExpr interface {
+	Sprint() string
+    Accept (NumExprVisitor)
+}
+
 type IntLiteralExpr struct {
 	Num int
 }

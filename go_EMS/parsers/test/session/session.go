@@ -1,8 +1,11 @@
 package main
 
-import "log"
-import "os"
-import . "ems/session"
+import (
+    "log"
+    "os"
+    "github.com/elastest/elastest-monitoring-service/go_EMS/parsers/session"
+    "github.com/elastest/elastest-monitoring-service/go_EMS/parsers/common"
+)
 
 
 func main() {
@@ -15,13 +18,11 @@ func main() {
 		defer f.Close()
 		in = f
 	}
-	parsed, err := ParseReader("",in)
+	parsed, err := session.ParseReader("",in)
 	if err != nil {
 		log.Fatal(err)
 	}
-	decls := ToSlice(parsed)
-	the_monitor := ProcessDeclarations(decls)
-	Print(the_monitor)
+	decls := common.ToSlice(parsed)
+	the_monitor := session.ProcessDeclarations(decls)
+	session.Print(the_monitor)
 }
-
-

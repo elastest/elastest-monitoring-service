@@ -28,13 +28,13 @@ Declaration <- f:Filter { return f,nil }
 	    / p:PredDef { return p,nil }
 
 
-PredDef <- PRED n:Name ":=" p:common.Predicate {
+PredDef <- PRED n:Name ":=" p:Predicate {
 	return newPredicateDeclaration(n,p),nil
 }
 
 
 
-Session <- SESSION n:Name ":" _? "[" _? beg:common.Predicate "," _? end:common.Predicate "]" _? {
+Session <- SESSION n:Name ":" _? "[" _? beg:Predicate "," _? end:Predicate "]" _? {
 	return newSessionDeclaration(n,beg,end),nil
 }
 
@@ -52,15 +52,15 @@ StreamExpr <- '(' _? s:StreamExpr ')' _? {
        / b:Builtin "(" _? s:Name WITHIN w:Name _? ")" _? {
           return newAggregatorExpr(b,s,w), nil
        }
-       / IF p:common.Predicate THEN a:StreamExpr ELSE b:StreamExpr {
+       / IF p:Predicate THEN a:StreamExpr ELSE b:StreamExpr {
        	 return newIfThenElseExpr(p,a,b),nil
        }
        / i:IntPathExpr { return i,nil }
        / s:StrPathExpr { return s,nil }
-       / IF p:common.Predicate THEN s:StreamExpr {
+       / IF p:Predicate THEN s:StreamExpr {
           return newIfThenExpr(p,s),nil
        }
-       / p:common.Predicate { //Boolean Expression
+       / p:Predicate { //Boolean Expression
        	 return newPredExpr(p),nil
        }
        / n:NumExpr {
@@ -79,17 +79,17 @@ StrPathExpr <- "e.getstr" _? '(' _? p:JSONPath _? ")" _? {
 
 
 
-Trigger <-TRIGGER p:common.Predicate DO a:Action _? {
+Trigger <-TRIGGER p:Predicate DO a:Action _? {
 	return newTrigger(p,a),nil
 }
 
-Action <- EMIT n:Name ON t:common.Tag _? {
+Action <- EMIT n:Name ON t:Tag _? {
        return newEmitAction(n,t),nil
 }
 
-Name <- n:common.Identifier _? { return n.(common.Identifier),nil }
+Name <- n:Identifier _? { return n.(common.Identifier),nil }
 
-Filter <- WHEN p:common.Predicate DO t:common.Tag _? {
+Filter <- WHEN p:Predicate DO t:Tag _? {
        return Filter{p.(common.Predicate),t.(common.Tag).Tag},nil
        }
 
@@ -107,7 +107,7 @@ AndExpr   <- "/\\" _? p:NegExpr      { return p,nil }
 OrExpr    <- "\\/" _? p:Ands         { return p,nil }
 NegExpr   <- "~" _? p:NegExpr        { return common.NewNotPredicate(p),nil }
 	 /  p:Primary             { return p,nil }
-Primary   <- '(' _? p:common.Predicate ')' _?  { return p,nil }
+Primary   <- '(' _? p:Predicate ')' _?  { return p,nil }
          / a:AtomicPredicate	 { return a,nil }
 AtomicPredicate <- p:PathPredicate  { return p,nil }
 	  / p:StrPredicate     { return p,nil }
@@ -158,7 +158,7 @@ PathPredicate <- "e.path" _? "(" _? p:JSONPath _? ")" _? {
 StrPredicate <- "e.strcmp(" _? p:JSONPath _? "," _? s:QuotedString _?")" _? {
 	     return common.NewStrPredicate(p,s),nil
 }
-HasTagPredicate <- "e.tag(" _? t:common.Tag _? ")" _? {
+HasTagPredicate <- "e.tag(" _? t:Tag _? ")" _? {
 		return common.NewTagPredicate(t),nil
 }
 
