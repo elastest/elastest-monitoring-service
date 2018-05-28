@@ -29,6 +29,20 @@ func newFiltersNode(defs interface{}) (Filters) {
 	return Filters{ds}
 }
 
+// Monitoring Machines
+
+type MoMVisitor interface {
+	VisitFilter(Filter)
+	VisitSession(Session)
+	VisitStream(Stream)
+	VisitTrigger(Trigger)
+	VisitPredicateDecl(PredicateDecl)
+}
+
+type MoM interface {
+    Accept(MoMVisitor)
+}
+
 
 //
 // Action
@@ -46,19 +60,9 @@ type Trigger struct {
 	Action  EmitAction
 }
 
-type IntPathExpr struct {
-	Path string
+func (this Trigger) Accept(visitor MoMVisitor) {
+    visitor.VisitTrigger(this)
 }
-type StringPathExpr struct {
-	Path string
-}
-func (i IntPathExpr) Sprint() string {
-	return fmt.Sprintf("e.getint(%s)",i.Path)
-}
-func (i StringPathExpr) Sprint() string {
-	return fmt.Sprintf("e.getstr(%s)",i.Path)
-}
-
 
 func newEmitAction(n, t interface{}) (EmitAction) {
 	name := n.(common.Identifier).Val
@@ -72,18 +76,6 @@ func newTrigger(p, a interface{}) (Trigger) {
 	act := a.(EmitAction)
 
 	return Trigger{pred,act}
-}
-
-func newIntPathExpr(p interface{}) (IntPathExpr) {
-	path := p.(common.PathName).Val
-
-	return IntPathExpr{path}
-}
-
-func newStringPathExpr(p interface{}) (StringPathExpr) {
-	path := p.(common.PathName).Val
-
-	return StringPathExpr{path}
 }
 
 
@@ -123,10 +115,19 @@ type Stream struct { // a Stream is a Name:=Expr
 	Name string
 	Expr StreamExpr
 }
+
+func (this Stream) Accept(visitor MoMVisitor) {
+    visitor.VisitStream(this)
+}
+
 type Session struct {
 	Name  string
 	Begin common.Predicate
 	End   common.Predicate
+}
+
+func (this Session) Accept(visitor MoMVisitor) {
+    visitor.VisitSession(this)
 }
 
 //
@@ -167,11 +168,26 @@ type IfThenElseExpr struct {
 //type StringExpr struct {
 //	Path string// so far only e.get(path) claiming to return a string
 //}
+
 type PredExpr struct {
 	Pred common.Predicate 
 }
 
+type IntPathExpr struct {
+	Path string
+}
+type StringPathExpr struct {
+	Path string
+}
+
 // TODO: Make this a visitor
+func (i IntPathExpr) Sprint() string {
+	return fmt.Sprintf("e.getint(%s)",i.Path)
+}
+func (i StringPathExpr) Sprint() string {
+	return fmt.Sprintf("e.getstr(%s)",i.Path)
+}
+
 func (p AggregatorExpr) Sprint() string {
 	return fmt.Sprintf("%s(%s within %s)",p.Operation,p.Stream,p.Session)
 }
@@ -211,6 +227,16 @@ func newIfThenElseExpr(p,a,b interface{}) IfThenElseExpr {
 }
 func newPredExpr(p interface{}) PredExpr {
 	return PredExpr{p.(common.Predicate)}
+}
+
+func newIntPathExpr(p interface{}) (IntPathExpr) {
+	path := p.(common.PathName).Val
+	return IntPathExpr{path}
+}
+
+func newStringPathExpr(p interface{}) (StringPathExpr) {
+	path := p.(common.PathName).Val
+	return StringPathExpr{path}
 }
 
 //
@@ -396,6 +422,10 @@ func newPredicateDeclaration(n,p interface{}) PredicateDecl {
 type PredicateDecl struct {
 	Name string
 	Pred common.Predicate
+}
+
+func (this PredicateDecl) Accept(visitor MoMVisitor) {
+    visitor.VisitPredicateDecl(this)
 }
 
 type MonitorMachine struct {

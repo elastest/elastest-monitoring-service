@@ -5,6 +5,7 @@ import (
 	sets "github.com/elastest/elastest-monitoring-service/go_EMS/setoperators"
     pb "github.com/elastest/elastest-monitoring-service/protobuf"
     "github.com/elastest/elastest-monitoring-service/go_EMS/parsers/stamp"
+    parsercommon "github.com/elastest/elastest-monitoring-service/go_EMS/parsers/common"
     "math/rand"
     "strconv"
     "fmt"
@@ -23,12 +24,12 @@ func DeployTaggerv01(taggerDef string) *pb.MomPostReply {
     }
     monitor := monitorif.(stamp.Filters)
     momid := rand.Int()
-    DeployRealSamplerv01(monitor, momid)
+    DeployRealStamperv01(monitor, momid)
     fmt.Println("with momid: ", momid)
     return &pb.MomPostReply{Deploymenterror:"", Momid:strconv.Itoa(momid)}
 }
 
-func DeployRealSamplerv01(monitor stamp.Filters, momid int) {
+func DeployRealStamperv01(monitor stamp.Filters, momid int) {
     // TODO make this method private in the future
     tagMonitors[momid] = monitor
 }
@@ -42,12 +43,15 @@ func TagEvent(ev *dt.Event) {
     }
     dirty:=true
 
+    theEvalVisitor := parsercommon.EvalVisitor{false, *ev}
+
     for (dirty) {
         dirty=false
 
 		tmp := checkDefs[:0]
         for _,def := range checkDefs {
-            if def.Pred.Eval(*ev) {
+            def.Pred.Accept(theEvalVisitor)
+            if theEvalVisitor.Result {
                 dirty = true
                 (*ev).Channels = sets.SetAdd(ev.Channels, def.Tag.Tag)
             } else if !sets.SetIn(def.Tag.Tag, ev.Channels) {
