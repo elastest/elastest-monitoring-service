@@ -1,4 +1,4 @@
-GRAMMAR_FILE=session
+GRAMMAR_FILE=sessions
 PEG_FILE=${GRAMMAR_FILE}.peg
 OUTPUT=parser.go
 
