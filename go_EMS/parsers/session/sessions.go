@@ -191,11 +191,19 @@ type PredExpr struct {
 }
 
 type IntPathExpr struct {
-	Path string
+	Path dt.JSONPath
+}
+
+func (this IntPathExpr) Accept(visitor StreamExprVisitor) {
+    visitor.visitIntPathExpr(this)
 }
 
 type StringPathExpr struct {
-	Path string
+	Path dt.JSONPath
+}
+
+func (this StringPathExpr) Accept(visitor StreamExprVisitor) {
+    visitor.visitStringPathExpr(this)
 }
 
 // TODO: Make this a visitor
@@ -248,12 +256,12 @@ func newPredExpr(p interface{}) PredExpr {
 
 func newIntPathExpr(p interface{}) (IntPathExpr) {
 	path := p.(common.PathName).Val
-	return IntPathExpr{path}
+	return IntPathExpr{dt.JSONPath(path)}
 }
 
 func newStringPathExpr(p interface{}) (StringPathExpr) {
 	path := p.(common.PathName).Val
-	return StringPathExpr{path}
+	return StringPathExpr{dt.JSONPath(path)}
 }
 
 //

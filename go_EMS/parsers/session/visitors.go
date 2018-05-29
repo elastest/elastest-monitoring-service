@@ -3,6 +3,8 @@ package session
 import(
     striverdt "gitlab.software.imdea.org/felipe.gorostiaga/striver-go/datatypes"
     parsercommon "github.com/elastest/elastest-monitoring-service/go_EMS/parsers/common"
+	dt "github.com/elastest/elastest-monitoring-service/go_EMS/datatypes"
+	"github.com/elastest/elastest-monitoring-service/go_EMS/jsonrw"
 )
 
 type MoMToStriverVisitor struct {
@@ -23,7 +25,7 @@ func (visitor *MoMToStriverVisitor) VisitTrigger(Trigger) {
     panic("No trigger allowed!")
 }
 func (visitor *MoMToStriverVisitor) VisitPredicateDecl(PredicateDecl) {
-    panic("No PredicateDeclallowed!")
+    panic("No PredicateDecl allowed!")
 }
 
 type StreamExprToStriverVisitor struct {
@@ -42,12 +44,13 @@ func (visitor StreamExprToStriverVisitor) visitAggregatorExpr(aggexp AggregatorE
 
 func (visitor StreamExprToStriverVisitor) visitIfThenExpr(ifthen IfThenExpr) {
     mysignalname := visitor.streamname
-    thensignalname := "ifthen_helper::"+mysignalname
+    thensignalname := "ifthen_thenstream::"+mysignalname
     visitor.streamname = thensignalname
     ifthen.Then.Accept(visitor)
-	//If   common.Predicate
     makeIfThenStream(ifthen.If, thensignalname, mysignalname, visitor.momvisitor)
-    panic("not implemented")
+}
+func (visitor StreamExprToStriverVisitor) visitIntPathExpr(ipathexpr IntPathExpr) {
+    makeIntPathStream(ipathexpr.Path, visitor.streamname, visitor.momvisitor)
 }
 func (visitor StreamExprToStriverVisitor) visitIfThenElseExpr(IfThenElseExpr) {
     panic("not implemented")
@@ -56,9 +59,6 @@ func (visitor StreamExprToStriverVisitor) visitNumExpr(NumExpr) {
     panic("not implemented")
 }
 func (visitor StreamExprToStriverVisitor) visitPredExpr(PredExpr) {
-    panic("not implemented")
-}
-func (visitor StreamExprToStriverVisitor) visitIntPathExpr(IntPathExpr) {
     panic("not implemented")
 }
 func (visitor StreamExprToStriverVisitor) visitStringPathExpr(StringPathExpr) {
@@ -92,13 +92,13 @@ func makeAvgOutStream(inSignalName, sessionSignalName, outSignalName striverdt.S
             return striverdt.NothingPayload
         }
         myprev := args[1]
-        cpuval := args[2].Val.(striverdt.EvPayload).Val.(float64)
+        currentval := args[2].Val.(striverdt.EvPayload).Val.(float64)
         kplusone := float64(args[3].Val.(striverdt.EvPayload).Val.(int))
         prev := 0.0
         if myprev.IsSet {
             prev = myprev.Val.(striverdt.EvPayload).Val.(float64)
         }
-        res := (prev*(kplusone-1)+cpuval)/kplusone
+        res := (prev*(kplusone-1)+currentval)/kplusone
         return striverdt.Some(res)
     }
     condAvgVal := striverdt.FuncNode{[]striverdt.ValNode{
@@ -112,5 +112,52 @@ func makeAvgOutStream(inSignalName, sessionSignalName, outSignalName striverdt.S
 }
 
 func makeIfThenStream(ifpred parsercommon.Predicate, thensignalname, mysignalname striverdt.StreamName, visitor *MoMToStriverVisitor) {
-    //TODO
+    condFun := func (args...striverdt.EvPayload) striverdt.EvPayload {
+        rawevent := args[0]
+        then := args[1]
+        if !rawevent.IsSet {
+            panic("No raw event!")
+        }
+        /*theEvent :*/ _ = rawevent.Val.(striverdt.EvPayload).Val.(dt.Event)
+        //FIXME FINISH THIS! Visit the event with the predicate
+        return then
+        /*if !cond.IsSet || !cond.Val.(striverdt.EvPayload).Val.(bool) {
+            return striverdt.NothingPayload
+        }
+        myprev := args[1]
+        currentval := args[2].Val.(striverdt.EvPayload).Val.(float64)
+        kplusone := float64(args[3].Val.(striverdt.EvPayload).Val.(int))
+        prev := 0.0
+        if myprev.IsSet {
+            prev = myprev.Val.(striverdt.EvPayload).Val.(float64)
+        }
+        res := (prev*(kplusone-1)+currentval)/kplusone
+        return striverdt.Some(res)*/
+    }
+    condVal := striverdt.FuncNode{[]striverdt.ValNode{
+        &striverdt.PrevEqValNode{striverdt.TNode{}, visitor.InSignalName, []striverdt.Event{}},
+        &striverdt.PrevEqValNode{striverdt.TNode{}, thensignalname, []striverdt.Event{}},
+    }, condFun}
+    condStream := striverdt.OutStream{mysignalname, striverdt.SrcTickerNode{visitor.InSignalName}, condVal} // TODO Check the source tick
+    visitor.OutStreams = append(visitor.OutStreams, condStream)
+}
+
+func makeIntPathStream(path dt.JSONPath, mysignalname striverdt.StreamName, visitor *MoMToStriverVisitor) {
+    extractFun := func (args...striverdt.EvPayload) striverdt.EvPayload {
+        rawevent := args[0]
+        if !rawevent.IsSet {
+            panic("No raw event!")
+        }
+        theEvent := rawevent.Val.(striverdt.EvPayload).Val.(dt.Event)
+        valif, err := jsonrw.ExtractFromMap(theEvent.Payload, path)
+        if err != nil {
+            panic("No path found!")
+        }
+        return striverdt.Some(valif.(float64)) // FIXME this should be int
+    }
+    extractVal := striverdt.FuncNode{[]striverdt.ValNode{
+        &striverdt.PrevEqValNode{striverdt.TNode{}, visitor.InSignalName, []striverdt.Event{}},
+    }, extractFun}
+    extractStream := striverdt.OutStream{mysignalname, striverdt.SrcTickerNode{visitor.InSignalName}, extractVal}
+    visitor.OutStreams = append(visitor.OutStreams, extractStream)
 }
