@@ -21,8 +21,8 @@ func (visitor *MoMToStriverVisitor) VisitFilter(Filter) {
 func (visitor *MoMToStriverVisitor) VisitSession(Session) {
     panic("No session allowed!")
 }
-func (visitor *MoMToStriverVisitor) VisitTrigger(Trigger) {
-    panic("No trigger allowed!")
+func (visitor *MoMToStriverVisitor) VisitTrigger(trigger Trigger) {
+    makeTriggerStreams(visitor, trigger.Pred, trigger.Action)
 }
 func (visitor *MoMToStriverVisitor) VisitPredicateDecl(PredicateDecl) {
     panic("No PredicateDecl allowed!")
@@ -121,7 +121,7 @@ func makeIfThenStream(ifpred parsercommon.Predicate, thensignalname, mysignalnam
         theEvent := rawevent.Val.(striverdt.EvPayload).Val.(dt.Event)
         theEvalVisitor := parsercommon.EvalVisitor{false, theEvent}
         ifpred.Accept(&theEvalVisitor)
-        if theEvalVisitor.Result {
+        if theEvalVisitor.Result && then.IsSet {
             return then.Val.(striverdt.EvPayload)
         } else {
             return striverdt.NothingPayload
