@@ -164,8 +164,7 @@ HasTagPredicate <- "e.tag(" _? t:Tag _? ")" _? {
 
 QuotedString <- ('"'(([^'"''\\']*('\\'.[^'"''\\']*)*))'"')  {
 	        str := string(c.text)
-	     	inner := str[1:len(str)-1]
-     	        return common.NewQuotedString(inner),nil
+            return common.NewQuotedString(str),nil
         }
 	
 JSONPath <- ([a-zA-Z0-9]+('.'[a-zA-Z0-9]+)*) {

@@ -27,13 +27,12 @@ func DeploySignals01(signalsDef string) *pb.MomPostReply {
         moms[i] = momif.(session.MoM)
     }
     momid := rand.Int()
-    DeployRealMoM01(moms, momid)
+    deployRealMoM01(moms, momid)
     fmt.Println("with momid: ", momid)
     return &pb.MomPostReply{Deploymenterror:"", Momid:strconv.Itoa(momid)}
 }
 
-func DeployRealMoM01(signaldefs []session.MoM, momid int) {
-    // TODO make this method private in the future
+func deployRealMoM01(signaldefs []session.MoM, momid int) {
     momengines[momid] = moms.StartEngine(signaldefs)
 }
 

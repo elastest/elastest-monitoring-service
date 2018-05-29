@@ -122,7 +122,7 @@ func makeIfThenStream(ifpred parsercommon.Predicate, thensignalname, mysignalnam
         theEvalVisitor := parsercommon.EvalVisitor{false, theEvent}
         ifpred.Accept(&theEvalVisitor)
         if theEvalVisitor.Result {
-            return then
+            return then.Val.(striverdt.EvPayload)
         } else {
             return striverdt.NothingPayload
         }
@@ -144,7 +144,8 @@ func makeIntPathStream(path dt.JSONPath, mysignalname striverdt.StreamName, visi
         theEvent := rawevent.Val.(striverdt.EvPayload).Val.(dt.Event)
         valif, err := jsonrw.ExtractFromMap(theEvent.Payload, path)
         if err != nil {
-            panic("No path found!")
+            /* This can happen: the stream might be guarded by an if statement upper in the AST */
+            return striverdt.NothingPayload
         }
         return striverdt.Some(valif.(float64))
     }

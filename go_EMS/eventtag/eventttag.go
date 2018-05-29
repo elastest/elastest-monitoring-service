@@ -24,13 +24,12 @@ func DeployTaggerv01(taggerDef string) *pb.MomPostReply {
     }
     monitor := monitorif.(stamp.Filters)
     momid := rand.Int()
-    DeployRealStamperv01(monitor, momid)
+    deployRealStamperv01(monitor, momid)
     fmt.Println("with momid: ", momid)
     return &pb.MomPostReply{Deploymenterror:"", Momid:strconv.Itoa(momid)}
 }
 
-func DeployRealStamperv01(monitor stamp.Filters, momid int) {
-    // TODO make this method private in the future
+func deployRealStamperv01(monitor stamp.Filters, momid int) {
     tagMonitors[momid] = monitor
 }
 

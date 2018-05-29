@@ -42,7 +42,7 @@ func main() {
         signals.ConditionalAvgSignalDefinition{"condavg", "cpuload", "hostnameiselastest"},
         signals.FuncSignalDefinition{"increasing", []striverdt.StreamName{"condavg", "cpuload"}, signals.SignalsLT64{}},
     }*/
-    defs := `stream int load := e.getint(system.load.1)`
+    defs := `stream int load := if e.strcmp(beat.hostname,"otrohost") then e.getint(system.load.1)`
     eventproc.DeploySignals01(defs)
     // Up to here
 
