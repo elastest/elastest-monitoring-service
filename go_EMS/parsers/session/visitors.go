@@ -118,21 +118,14 @@ func makeIfThenStream(ifpred parsercommon.Predicate, thensignalname, mysignalnam
         if !rawevent.IsSet {
             panic("No raw event!")
         }
-        /*theEvent :*/ _ = rawevent.Val.(striverdt.EvPayload).Val.(dt.Event)
-        //FIXME FINISH THIS! Visit the event with the predicate
-        return then
-        /*if !cond.IsSet || !cond.Val.(striverdt.EvPayload).Val.(bool) {
+        theEvent := rawevent.Val.(striverdt.EvPayload).Val.(dt.Event)
+        theEvalVisitor := parsercommon.EvalVisitor{false, theEvent}
+        ifpred.Accept(&theEvalVisitor)
+        if theEvalVisitor.Result {
+            return then
+        } else {
             return striverdt.NothingPayload
         }
-        myprev := args[1]
-        currentval := args[2].Val.(striverdt.EvPayload).Val.(float64)
-        kplusone := float64(args[3].Val.(striverdt.EvPayload).Val.(int))
-        prev := 0.0
-        if myprev.IsSet {
-            prev = myprev.Val.(striverdt.EvPayload).Val.(float64)
-        }
-        res := (prev*(kplusone-1)+currentval)/kplusone
-        return striverdt.Some(res)*/
     }
     condVal := striverdt.FuncNode{[]striverdt.ValNode{
         &striverdt.PrevEqValNode{striverdt.TNode{}, visitor.InSignalName, []striverdt.Event{}},
@@ -153,7 +146,7 @@ func makeIntPathStream(path dt.JSONPath, mysignalname striverdt.StreamName, visi
         if err != nil {
             panic("No path found!")
         }
-        return striverdt.Some(valif.(float64)) // FIXME this should be int
+        return striverdt.Some(valif.(float64))
     }
     extractVal := striverdt.FuncNode{[]striverdt.ValNode{
         &striverdt.PrevEqValNode{striverdt.TNode{}, visitor.InSignalName, []striverdt.Event{}},
