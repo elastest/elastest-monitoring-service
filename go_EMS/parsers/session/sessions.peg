@@ -27,7 +27,6 @@ Declaration <- f:Filter { return f,nil }
 	    / t:Trigger { return t,nil }
 	    / p:PredDef { return p,nil }
 
-
 PredDef <- PRED n:Name ":=" p:Predicate {
 	return newPredicateDeclaration(n,p),nil
 }
@@ -42,7 +41,8 @@ Stream <- STREAM t:Type n:Name ":=" _? e:StreamExpr {
        return newStreamDeclaration(t,n,e),nil
 }
 
-Type <- INT     { return IntT, nil  }
+Type <- NUM { return NumT,nil}
+//   /  INT     { return IntT, nil  }
      /  BOOL    { return BoolT, nil }
      /  STRING  { return StringT,nil}
 
@@ -55,7 +55,8 @@ StreamExpr <- '(' _? s:StreamExpr ')' _? {
        / IF p:Predicate THEN a:StreamExpr ELSE b:StreamExpr {
        	 return newIfThenElseExpr(p,a,b),nil
        }
-       / i:IntPathExpr { return i,nil }
+//       / i:IntPathExpr { return i,nil }
+       / n:NumPathExpr { return n,nil }
        / s:StrPathExpr { return s,nil }
        / IF p:Predicate THEN s:StreamExpr {
           return newIfThenExpr(p,s),nil
@@ -66,13 +67,22 @@ StreamExpr <- '(' _? s:StreamExpr ')' _? {
        / n:NumExpr {
        	 return n,nil
        }
+       / p:PrevExpr {
+       	 return p,nil
+       }
+
+
+PrevExpr <- PREV n:Name { return newPrevExpr(n),nil }
 
 Builtin <- AVG { return "avg",nil }
 	/ COUNT { return "count",nil }
 
-IntPathExpr <- "e.getint(" _? p:JSONPath _? ")" _? {
-      return newIntPathExpr(p),nil		
+NumPathExpr <- "e.getnum(" _? p:JSONPath _? ")" _? {
+      return newNumPathExpr(p),nil		
 }
+// IntPathExpr <- "e.getint(" _? p:JSONPath _? ")" _? {
+//      return newIntPathExpr(p),nil		
+//}
 StrPathExpr <- "e.getstr" _? '(' _? p:JSONPath _? ")" _? {
       return newStringPathExpr(p),nil		
 }
@@ -136,13 +146,14 @@ Mults    <- a:BasicNumExpr "*" _? b:Mults { return newMulExpr(a,b),nil }
 BasicNumExpr <- '(' _? n:NumExpr ')' _?   { return n,nil }
            / a:AtomicNumExpr { return a,nil }
 AtomicNumExpr <- n:NumStream { return newNumStreamExpr(n),nil }
-	      / l:IntLiteral { return l,nil }
+//	      / l:IntLiteral { return l,nil }
+	      / n:NumLiteral { return n,nil }
 
 NumStream <- n:Name { return n,nil }
 
 NumLiteral <- p:([0-9]+('.'[0-9]+)?) {
 	      x,err := strconv.ParseFloat(p.(string),32)
-	      return newFloatLiteralExpr(x), err
+	      return newNumLiteralExpr(x), err
 	   }
 IntLiteral <- p:('-'?[0-9]+) {
               n,err := strconv.Atoi(p.(string))
@@ -215,3 +226,6 @@ DO   <- "do" _
 IF   <- "if" _
 THEN <- "then" _
 ELSE <- "else" _
+PREV <- "Prev" _
+ONCE <- "Once" _
+WASALWAYS <-"WasAlways" _

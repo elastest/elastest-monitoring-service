@@ -82,7 +82,7 @@ func newTrigger(p, a interface{}) (Trigger) {
 
 type StreamType int
 const (
-	IntT  StreamType   = iota
+	NumT  StreamType   = iota
 	BoolT
 	StringT
 	LastType = StringT
@@ -142,11 +142,12 @@ type StreamExprVisitor interface {
     // visitStringExpr(StringExpr)
     visitNumExpr(NumExpr)
     visitPredExpr(PredExpr)
+    visitPrevExpr(PrevExpr)	
 }
 
 type StreamExpr interface {
 	// add functions here
-	Sprint() string
+    Sprint() string
     Accept (StreamExprVisitor)
 }
 
@@ -188,21 +189,26 @@ type PredExpr struct {
 	Pred common.Predicate 
 }
 
-type IntPathExpr struct {
+type NumPathExpr struct {
 	Path string
 }
 type StringPathExpr struct {
 	Path string
 }
 
+type PrevExpr struct {
+	Stream string
+}
 // TODO: Make this a visitor
-func (i IntPathExpr) Sprint() string {
+func (i NumPathExpr) Sprint() string {
 	return fmt.Sprintf("e.getint(%s)",i.Path)
 }
 func (i StringPathExpr) Sprint() string {
 	return fmt.Sprintf("e.getstr(%s)",i.Path)
 }
-
+func (i PrevExpr) Sprint() string {
+	return fmt.Sprintf("Prev %s",i.Stream)
+}
 func (p AggregatorExpr) Sprint() string {
 	return fmt.Sprintf("%s(%s within %s)",p.Operation,p.Stream,p.Session)
 }
@@ -213,10 +219,10 @@ func (p IfThenExpr) Sprint() string {
 func (p IfThenElseExpr) Sprint() string {
 	return fmt.Sprintf("if %s then %s else %s",p.If.Sprint(),p.Then.Sprint(),p.Else.Sprint())
 }
-
 func (p PredExpr) Sprint() string {
 	return p.Pred.Sprint()
 }
+
 
 //
 // Expression Node constructors
@@ -244,9 +250,9 @@ func newPredExpr(p interface{}) PredExpr {
 	return PredExpr{p.(common.Predicate)}
 }
 
-func newIntPathExpr(p interface{}) (IntPathExpr) {
+func newNumPathExpr(p interface{}) (NumPathExpr) {
 	path := p.(common.PathName).Val
-	return IntPathExpr{path}
+	return NumPathExpr{path}
 }
 
 func newStringPathExpr(p interface{}) (StringPathExpr) {
@@ -254,6 +260,9 @@ func newStringPathExpr(p interface{}) (StringPathExpr) {
 	return StringPathExpr{path}
 }
 
+func newPrevExpr(p interface{}) (PrevExpr) {
+	return PrevExpr{p.(string)}
+}
 //
 // Numeric:
 //  NumExpressions and NumComparison
@@ -328,7 +337,7 @@ func newNumNotEq(a,b interface{}) NumNotEq {
 
 type NumExprVisitor interface {
     visitIntLiteralExpr(IntLiteralExpr)
-    visitFloatLiteralExpr(FloatLiteralExpr)
+    visitNumLiteralExpr(NumLiteralExpr)
     visitNumStreamExpr(NumStreamExpr)
     visitNumMulExpr(NumMulExpr)
     visitNumDivExpr(NumDivExpr)
@@ -343,7 +352,7 @@ type NumExpr interface {
 type IntLiteralExpr struct {
 	Num int
 }
-type FloatLiteralExpr struct {
+type NumLiteralExpr struct {
 	Num float32
 }
 type NumStreamExpr struct {
@@ -384,8 +393,8 @@ func newNumStreamExpr(a interface{}) NumStreamExpr {
 func newIntLiteralExpr(a interface{}) IntLiteralExpr {
 	return IntLiteralExpr{a.(int)}
 }
-func newFloatLiteralExpr(a interface{}) FloatLiteralExpr {
-	return FloatLiteralExpr{a.(float32)}
+func newNumLiteralExpr(a interface{}) NumLiteralExpr {
+	return NumLiteralExpr{a.(float32)}
 }
 
 func (e NumMulExpr) Sprint() string {
@@ -406,7 +415,7 @@ func (e NumStreamExpr) Sprint() string {
 func (e IntLiteralExpr) Sprint() string {
 	return strconv.Itoa(e.Num)
 }
-func (e FloatLiteralExpr) Sprint() string {
+func (e NumLiteralExpr) Sprint() string {
 	return strconv.FormatFloat(float64(e.Num),'f',4,32)
 }
 

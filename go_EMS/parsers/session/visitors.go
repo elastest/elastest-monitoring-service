@@ -53,6 +53,10 @@ func (visitor StreamExprToStriverVisitor) visitNumExpr(NumExpr) {
 func (visitor StreamExprToStriverVisitor) visitPredExpr(PredExpr) {
     panic("not implemented")
 }
+func (visitor StreamExprToStriverVisitor) visitPrevExpr(PrevExpr) {
+    panic("not implemented")
+}
+
 
 func getAvgOutStream(inSignalName, sessionSignalName, outSignalName striverdt.StreamName, visitor *MoMToStriverVisitor) {
     condCounterName := "condcounter::"+outSignalName
