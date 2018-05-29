@@ -142,6 +142,8 @@ type StreamExprVisitor interface {
     // visitStringExpr(StringExpr)
     visitNumExpr(NumExpr)
     visitPredExpr(PredExpr)
+    visitIntPathExpr(IntPathExpr)
+    visitStringPathExpr(StringPathExpr)
 }
 
 type StreamExpr interface {
@@ -185,12 +187,13 @@ func (this IfThenElseExpr) Accept(visitor StreamExprVisitor) {
 //}
 
 type PredExpr struct {
-	Pred common.Predicate 
+	Pred common.Predicate
 }
 
 type IntPathExpr struct {
 	Path string
 }
+
 type StringPathExpr struct {
 	Path string
 }
@@ -213,7 +216,6 @@ func (p IfThenExpr) Sprint() string {
 func (p IfThenElseExpr) Sprint() string {
 	return fmt.Sprintf("if %s then %s else %s",p.If.Sprint(),p.Then.Sprint(),p.Else.Sprint())
 }
-
 func (p PredExpr) Sprint() string {
 	return p.Pred.Sprint()
 }

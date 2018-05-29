@@ -39,7 +39,7 @@ type SignalToStriverVisitor struct {
 
 func (visitor *SignalToStriverVisitor) visitSampled(sampledsignal SampledSignalDefinition) {
 	signalchan := make(chan striverdt.Event)
-    visitor.Samplers = append(visitor.Samplers, dt.Sampler{sampledsignal.InChannel, sampledsignal.ValuePath, signalchan})
+    visitor.Samplers = append(visitor.Samplers, dt.Sampler{signalchan})
 	inStream := striverdt.InStream{striverdt.StreamName(sampledsignal.Name), &striverdt.InFromChannel{signalchan, nil, 0, false}}
     visitor.InStreams = append(visitor.InStreams, inStream)
 }

@@ -14,16 +14,21 @@ func StartEngine(signaldefs []session.MoM) dt.MoMEngine01 {
 	writechan := make(chan striverdt.FlowingEvent)
     startWriter(writechan)
 
-    momtostrivervisitor := session.MoMToStriverVisitor{[]dt.Sampler{}, []striverdt.OutStream{}, []striverdt.InStream{}}
+    inSignalName := striverdt.StreamName("elastest::in_events")
+	signalchan := make(chan striverdt.Event)
+    sampler := dt.Sampler{signalchan}
+	inStream := striverdt.InStream{inSignalName, &striverdt.InFromChannel{signalchan, nil, 0, false}}
+    inStreams := []striverdt.InStream{inStream}
+
+    momtostrivervisitor := session.MoMToStriverVisitor{[]striverdt.OutStream{}, inSignalName}
 
     for _,signaldef := range signaldefs {
         signaldef.Accept(&momtostrivervisitor)
     }
 
-    samplers := momtostrivervisitor.Samplers
     kchan := make (chan bool)
-    go strivercp.Start(momtostrivervisitor.InStreams, momtostrivervisitor.OutStreams, writechan, kchan)
-    return dt.MoMEngine01{samplers, kchan}
+    go strivercp.Start(inStreams, momtostrivervisitor.OutStreams, writechan, kchan)
+    return dt.MoMEngine01{sampler, kchan}
 }
 
 func startWriter(writechan chan striverdt.FlowingEvent) {

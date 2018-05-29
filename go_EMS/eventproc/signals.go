@@ -6,7 +6,6 @@ import (
     "math/rand"
     "strconv"
     "fmt"
-	"github.com/elastest/elastest-monitoring-service/go_EMS/signals"
 	"github.com/elastest/elastest-monitoring-service/go_EMS/moms"
     "github.com/elastest/elastest-monitoring-service/go_EMS/parsers/session"
     "strings"
@@ -49,10 +48,7 @@ func UndeploySignals01(momid int) *pb.MomPostReply {
 
 func ProcessEvent(evt dt.Event) {
     for _,engine := range momengines {
-        samplers := engine.Samplers
-        for _,sampler := range samplers {
-            signals.SamplerProcessEvent(sampler, evt)
-        }
+        engine.Sampler.ProcessEvent(evt)
     }
 }
 

@@ -2,6 +2,7 @@ package data
 
 import (
     striverdt "gitlab.software.imdea.org/felipe.gorostiaga/striver-go/datatypes"
+	"time"
 )
 
 type SignalsDefinitions struct {
@@ -10,19 +11,25 @@ type SignalsDefinitions struct {
 }
 
 type Sampler struct {
-    InChannel Channel
-    ValuePath JSONPath
     OutChan chan striverdt.Event
 }
 
 type MoMEngine01 struct {
-    Samplers []Sampler
+    Sampler Sampler
     Striverkillchan chan bool
 }
 
 func (engine MoMEngine01) Kill() {
-    for _,sampler := range engine.Samplers {
-        close(sampler.OutChan)
-    }
+    close(engine.Sampler.OutChan)
     close(engine.Striverkillchan)
+}
+
+func (s Sampler) ProcessEvent(evt Event) {
+    payload := striverdt.Some(evt)
+    t, err := time.Parse(time.RFC3339Nano,evt.Timestamp)
+    if err != nil {
+        panic(err)
+    }
+    striverEvent := striverdt.Event{striverdt.Time(t.Unix()), payload}
+    s.OutChan <- striverEvent
 }

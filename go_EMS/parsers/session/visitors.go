@@ -1,14 +1,13 @@
 package session
 
 import(
-    dt "github.com/elastest/elastest-monitoring-service/go_EMS/datatypes"
     striverdt "gitlab.software.imdea.org/felipe.gorostiaga/striver-go/datatypes"
+    parsercommon "github.com/elastest/elastest-monitoring-service/go_EMS/parsers/common"
 )
 
 type MoMToStriverVisitor struct {
-    Samplers []dt.Sampler
     OutStreams []striverdt.OutStream
-    InStreams []striverdt.InStream
+    InSignalName striverdt.StreamName
 }
 
 func (visitor *MoMToStriverVisitor) VisitStream(stream Stream) {
@@ -35,13 +34,19 @@ type StreamExprToStriverVisitor struct {
 func (visitor StreamExprToStriverVisitor) visitAggregatorExpr(aggexp AggregatorExpr) {
     switch aggexp.Operation {
     case "avg":
-        getAvgOutStream(aggexp.Stream, aggexp.Session, visitor.streamname, visitor.momvisitor)
+        makeAvgOutStream(aggexp.Stream, aggexp.Session, visitor.streamname, visitor.momvisitor)
     default:
         panic("Operation "+aggexp.Operation+" not implemented")
     }
 }
 
-func (visitor StreamExprToStriverVisitor) visitIfThenExpr(IfThenExpr) {
+func (visitor StreamExprToStriverVisitor) visitIfThenExpr(ifthen IfThenExpr) {
+    mysignalname := visitor.streamname
+    thensignalname := "ifthen_helper::"+mysignalname
+    visitor.streamname = thensignalname
+    ifthen.Then.Accept(visitor)
+	//If   common.Predicate
+    makeIfThenStream(ifthen.If, thensignalname, mysignalname, visitor.momvisitor)
     panic("not implemented")
 }
 func (visitor StreamExprToStriverVisitor) visitIfThenElseExpr(IfThenElseExpr) {
@@ -53,8 +58,14 @@ func (visitor StreamExprToStriverVisitor) visitNumExpr(NumExpr) {
 func (visitor StreamExprToStriverVisitor) visitPredExpr(PredExpr) {
     panic("not implemented")
 }
+func (visitor StreamExprToStriverVisitor) visitIntPathExpr(IntPathExpr) {
+    panic("not implemented")
+}
+func (visitor StreamExprToStriverVisitor) visitStringPathExpr(StringPathExpr) {
+    panic("not implemented")
+}
 
-func getAvgOutStream(inSignalName, sessionSignalName, outSignalName striverdt.StreamName, visitor *MoMToStriverVisitor) {
+func makeAvgOutStream(inSignalName, sessionSignalName, outSignalName striverdt.StreamName, visitor *MoMToStriverVisitor) {
     condCounterName := "condcounter::"+outSignalName
     condCounterFun := func (args...striverdt.EvPayload) striverdt.EvPayload {
         cond := args[0]
@@ -98,4 +109,8 @@ func getAvgOutStream(inSignalName, sessionSignalName, outSignalName striverdt.St
     }, condAvgFun}
     condAvgStream := striverdt.OutStream{outSignalName, striverdt.SrcTickerNode{inSignalName}, condAvgVal}
     visitor.OutStreams = append(visitor.OutStreams, condAvgStream)
+}
+
+func makeIfThenStream(ifpred parsercommon.Predicate, thensignalname, mysignalname striverdt.StreamName, visitor *MoMToStriverVisitor) {
+    //TODO
 }
