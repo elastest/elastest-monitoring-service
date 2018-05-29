@@ -50,7 +50,7 @@ func TagEvent(ev *dt.Event) {
 
 		tmp := checkDefs[:0]
         for _,def := range checkDefs {
-            def.Pred.Accept(theEvalVisitor)
+            def.Pred.Accept(&theEvalVisitor)
             if theEvalVisitor.Result {
                 dirty = true
                 (*ev).Channels = sets.SetAdd(ev.Channels, def.Tag.Tag)

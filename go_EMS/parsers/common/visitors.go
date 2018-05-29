@@ -12,46 +12,48 @@ type EvalVisitor struct {
     Event dt.Event
 }
 
-func (visitor EvalVisitor) visitAndPredicate(p AndPredicate) {
+func (visitor *EvalVisitor) visitAndPredicate(p AndPredicate) {
     p.Left.Accept(visitor)
     rLeft := visitor.Result
     p.Right.Accept(visitor)
     rRight := visitor.Result
 	visitor.Result = rLeft && rRight
 }
-func (visitor EvalVisitor) visitTruePredicate(p TruePredicate) {
+func (visitor *EvalVisitor) visitTruePredicate(p TruePredicate) {
     visitor.Result = true
 }
-func (visitor EvalVisitor) visitFalsePredicate(p FalsePredicate) {
+func (visitor *EvalVisitor) visitFalsePredicate(p FalsePredicate) {
     visitor.Result = false
 }
-func (visitor EvalVisitor) visitNotPredicate(p NotPredicate) {
+func (visitor *EvalVisitor) visitNotPredicate(p NotPredicate) {
 	p.Inner.Accept(visitor)
     visitor.Result = !visitor.Result
 }
-func (visitor EvalVisitor) visitOrPredicate(p OrPredicate) {
+func (visitor *EvalVisitor) visitOrPredicate(p OrPredicate) {
     p.Left.Accept(visitor)
     rLeft := visitor.Result
     p.Right.Accept(visitor)
     rRight := visitor.Result
 	visitor.Result = rLeft || rRight
 }
-func (visitor EvalVisitor) visitPathPredicate(p PathPredicate) {
+func (visitor *EvalVisitor) visitPathPredicate(p PathPredicate) {
     _,err := jsonrw.ExtractFromMap(visitor.Event.Payload, dt.JSONPath(p.Path))
 	visitor.Result = err == nil
 }
-func (visitor EvalVisitor) visitStrPredicate(p StrPredicate) {
+func (visitor *EvalVisitor) visitStrPredicate(p StrPredicate) {
     strif,err := jsonrw.ExtractFromMap(visitor.Event.Payload, dt.JSONPath(p.Path))
     if err != nil {
         visitor.Result = false
+        //fmt.Println("No string found in event ", visitor.Event)
+        return
     }
-    fmt.Println("Comparing",strif, "with", p.Expected)
     visitor.Result = strif.(string) == p.Expected
+    //fmt.Println("Comparing",strif, "with", p.Expected, "and the result is", visitor.Result)
 }
-func (visitor EvalVisitor) visitTagPredicate(p TagPredicate) {
+func (visitor *EvalVisitor) visitTagPredicate(p TagPredicate) {
     visitor.Result = sets.SetIn(p.Tag, visitor.Event.Channels)
 }
-func (visitor EvalVisitor) visitNamedPredicate(p NamedPredicate) {
+func (visitor *EvalVisitor) visitNamedPredicate(p NamedPredicate) {
     // TODO
 }
 
