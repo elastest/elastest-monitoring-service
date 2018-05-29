@@ -38,5 +38,6 @@ func NewPathName(s string) (PathName) {
 	return PathName{s}
 }
 func NewQuotedString(s string) (QuotedString) {
+    s = s[1:len(s)-1]
 	return QuotedString{s}
 }
