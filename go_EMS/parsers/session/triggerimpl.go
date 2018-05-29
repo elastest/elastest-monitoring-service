@@ -6,12 +6,14 @@ import(
 	dt "github.com/elastest/elastest-monitoring-service/go_EMS/datatypes"
 )
 
+var TRIGGER_PREFIX striverdt.StreamName = "trigger::"
+
 func makeTriggerStreams(visitor *MoMToStriverVisitor, predicate parsercommon.Predicate, triggerAction EmitAction) {
 	//StreamName striverdt.StreamName
 	//TagName    common.Tag
 
     inputSignalName := triggerAction.StreamName
-    outputSignalName := "trigger::" + inputSignalName
+    outputSignalName := TRIGGER_PREFIX + inputSignalName
     condFun := func (args...striverdt.EvPayload) striverdt.EvPayload {
         rawevent := args[0]
         then := args[1]
