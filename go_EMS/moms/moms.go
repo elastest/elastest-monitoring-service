@@ -5,7 +5,6 @@ import (
     striverdt "gitlab.software.imdea.org/felipe.gorostiaga/striver-go/datatypes"
     strivercp "gitlab.software.imdea.org/felipe.gorostiaga/striver-go/controlplane"
     "github.com/elastest/elastest-monitoring-service/go_EMS/eventout"
-	//"time"
     "github.com/elastest/elastest-monitoring-service/go_EMS/parsers/session"
     "strings"
 )
@@ -32,7 +31,6 @@ func StartEngine(signaldefs []session.MoM) dt.MoMEngine01 {
 }
 
 func startWriter(writechan chan striverdt.FlowingEvent) {
-    //loc := time.FixedZone("fakeplace", 0)
     sendchan := eventout.GetSendChannel()
 
     go func () {

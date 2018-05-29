@@ -190,6 +190,10 @@ type PredExpr struct {
 	Pred common.Predicate
 }
 
+func (this PredExpr) Accept(visitor StreamExprVisitor) {
+    visitor.visitPredExpr(this)
+}
+
 type IntPathExpr struct {
 	Path dt.JSONPath
 }
