@@ -1,9 +1,10 @@
-package common
+package impl
 
 import(
     dt "github.com/elastest/elastest-monitoring-service/go_EMS/datatypes"
     sets "github.com/elastest/elastest-monitoring-service/go_EMS/setoperators"
     "github.com/elastest/elastest-monitoring-service/go_EMS/jsonrw"
+	"github.com/elastest/elastest-monitoring-service/go_EMS/parsers/common"
 )
 
 type EvalVisitor struct {
@@ -11,35 +12,35 @@ type EvalVisitor struct {
     Event dt.Event
 }
 
-func (visitor *EvalVisitor) visitAndPredicate(p AndPredicate) {
+func (visitor *EvalVisitor) VisitAndPredicate(p common.AndPredicate) {
     p.Left.Accept(visitor)
     rLeft := visitor.Result
     p.Right.Accept(visitor)
     rRight := visitor.Result
 	visitor.Result = rLeft && rRight
 }
-func (visitor *EvalVisitor) visitTruePredicate(p TruePredicate) {
+func (visitor *EvalVisitor) VisitTruePredicate(p common.TruePredicate) {
     visitor.Result = true
 }
-func (visitor *EvalVisitor) visitFalsePredicate(p FalsePredicate) {
+func (visitor *EvalVisitor) VisitFalsePredicate(p common.FalsePredicate) {
     visitor.Result = false
 }
-func (visitor *EvalVisitor) visitNotPredicate(p NotPredicate) {
+func (visitor *EvalVisitor) VisitNotPredicate(p common.NotPredicate) {
 	p.Inner.Accept(visitor)
     visitor.Result = !visitor.Result
 }
-func (visitor *EvalVisitor) visitOrPredicate(p OrPredicate) {
+func (visitor *EvalVisitor) VisitOrPredicate(p common.OrPredicate) {
     p.Left.Accept(visitor)
     rLeft := visitor.Result
     p.Right.Accept(visitor)
     rRight := visitor.Result
 	visitor.Result = rLeft || rRight
 }
-func (visitor *EvalVisitor) visitPathPredicate(p PathPredicate) {
+func (visitor *EvalVisitor) VisitPathPredicate(p common.PathPredicate) {
     _,err := jsonrw.ExtractFromMap(visitor.Event.Payload, dt.JSONPath(p.Path))
 	visitor.Result = err == nil
 }
-func (visitor *EvalVisitor) visitStrPredicate(p StrPredicate) {
+func (visitor *EvalVisitor) VisitStrPredicate(p common.StrPredicate) {
     strif,err := jsonrw.ExtractFromMap(visitor.Event.Payload, dt.JSONPath(p.Path))
     if err != nil {
         visitor.Result = false
@@ -49,14 +50,15 @@ func (visitor *EvalVisitor) visitStrPredicate(p StrPredicate) {
     visitor.Result = strif.(string) == p.Expected
     //fmt.Println("Comparing",strif, "with", p.Expected, "and the result is", visitor.Result)
 }
-func (visitor *EvalVisitor) visitTagPredicate(p TagPredicate) {
+func (visitor *EvalVisitor) VisitTagPredicate(p common.TagPredicate) {
     visitor.Result = sets.SetIn(p.Tag, visitor.Event.Channels)
 }
-func (visitor *EvalVisitor) visitNamedPredicate(p NamedPredicate) {
+func (visitor *EvalVisitor) VisitNamedPredicate(p common.NamedPredicate) {
     // TODO
 }
-func (visitor *EvalVisitor) visitNumComparisonPredicate(p NumComparisonPredicate) {
+func (visitor *EvalVisitor) VisitNumComparisonPredicate(p common.NumComparisonPredicate) {
     // TODO
+    panic("Not implemented")
 }
 
 

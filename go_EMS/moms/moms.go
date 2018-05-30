@@ -6,6 +6,7 @@ import (
     strivercp "gitlab.software.imdea.org/felipe.gorostiaga/striver-go/controlplane"
     "github.com/elastest/elastest-monitoring-service/go_EMS/eventout"
     "github.com/elastest/elastest-monitoring-service/go_EMS/parsers/session"
+    parserimpl "github.com/elastest/elastest-monitoring-service/go_EMS/parsers/impl"
     "strings"
 )
 
@@ -19,7 +20,7 @@ func StartEngine(signaldefs []session.MoM) dt.MoMEngine01 {
 	inStream := striverdt.InStream{inSignalName, &striverdt.InFromChannel{signalchan, nil, 0, false}}
     inStreams := []striverdt.InStream{inStream}
 
-    momtostrivervisitor := session.MoMToStriverVisitor{[]striverdt.OutStream{}, inSignalName}
+    momtostrivervisitor := parserimpl.MoMToStriverVisitor{[]striverdt.OutStream{}, inSignalName}
 
     for _,signaldef := range signaldefs {
         signaldef.Accept(&momtostrivervisitor)
@@ -39,7 +40,7 @@ func startWriter(writechan chan striverdt.FlowingEvent) {
             if !open {
                 break
             }
-            if strings.HasPrefix(string(flowev.Name), string(session.TRIGGER_PREFIX)) {
+            if strings.HasPrefix(string(flowev.Name), string(parserimpl.TRIGGER_PREFIX)) {
                 theEv := flowev.Event.Payload.Val.(dt.Event)
                 sendchan <- theEv
             }

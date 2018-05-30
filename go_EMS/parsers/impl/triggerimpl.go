@@ -1,14 +1,15 @@
-package session
+package impl
 
 import(
     striverdt "gitlab.software.imdea.org/felipe.gorostiaga/striver-go/datatypes"
     parsercommon "github.com/elastest/elastest-monitoring-service/go_EMS/parsers/common"
 	dt "github.com/elastest/elastest-monitoring-service/go_EMS/datatypes"
+	"github.com/elastest/elastest-monitoring-service/go_EMS/parsers/session"
 )
 
 var TRIGGER_PREFIX striverdt.StreamName = "trigger::"
 
-func makeTriggerStreams(visitor *MoMToStriverVisitor, predicate parsercommon.Predicate, triggerAction EmitAction) {
+func makeTriggerStreams(visitor *MoMToStriverVisitor, predicate parsercommon.Predicate, triggerAction session.EmitAction) {
 	//StreamName striverdt.StreamName
 	//TagName    common.Tag
 
@@ -21,7 +22,7 @@ func makeTriggerStreams(visitor *MoMToStriverVisitor, predicate parsercommon.Pre
             panic("No raw event!")
         }
         theEvent := rawevent.Val.(striverdt.EvPayload).Val.(dt.Event)
-        theEvalVisitor := parsercommon.EvalVisitor{false, theEvent}
+        theEvalVisitor := EvalVisitor{false, theEvent}
         predicate.Accept(&theEvalVisitor)
         if theEvalVisitor.Result && then.IsSet {
             theVal := then.Val.(striverdt.EvPayload).Val

@@ -5,7 +5,7 @@ import (
 	sets "github.com/elastest/elastest-monitoring-service/go_EMS/setoperators"
     pb "github.com/elastest/elastest-monitoring-service/protobuf"
     "github.com/elastest/elastest-monitoring-service/go_EMS/parsers/stamp"
-    parsercommon "github.com/elastest/elastest-monitoring-service/go_EMS/parsers/common"
+    parserimpl "github.com/elastest/elastest-monitoring-service/go_EMS/parsers/impl"
     "math/rand"
     "strconv"
     "fmt"
@@ -42,7 +42,7 @@ func TagEvent(ev *dt.Event) {
     }
     dirty:=true
 
-    theEvalVisitor := parsercommon.EvalVisitor{false, *ev}
+    theEvalVisitor := parserimpl.EvalVisitor{false, *ev}
 
     for (dirty) {
         dirty=false

@@ -12,12 +12,12 @@ import(
 //  NumExpressions and NumComparison
 //
 type NumComparisonVisitor interface {
-    visitNumLess(NumLess)
-    visitNumLessEq(NumLessEq)
-    visitNumEq(NumEq)
-    visitNumGreater(NumGreater)
-    visitNumGreaterEq(NumGreaterEq)
-    visitNumNotEq(NumNotEq)
+    VisitNumLess(NumLess)
+    VisitNumLessEq(NumLessEq)
+    VisitNumEq(NumEq)
+    VisitNumGreater(NumGreater)
+    VisitNumGreaterEq(NumGreaterEq)
+    VisitNumNotEq(NumNotEq)
 }
 
 type NumComparison interface {
@@ -29,7 +29,7 @@ type NumLess struct {
 	Right NumExpr
 }
 func (this NumLess) Accept(visitor NumComparisonVisitor) {
-    visitor.visitNumLess(this)
+    visitor.VisitNumLess(this)
 }
 
 type NumLessEq struct {
@@ -37,7 +37,7 @@ type NumLessEq struct {
 	Right NumExpr
 }
 func (this NumLessEq) Accept(visitor NumComparisonVisitor) {
-    visitor.visitNumLessEq(this)
+    visitor.VisitNumLessEq(this)
 }
 
 type NumEq struct {
@@ -45,7 +45,7 @@ type NumEq struct {
 	Right NumExpr
 }
 func (this NumEq) Accept(visitor NumComparisonVisitor) {
-    visitor.visitNumEq(this)
+    visitor.VisitNumEq(this)
 }
 
 type NumGreater struct {
@@ -53,7 +53,7 @@ type NumGreater struct {
 	Right NumExpr
 }
 func (this NumGreater) Accept(visitor NumComparisonVisitor) {
-    visitor.visitNumGreater(this)
+    visitor.VisitNumGreater(this)
 }
 
 type NumGreaterEq struct {
@@ -61,7 +61,7 @@ type NumGreaterEq struct {
 	Right NumExpr
 }
 func (this NumGreaterEq) Accept(visitor NumComparisonVisitor) {
-    visitor.visitNumGreaterEq(this)
+    visitor.VisitNumGreaterEq(this)
 }
 
 type NumNotEq struct {
@@ -69,7 +69,7 @@ type NumNotEq struct {
 	Right NumExpr
 }
 func (this NumNotEq) Accept(visitor NumComparisonVisitor) {
-    visitor.visitNumNotEq(this)
+    visitor.VisitNumNotEq(this)
 }
 
 func NewNumLess(a,b interface{}) NumLess {
@@ -96,14 +96,14 @@ func NewNumNotEq(a,b interface{}) NumNotEq {
 // 
 
 type NumExprVisitor interface {
-    visitIntLiteralExpr(IntLiteralExpr)
-    visitFloatLiteralExpr(FloatLiteralExpr)
-    visitStreamNameExpr(StreamNameExpr)
-    visitNumMulExpr(NumMulExpr)
-    visitNumDivExpr(NumDivExpr)
-    visitNumPlusExpr(NumPlusExpr)
-    visitNumMinusExpr(NumMinusExpr)
-    visitIntPathExpr(IntPathExpr)
+    VisitIntLiteralExpr(IntLiteralExpr)
+    VisitFloatLiteralExpr(FloatLiteralExpr)
+    VisitStreamNameExpr(StreamNameExpr)
+    VisitNumMulExpr(NumMulExpr)
+    VisitNumDivExpr(NumDivExpr)
+    VisitNumPlusExpr(NumPlusExpr)
+    VisitNumMinusExpr(NumMinusExpr)
+    VisitIntPathExpr(IntPathExpr)
 }
 type NumExpr interface {
 	Sprint() string
@@ -114,28 +114,28 @@ type IntPathExpr struct {
 	Path dt.JSONPath
 }
 func (this IntPathExpr) Accept(visitor NumExprVisitor) {
-    visitor.visitIntPathExpr(this)
+    visitor.VisitIntPathExpr(this)
 }
 
 type IntLiteralExpr struct {
 	Num int
 }
 func (this IntLiteralExpr) Accept(visitor NumExprVisitor) {
-    visitor.visitIntLiteralExpr(this)
+    visitor.VisitIntLiteralExpr(this)
 }
 
 type FloatLiteralExpr struct {
 	Num float32
 }
 func (this FloatLiteralExpr) Accept(visitor NumExprVisitor) {
-    visitor.visitFloatLiteralExpr(this)
+    visitor.VisitFloatLiteralExpr(this)
 }
 
 type StreamNameExpr struct {
 	StreamName striverdt.StreamName
 }
 func (this StreamNameExpr) Accept(visitor NumExprVisitor) {
-    visitor.visitStreamNameExpr(this)
+    visitor.VisitStreamNameExpr(this)
 }
 
 type NumMulExpr struct {
@@ -143,7 +143,7 @@ type NumMulExpr struct {
 	Right NumExpr
 }
 func (this NumMulExpr) Accept(visitor NumExprVisitor) {
-    visitor.visitNumMulExpr(this)
+    visitor.VisitNumMulExpr(this)
 }
 
 type NumDivExpr struct {
@@ -151,7 +151,7 @@ type NumDivExpr struct {
 	Right NumExpr
 }
 func (this NumDivExpr) Accept(visitor NumExprVisitor) {
-    visitor.visitNumDivExpr(this)
+    visitor.VisitNumDivExpr(this)
 }
 
 type NumPlusExpr struct {
@@ -159,7 +159,7 @@ type NumPlusExpr struct {
 	Right NumExpr
 }
 func (this NumPlusExpr) Accept(visitor NumExprVisitor) {
-    visitor.visitNumPlusExpr(this)
+    visitor.VisitNumPlusExpr(this)
 }
 
 type NumMinusExpr struct {
@@ -167,7 +167,7 @@ type NumMinusExpr struct {
 	Right NumExpr
 }
 func (this NumMinusExpr) Accept(visitor NumExprVisitor) {
-    visitor.visitNumMinusExpr(this)
+    visitor.VisitNumMinusExpr(this)
 }
 
 func NewIntPathExpr(p interface{}) (IntPathExpr) {

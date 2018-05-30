@@ -5,16 +5,16 @@ import(
 )
 
 type PredicateVisitor interface {
-    visitTruePredicate(TruePredicate)
-    visitFalsePredicate(FalsePredicate)
-    visitNotPredicate(NotPredicate)
-    visitAndPredicate(AndPredicate)
-    visitOrPredicate(OrPredicate)
-    visitPathPredicate(PathPredicate)
-    visitStrPredicate(StrPredicate)
-    visitTagPredicate(TagPredicate)
-    visitNamedPredicate(NamedPredicate)
-    visitNumComparisonPredicate(NumComparisonPredicate)
+    VisitTruePredicate(TruePredicate)
+    VisitFalsePredicate(FalsePredicate)
+    VisitNotPredicate(NotPredicate)
+    VisitAndPredicate(AndPredicate)
+    VisitOrPredicate(OrPredicate)
+    VisitPathPredicate(PathPredicate)
+    VisitStrPredicate(StrPredicate)
+    VisitTagPredicate(TagPredicate)
+    VisitNamedPredicate(NamedPredicate)
+    VisitNumComparisonPredicate(NumComparisonPredicate)
 }
 
 type Predicate interface {
@@ -24,13 +24,13 @@ type Predicate interface {
 type TruePredicate  struct {}
 
 func (this TruePredicate) Accept (visitor PredicateVisitor) {
-    visitor.visitTruePredicate(this)
+    visitor.VisitTruePredicate(this)
 }
 
 type FalsePredicate struct {}
 
 func (this FalsePredicate) Accept (visitor PredicateVisitor) {
-    visitor.visitFalsePredicate(this)
+    visitor.VisitFalsePredicate(this)
 }
 
 type NotPredicate struct {
@@ -38,7 +38,7 @@ type NotPredicate struct {
 }
 
 func (this NotPredicate) Accept (visitor PredicateVisitor) {
-    visitor.visitNotPredicate(this)
+    visitor.VisitNotPredicate(this)
 }
 
 type AndPredicate struct {
@@ -47,7 +47,7 @@ type AndPredicate struct {
 }
 
 func (this AndPredicate) Accept (visitor PredicateVisitor) {
-    visitor.visitAndPredicate(this)
+    visitor.VisitAndPredicate(this)
 }
 
 type OrPredicate struct {
@@ -56,7 +56,7 @@ type OrPredicate struct {
 }
 
 func (this OrPredicate) Accept (visitor PredicateVisitor) {
-    visitor.visitOrPredicate(this)
+    visitor.VisitOrPredicate(this)
 }
 
 type PathPredicate struct {
@@ -64,7 +64,7 @@ type PathPredicate struct {
 }
 
 func (this PathPredicate) Accept (visitor PredicateVisitor) {
-    visitor.visitPathPredicate(this)
+    visitor.VisitPathPredicate(this)
 }
 
 type StrPredicate struct {
@@ -73,7 +73,7 @@ type StrPredicate struct {
 }
 
 func (this StrPredicate) Accept (visitor PredicateVisitor) {
-    visitor.visitStrPredicate(this)
+    visitor.VisitStrPredicate(this)
 }
 
 type TagPredicate struct {
@@ -81,7 +81,7 @@ type TagPredicate struct {
 }
 
 func (this TagPredicate) Accept (visitor PredicateVisitor) {
-    visitor.visitTagPredicate(this)
+    visitor.VisitTagPredicate(this)
 }
 
 type NamedPredicate struct {
@@ -91,7 +91,7 @@ type NamedPredicate struct {
 }
 
 func (this NamedPredicate) Accept (visitor PredicateVisitor) {
-    visitor.visitNamedPredicate(this)
+    visitor.VisitNamedPredicate(this)
 }
 
 type NumComparisonPredicate struct {
@@ -99,7 +99,7 @@ type NumComparisonPredicate struct {
 }
 
 func (this NumComparisonPredicate) Accept (visitor PredicateVisitor) {
-    visitor.visitNumComparisonPredicate(this)
+    visitor.VisitNumComparisonPredicate(this)
 }
 
 var (

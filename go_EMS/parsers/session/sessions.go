@@ -135,13 +135,13 @@ func (this Session) Accept(visitor MoMVisitor) {
 //
 
 type StreamExprVisitor interface {
-    visitAggregatorExpr(AggregatorExpr)
-    visitIfThenExpr(IfThenExpr)
-    visitIfThenElseExpr(IfThenElseExpr)
-    // visitStringExpr(StringExpr)
-    visitNumExprStream(NumExprStream)
-    visitPredExpr(PredExpr)
-    visitStringPathExpr(StringPathExpr)
+    VisitAggregatorExpr(AggregatorExpr)
+    VisitIfThenExpr(IfThenExpr)
+    VisitIfThenElseExpr(IfThenElseExpr)
+    // VisittringExpr(StringExpr)
+    VisitNumExprStream(NumExprStream)
+    VisitPredExpr(PredExpr)
+    VisitStringPathExpr(StringPathExpr)
 }
 
 type StreamExpr interface {
@@ -153,7 +153,7 @@ type NumExprStream struct {
     NumExpr common.NumExpr
 }
 func (this NumExprStream) Accept(visitor StreamExprVisitor) {
-    visitor.visitNumExprStream(this)
+    visitor.VisitNumExprStream(this)
 }
 
 type AggregatorExpr struct {
@@ -163,7 +163,7 @@ type AggregatorExpr struct {
 }
 
 func (this AggregatorExpr) Accept(visitor StreamExprVisitor) {
-    visitor.visitAggregatorExpr(this)
+    visitor.VisitAggregatorExpr(this)
 }
 
 type IfThenExpr struct {
@@ -172,7 +172,7 @@ type IfThenExpr struct {
 }
 
 func (this IfThenExpr) Accept(visitor StreamExprVisitor) {
-    visitor.visitIfThenExpr(this)
+    visitor.VisitIfThenExpr(this)
 }
 
 type IfThenElseExpr struct {
@@ -182,7 +182,7 @@ type IfThenElseExpr struct {
 }
 
 func (this IfThenElseExpr) Accept(visitor StreamExprVisitor) {
-    visitor.visitIfThenElseExpr(this)
+    visitor.VisitIfThenElseExpr(this)
 }
 
 // Is this ever used?
@@ -195,7 +195,7 @@ type PredExpr struct {
 }
 
 func (this PredExpr) Accept(visitor StreamExprVisitor) {
-    visitor.visitPredExpr(this)
+    visitor.VisitPredExpr(this)
 }
 
 type StringPathExpr struct {
@@ -203,7 +203,7 @@ type StringPathExpr struct {
 }
 
 func (this StringPathExpr) Accept(visitor StreamExprVisitor) {
-    visitor.visitStringPathExpr(this)
+    visitor.VisitStringPathExpr(this)
 }
 
 // TODO: Make this a visitor
