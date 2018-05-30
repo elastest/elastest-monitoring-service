@@ -28,7 +28,7 @@ Declaration <- f:Filter { return f,nil }
 	    / p:PredDef { return p,nil }
 
 
-PredDef <- PRED n:Name ":=" p:Predicate {
+PredDef <- PRED n:Name ":=" _? p:Predicate _? {
 	return newPredicateDeclaration(n,p),nil
 }
 
