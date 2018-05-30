@@ -42,7 +42,7 @@ func TagEvent(ev *dt.Event) {
     }
     dirty:=true
 
-    theEvalVisitor := parserimpl.EvalVisitor{false, *ev}
+    theEvalVisitor := parserimpl.EvalVisitor{false, *ev, nil} // FIXME no nil
 
     for (dirty) {
         dirty=false
