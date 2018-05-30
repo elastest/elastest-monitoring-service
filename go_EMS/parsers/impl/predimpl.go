@@ -11,13 +11,13 @@ import(
 type EvalVisitor struct {
     Result bool
     Event dt.Event
-    ArgsMap map[striverdt.StreamName]common.Predicate
+    ArgsMap map[striverdt.StreamName]interface{}
 }
 
 type EvalNumVisitor struct {
     Result float32
     Event dt.Event
-    ArgsMap map[striverdt.StreamName]common.Predicate
+    ArgsMap map[striverdt.StreamName]interface{}
 }
 
 func (visitor *EvalVisitor) VisitAndPredicate(p common.AndPredicate) {
@@ -128,8 +128,7 @@ func (visitor *EvalNumVisitor) VisitFloatLiteralExpr(exp common.FloatLiteralExpr
     visitor.Result = exp.Num
 }
 func (visitor *EvalNumVisitor) VisitStreamNameExpr(exp common.StreamNameExpr) {
-    // TODO
-    panic("almost there")
+    visitor.Result = visitor.ArgsMap[exp.StreamName].(float32)
 }
 func (visitor *EvalNumVisitor) VisitNumMulExpr(exp common.NumMulExpr) {
     exp.Left.Accept(visitor)

@@ -68,11 +68,11 @@ func makeAvgOutStream(inSignalName, sessionSignalName, outSignalName striverdt.S
             return striverdt.NothingPayload
         }
         myprev := args[1]
-        currentval := args[2].Val.(striverdt.EvPayload).Val.(float64)
-        kplusone := float64(args[3].Val.(striverdt.EvPayload).Val.(int))
-        prev := 0.0
+        currentval := args[2].Val.(striverdt.EvPayload).Val.(float32)
+        kplusone := float32(args[3].Val.(striverdt.EvPayload).Val.(int))
+        prev := float32(0.0)
         if myprev.IsSet {
-            prev = myprev.Val.(striverdt.EvPayload).Val.(float64)
+            prev = myprev.Val.(striverdt.EvPayload).Val.(float32)
         }
         res := (prev*(kplusone-1)+currentval)/kplusone
         return striverdt.Some(res)
@@ -93,20 +93,15 @@ func makeIfThenStream(ifpred parsercommon.Predicate, thensignalname, mysignalnam
     signalNames := signalNamesVisitor.SNames
     condFun := func (args...striverdt.EvPayload) striverdt.EvPayload {
         rawevent := args[0]
-        then := args[1]
-        argsMap := map[striverdt.StreamName]parsercommon.Predicate{}
-        for i,sname := range signalNames {
-            theArg := args[i+2]
-            if theArg.IsSet && theArg.Val.(striverdt.EvPayload).Val.(bool) {
-                argsMap[sname] = parsercommon.True
-            } else {
-                argsMap[sname] = parsercommon.False
-            }
-        }
         if !rawevent.IsSet {
             panic("No raw event!")
         }
         theEvent := rawevent.Val.(striverdt.EvPayload).Val.(dt.Event)
+        then := args[1]
+        argsMap := map[striverdt.StreamName]interface{}{}
+        for i,sname := range signalNames {
+            argsMap[sname] = args[i+2].Val.(striverdt.EvPayload).Val
+        }
         theEvalVisitor := EvalVisitor{false, theEvent, argsMap}
         ifpred.Accept(&theEvalVisitor)
         if theEvalVisitor.Result && then.IsSet {
@@ -129,21 +124,34 @@ func makeIfThenStream(ifpred parsercommon.Predicate, thensignalname, mysignalnam
 }
 
 func makePredicateStream(pred parsercommon.Predicate, mysignalname striverdt.StreamName, visitor *MoMToStriverVisitor) {
-    /* TODO REDO
+    signalNamesVisitor := SignalNamesFromPredicateVisitor{[]striverdt.StreamName{}}
+    pred.Accept(&signalNamesVisitor)
+    signalNames := signalNamesVisitor.SNames
     predFun := func (args...striverdt.EvPayload) striverdt.EvPayload {
         rawevent := args[0]
         if !rawevent.IsSet {
             panic("No raw event!")
         }
         theEvent := rawevent.Val.(striverdt.EvPayload).Val.(dt.Event)
-        theEvalVisitor := EvalVisitor{false, theEvent}
+        argsMap := map[striverdt.StreamName]interface{}{}
+        for i,sname := range signalNames {
+            argsMap[sname] = args[i+1].Val.(striverdt.EvPayload).Val
+        }
+        theEvalVisitor := EvalVisitor{false, theEvent, argsMap}
         pred.Accept(&theEvalVisitor)
         return striverdt.Some(theEvalVisitor.Result)
     }
 
-    predVal := striverdt.FuncNode{[]striverdt.ValNode{
+    argSignals := []striverdt.ValNode{
         &striverdt.PrevEqValNode{striverdt.TNode{}, visitor.InSignalName, []striverdt.Event{}},
-    }, predFun}
+    }
+    for _,sname := range signalNames {
+        argSignals = append(argSignals,
+        &striverdt.PrevEqValNode{striverdt.TNode{}, sname, []striverdt.Event{}})
+    }
+
+
+    predVal := striverdt.FuncNode{argSignals, predFun}
     predStream := striverdt.OutStream{mysignalname, striverdt.SrcTickerNode{visitor.InSignalName}, predVal}
-    visitor.OutStreams = append(visitor.OutStreams, predStream)*/
+    visitor.OutStreams = append(visitor.OutStreams, predStream)
 }

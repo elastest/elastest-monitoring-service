@@ -80,6 +80,6 @@ type SignalsLT64 struct {}
 
 func (def SignalsLT64) getFunction() (func(...interface{}) interface{}) {
     return func(args...interface{}) interface{} {
-        return args[0].(float64) < args[1].(float64)
+        return args[0].(float32) < args[1].(float32)
     }
 }

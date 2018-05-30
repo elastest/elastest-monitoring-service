@@ -90,11 +90,11 @@ func (visitor *SignalToStriverVisitor) visitConditionalAvgSignal(funcsignal Cond
             return striverdt.NothingPayload
         }
         myprev := args[1]
-        cpuval := args[2].Val.(striverdt.EvPayload).Val.(float64)
-        kplusone := float64(args[3].Val.(striverdt.EvPayload).Val.(int))
+        cpuval := args[2].Val.(striverdt.EvPayload).Val.(float32)
+        kplusone := float32(args[3].Val.(striverdt.EvPayload).Val.(int))
         prev := 0.0
         if myprev.IsSet {
-            prev = myprev.Val.(striverdt.EvPayload).Val.(float64)
+            prev = myprev.Val.(striverdt.EvPayload).Val.(float32)
         }
         res := (prev*(kplusone-1)+cpuval)/kplusone
         return striverdt.Some(res)

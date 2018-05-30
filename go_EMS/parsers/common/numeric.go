@@ -192,8 +192,8 @@ func NewStreamNameExpr(a interface{}) StreamNameExpr {
 func NewIntLiteralExpr(a interface{}) IntLiteralExpr {
 	return IntLiteralExpr{a.(int)}
 }
-func NewFloatLiteralExpr(a interface{}) FloatLiteralExpr {
-	return FloatLiteralExpr{a.(float32)}
+func NewFloatLiteralExpr(val float64) FloatLiteralExpr {
+	return FloatLiteralExpr{float32(val)}
 }
 
 func (i IntPathExpr) Sprint() string {
@@ -219,5 +219,5 @@ func (e IntLiteralExpr) Sprint() string {
 	return strconv.Itoa(e.Num)
 }
 func (e FloatLiteralExpr) Sprint() string {
-	return strconv.FormatFloat(float64(e.Num),'f',4,32)
+	return "a number"
 }

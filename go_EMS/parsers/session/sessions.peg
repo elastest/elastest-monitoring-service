@@ -136,17 +136,13 @@ Mults    <- a:BasicNumExpr "*" _? b:Mults { return common.NewMulExpr(a,b),nil }
 BasicNumExpr <- '(' _? n:NumExpr ')' _?   { return n,nil }
            / a:AtomicNumExpr { return a,nil }
 AtomicNumExpr <- n:NumStream { return common.NewStreamNameExpr(n),nil }
-	      / l:IntLiteral { return l,nil }
+	      / l:NumLiteral { return l,nil }
 
 NumStream <- n:Name { return n,nil }
 
 NumLiteral <- p:([0-9]+('.'[0-9]+)?) {
-	      x,err := strconv.ParseFloat(p.(string),32)
+	      x,err := strconv.ParseFloat(string(c.text),32)
 	      return common.NewFloatLiteralExpr(x), err
-	   }
-IntLiteral <- p:('-'?[0-9]+) {
-              n,err := strconv.Atoi(string(c.text))
-	      return common.NewIntLiteralExpr(n),err
 	   }
 
 NamedPredicate <- n:Name _? { return common.NewNamedPredicate(n),nil  } 

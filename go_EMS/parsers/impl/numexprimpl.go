@@ -48,7 +48,7 @@ func makeIntPathStream(path dt.JSONPath, mysignalname striverdt.StreamName, visi
             /* This can happen: the stream might be guarded by an if statement upper in the AST */
             return striverdt.NothingPayload
         }
-        return striverdt.Some(valif.(float64))
+        return striverdt.Some(float32(valif.(float64)))
     }
     extractVal := striverdt.FuncNode{[]striverdt.ValNode{
         &striverdt.PrevEqValNode{striverdt.TNode{}, visitor.InSignalName, []striverdt.Event{}},
