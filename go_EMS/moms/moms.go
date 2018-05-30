@@ -7,6 +7,7 @@ import (
     "github.com/elastest/elastest-monitoring-service/go_EMS/eventout"
     "github.com/elastest/elastest-monitoring-service/go_EMS/parsers/session"
     parserimpl "github.com/elastest/elastest-monitoring-service/go_EMS/parsers/impl"
+    parsercommon "github.com/elastest/elastest-monitoring-service/go_EMS/parsers/common"
     "strings"
 )
 
@@ -20,7 +21,7 @@ func StartEngine(signaldefs []session.MoM) dt.MoMEngine01 {
 	inStream := striverdt.InStream{inSignalName, &striverdt.InFromChannel{signalchan, nil, 0, false}}
     inStreams := []striverdt.InStream{inStream}
 
-    momtostrivervisitor := parserimpl.MoMToStriverVisitor{[]striverdt.OutStream{}, inSignalName}
+    momtostrivervisitor := parserimpl.MoMToStriverVisitor{[]striverdt.OutStream{}, inSignalName, map[string]parsercommon.Predicate{}}
 
     for _,signaldef := range signaldefs {
         signaldef.Accept(&momtostrivervisitor)

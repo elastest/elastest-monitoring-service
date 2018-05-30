@@ -11,6 +11,7 @@ import(
 type EvalVisitor struct {
     Result bool
     Event dt.Event
+    Preds map[string]common.Predicate
     ArgsMap map[striverdt.StreamName]interface{}
 }
 
@@ -62,7 +63,11 @@ func (visitor *EvalVisitor) VisitTagPredicate(p common.TagPredicate) {
     visitor.Result = sets.SetIn(p.Tag, visitor.Event.Channels)
 }
 func (visitor *EvalVisitor) VisitNamedPredicate(p common.NamedPredicate) {
-    // TODO
+    if thepred, ok := visitor.Preds[p.Name]; ok {
+        thepred.Accept(visitor)
+    } else {
+        visitor.Result = visitor.ArgsMap[striverdt.StreamName(p.Name)].(bool)
+    }
 }
 func (visitor *EvalVisitor) VisitNumComparisonPredicate(p common.NumComparisonPredicate) {
     p.NumComparison.Accept(visitor)
@@ -161,35 +166,3 @@ func (visitor *EvalNumVisitor) VisitNumMinusExpr(exp common.NumMinusExpr) {
 func (visitor *EvalNumVisitor) VisitIntPathExpr(exp common.IntPathExpr) {
     panic("not implemented")
 }
-
-
-//
-// sprint() functions of the different Predicates. TODO: Use visitor
-//
-// func (p AndPredicate) Sprint() string {
-// 	return fmt.Sprintf("(%s /\\ %s)",p.Left.Sprint(),p.Right.Sprint())
-// }
-// func (p OrPredicate) Sprint() string {
-// 	return fmt.Sprintf("(%s \\/  %s)",p.Left.Sprint(),p.Right.Sprint())
-// }
-// func (p NotPredicate) Sprint() string {
-// 	return fmt.Sprintf("~ %s",p.Inner.Sprint())
-// }
-// func (p PathPredicate) Sprint() string {
-// 	return fmt.Sprintf("e.path(%s)",p.Path)
-// }
-// func (p StrPredicate) Sprint() string {
-// 	return fmt.Sprintf("e.strcmp(%s,\"%s\")",p.Path,p.Expected)
-// }
-// func (p TagPredicate) Sprint() string {
-// 	return fmt.Sprintf("e.tag(%s)",p.Tag)
-// }
-// func (p TruePredicate) Sprint() string {
-// 	return fmt.Sprintf("true");
-// }
-// func (p FalsePredicate) Sprint() string {
-// 	return fmt.Sprintf("false")
-// }
-// func (p NamedPredicate) Sprint() string {
-// 	return p.Name
-// }

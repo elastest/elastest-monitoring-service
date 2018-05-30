@@ -206,29 +206,6 @@ func (this StringPathExpr) Accept(visitor StreamExprVisitor) {
     visitor.VisitStringPathExpr(this)
 }
 
-// TODO: Make this a visitor
-// func (p NumExprStream) Sprint() string {
-// 	return fmt.Sprintf("numexpr")
-// }
-// 
-// func (i StringPathExpr) Sprint() string {
-// 	return fmt.Sprintf("e.getstr(%s)",i.Path)
-// }
-// 
-// func (p AggregatorExpr) Sprint() string {
-// 	return fmt.Sprintf("%s(%s within %s)",p.Operation,p.Stream,p.Session)
-// }
-// 
-// func (p IfThenExpr) Sprint() string {
-// 	return fmt.Sprintf("if %s then %s",p.If.Sprint(),p.Then.Sprint())
-// }
-// func (p IfThenElseExpr) Sprint() string {
-// 	return fmt.Sprintf("if %s then %s else %s",p.If.Sprint(),p.Then.Sprint(),p.Else.Sprint())
-// }
-// func (p PredExpr) Sprint() string {
-// 	return p.Pred.Sprint()
-// }
-
 //
 // Expression Node constructors
 //

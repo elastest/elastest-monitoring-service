@@ -88,7 +88,7 @@ func makeAvgOutStream(inSignalName, sessionSignalName, outSignalName striverdt.S
 }
 
 func makeIfThenStream(ifpred parsercommon.Predicate, thensignalname, mysignalname striverdt.StreamName, visitor *MoMToStriverVisitor) {
-    signalNamesVisitor := SignalNamesFromPredicateVisitor{[]striverdt.StreamName{}}
+    signalNamesVisitor := SignalNamesFromPredicateVisitor{visitor.Preds, []striverdt.StreamName{}}
     ifpred.Accept(&signalNamesVisitor)
     signalNames := signalNamesVisitor.SNames
     condFun := func (args...striverdt.EvPayload) striverdt.EvPayload {
@@ -102,7 +102,7 @@ func makeIfThenStream(ifpred parsercommon.Predicate, thensignalname, mysignalnam
         for i,sname := range signalNames {
             argsMap[sname] = args[i+2].Val.(striverdt.EvPayload).Val
         }
-        theEvalVisitor := EvalVisitor{false, theEvent, argsMap}
+        theEvalVisitor := EvalVisitor{false, theEvent, visitor.Preds, argsMap}
         ifpred.Accept(&theEvalVisitor)
         if theEvalVisitor.Result && then.IsSet {
             return then.Val.(striverdt.EvPayload)
@@ -124,7 +124,7 @@ func makeIfThenStream(ifpred parsercommon.Predicate, thensignalname, mysignalnam
 }
 
 func makePredicateStream(pred parsercommon.Predicate, mysignalname striverdt.StreamName, visitor *MoMToStriverVisitor) {
-    signalNamesVisitor := SignalNamesFromPredicateVisitor{[]striverdt.StreamName{}}
+    signalNamesVisitor := SignalNamesFromPredicateVisitor{visitor.Preds, []striverdt.StreamName{}}
     pred.Accept(&signalNamesVisitor)
     signalNames := signalNamesVisitor.SNames
     predFun := func (args...striverdt.EvPayload) striverdt.EvPayload {
@@ -137,7 +137,7 @@ func makePredicateStream(pred parsercommon.Predicate, mysignalname striverdt.Str
         for i,sname := range signalNames {
             argsMap[sname] = args[i+1].Val.(striverdt.EvPayload).Val
         }
-        theEvalVisitor := EvalVisitor{false, theEvent, argsMap}
+        theEvalVisitor := EvalVisitor{false, theEvent, visitor.Preds, argsMap}
         pred.Accept(&theEvalVisitor)
         return striverdt.Some(theEvalVisitor.Result)
     }

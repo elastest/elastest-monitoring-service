@@ -3,11 +3,13 @@ package impl
 import(
     striverdt "gitlab.software.imdea.org/felipe.gorostiaga/striver-go/datatypes"
 	"github.com/elastest/elastest-monitoring-service/go_EMS/parsers/session"
+    parsercommon "github.com/elastest/elastest-monitoring-service/go_EMS/parsers/common"
 )
 
 type MoMToStriverVisitor struct {
     OutStreams []striverdt.OutStream
     InSignalName striverdt.StreamName
+    Preds map[string]parsercommon.Predicate
 }
 
 func (visitor *MoMToStriverVisitor) VisitStream(stream session.Stream) {
@@ -22,6 +24,6 @@ func (visitor *MoMToStriverVisitor) VisitFilter(session.Filter) {
 func (visitor *MoMToStriverVisitor) VisitSession(session.Session) {
     panic("No session allowed!")
 }
-func (visitor *MoMToStriverVisitor) VisitPredicateDecl(session.PredicateDecl) {
-    panic("No PredicateDecl allowed!")
+func (visitor *MoMToStriverVisitor) VisitPredicateDecl(pd session.PredicateDecl) {
+    visitor.Preds[pd.Name] = pd.Pred
 }
