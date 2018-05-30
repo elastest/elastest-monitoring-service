@@ -1,7 +1,6 @@
 package common
 
 import(
-	"fmt"
     dt "github.com/elastest/elastest-monitoring-service/go_EMS/datatypes"
     sets "github.com/elastest/elastest-monitoring-service/go_EMS/setoperators"
     "github.com/elastest/elastest-monitoring-service/go_EMS/jsonrw"
@@ -56,35 +55,38 @@ func (visitor *EvalVisitor) visitTagPredicate(p TagPredicate) {
 func (visitor *EvalVisitor) visitNamedPredicate(p NamedPredicate) {
     // TODO
 }
+func (visitor *EvalVisitor) visitNumComparisonPredicate(p NumComparisonPredicate) {
+    // TODO
+}
 
 
 //
 // sprint() functions of the different Predicates. TODO: Use visitor
 //
-func (p AndPredicate) Sprint() string {
-	return fmt.Sprintf("(%s /\\ %s)",p.Left.Sprint(),p.Right.Sprint())
-}
-func (p OrPredicate) Sprint() string {
-	return fmt.Sprintf("(%s \\/  %s)",p.Left.Sprint(),p.Right.Sprint())
-}
-func (p NotPredicate) Sprint() string {
-	return fmt.Sprintf("~ %s",p.Inner.Sprint())
-}
-func (p PathPredicate) Sprint() string {
-	return fmt.Sprintf("e.path(%s)",p.Path)
-}
-func (p StrPredicate) Sprint() string {
-	return fmt.Sprintf("e.strcmp(%s,\"%s\")",p.Path,p.Expected)
-}
-func (p TagPredicate) Sprint() string {
-	return fmt.Sprintf("e.tag(%s)",p.Tag)
-}
-func (p TruePredicate) Sprint() string {
-	return fmt.Sprintf("true");
-}
-func (p FalsePredicate) Sprint() string {
-	return fmt.Sprintf("false")
-}
-func (p NamedPredicate) Sprint() string {
-	return p.Name
-}
+// func (p AndPredicate) Sprint() string {
+// 	return fmt.Sprintf("(%s /\\ %s)",p.Left.Sprint(),p.Right.Sprint())
+// }
+// func (p OrPredicate) Sprint() string {
+// 	return fmt.Sprintf("(%s \\/  %s)",p.Left.Sprint(),p.Right.Sprint())
+// }
+// func (p NotPredicate) Sprint() string {
+// 	return fmt.Sprintf("~ %s",p.Inner.Sprint())
+// }
+// func (p PathPredicate) Sprint() string {
+// 	return fmt.Sprintf("e.path(%s)",p.Path)
+// }
+// func (p StrPredicate) Sprint() string {
+// 	return fmt.Sprintf("e.strcmp(%s,\"%s\")",p.Path,p.Expected)
+// }
+// func (p TagPredicate) Sprint() string {
+// 	return fmt.Sprintf("e.tag(%s)",p.Tag)
+// }
+// func (p TruePredicate) Sprint() string {
+// 	return fmt.Sprintf("true");
+// }
+// func (p FalsePredicate) Sprint() string {
+// 	return fmt.Sprintf("false")
+// }
+// func (p NamedPredicate) Sprint() string {
+// 	return p.Name
+// }

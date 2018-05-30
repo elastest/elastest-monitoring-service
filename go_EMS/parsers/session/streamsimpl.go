@@ -28,19 +28,19 @@ func (visitor StreamExprToStriverVisitor) visitIfThenExpr(ifthen IfThenExpr) {
     ifthen.Then.Accept(visitor)
     makeIfThenStream(ifthen.If, thensignalname, mysignalname, visitor.momvisitor)
 }
-func (visitor StreamExprToStriverVisitor) visitIntPathExpr(ipathexpr IntPathExpr) {
-    makeIntPathStream(ipathexpr.Path, visitor.streamname, visitor.momvisitor)
-}
+// func (visitor StreamExprToStriverVisitor) visitIntPathExpr(ipathexpr IntPathExpr) { // TODO Move this somewhere else
+//     makeIntPathStream(ipathexpr.Path, visitor.streamname, visitor.momvisitor)
+// }
 func (visitor StreamExprToStriverVisitor) visitIfThenElseExpr(IfThenElseExpr) {
-    panic("not implemented")
-}
-func (visitor StreamExprToStriverVisitor) visitNumExpr(NumExpr) {
     panic("not implemented")
 }
 func (visitor StreamExprToStriverVisitor) visitPredExpr(predExp PredExpr) {
     makePredicateStream(predExp.Pred, visitor.streamname, visitor.momvisitor)
 }
 func (visitor StreamExprToStriverVisitor) visitStringPathExpr(StringPathExpr) {
+    panic("not implemented")
+}
+func (visitor StreamExprToStriverVisitor) visitNumExprStream(NumExprStream) {
     panic("not implemented")
 }
 

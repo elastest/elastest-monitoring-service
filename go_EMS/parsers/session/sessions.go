@@ -4,7 +4,6 @@ import(
 //	"errors"
 	"fmt"
 //	"log"
-	"strconv"
     "github.com/elastest/elastest-monitoring-service/go_EMS/parsers/common"
     dt "github.com/elastest/elastest-monitoring-service/go_EMS/datatypes"
     striverdt "gitlab.software.imdea.org/felipe.gorostiaga/striver-go/datatypes"
@@ -52,9 +51,9 @@ type EmitAction struct {
 	StreamName striverdt.StreamName
 	TagName    common.Tag
 }
-func (a EmitAction) Sprint() string {
-	return fmt.Sprintf("emit %s on %s\n",a.StreamName,a.TagName.Tag)
-}
+// func (a EmitAction) Sprint() string {
+// 	return fmt.Sprintf("emit %s on %s\n",a.StreamName,a.TagName.Tag)
+// }
 
 type Trigger struct {
 	Pred    common.Predicate
@@ -88,24 +87,24 @@ const (
 	LastType = StringT
 )
 
-func (t StreamType) Sprint() string {
-
-	type_names := []string{"int","bool","string"}
-
-	// str string 
-	// switch t {
-	// case Int:
-	// 	str = "int"
-	// case Bool:
-	// 	str = "bool"
-	// case String:
-	// 	str = "string"
-	// }
-	// return str
-
-	if t>=LastType { return "" }
-	return fmt.Sprintf("%s",type_names[t])
-}
+// func (t StreamType) Sprint() string {
+// 
+// 	type_names := []string{"int","bool","string"}
+// 
+// 	// str string 
+// 	// switch t {
+// 	// case Int:
+// 	// 	str = "int"
+// 	// case Bool:
+// 	// 	str = "bool"
+// 	// case String:
+// 	// 	str = "string"
+// 	// }
+// 	// return str
+// 
+// 	if t>=LastType { return "" }
+// 	return fmt.Sprintf("%s",type_names[t])
+// }
 
 
 //
@@ -140,16 +139,21 @@ type StreamExprVisitor interface {
     visitIfThenExpr(IfThenExpr)
     visitIfThenElseExpr(IfThenElseExpr)
     // visitStringExpr(StringExpr)
-    visitNumExpr(NumExpr)
+    visitNumExprStream(NumExprStream)
     visitPredExpr(PredExpr)
-    visitIntPathExpr(IntPathExpr)
     visitStringPathExpr(StringPathExpr)
 }
 
 type StreamExpr interface {
 	// add functions here
-	Sprint() string
     Accept (StreamExprVisitor)
+}
+
+type NumExprStream struct {
+    NumExpr common.NumExpr
+}
+func (this NumExprStream) Accept(visitor StreamExprVisitor) {
+    visitor.visitNumExprStream(this)
 }
 
 type AggregatorExpr struct {
@@ -194,14 +198,6 @@ func (this PredExpr) Accept(visitor StreamExprVisitor) {
     visitor.visitPredExpr(this)
 }
 
-type IntPathExpr struct {
-	Path dt.JSONPath
-}
-
-func (this IntPathExpr) Accept(visitor StreamExprVisitor) {
-    visitor.visitIntPathExpr(this)
-}
-
 type StringPathExpr struct {
 	Path dt.JSONPath
 }
@@ -211,30 +207,34 @@ func (this StringPathExpr) Accept(visitor StreamExprVisitor) {
 }
 
 // TODO: Make this a visitor
-func (i IntPathExpr) Sprint() string {
-	return fmt.Sprintf("e.getint(%s)",i.Path)
-}
-func (i StringPathExpr) Sprint() string {
-	return fmt.Sprintf("e.getstr(%s)",i.Path)
-}
-
-func (p AggregatorExpr) Sprint() string {
-	return fmt.Sprintf("%s(%s within %s)",p.Operation,p.Stream,p.Session)
-}
-
-func (p IfThenExpr) Sprint() string {
-	return fmt.Sprintf("if %s then %s",p.If.Sprint(),p.Then.Sprint())
-}
-func (p IfThenElseExpr) Sprint() string {
-	return fmt.Sprintf("if %s then %s else %s",p.If.Sprint(),p.Then.Sprint(),p.Else.Sprint())
-}
-func (p PredExpr) Sprint() string {
-	return p.Pred.Sprint()
-}
+// func (p NumExprStream) Sprint() string {
+// 	return fmt.Sprintf("numexpr")
+// }
+// 
+// func (i StringPathExpr) Sprint() string {
+// 	return fmt.Sprintf("e.getstr(%s)",i.Path)
+// }
+// 
+// func (p AggregatorExpr) Sprint() string {
+// 	return fmt.Sprintf("%s(%s within %s)",p.Operation,p.Stream,p.Session)
+// }
+// 
+// func (p IfThenExpr) Sprint() string {
+// 	return fmt.Sprintf("if %s then %s",p.If.Sprint(),p.Then.Sprint())
+// }
+// func (p IfThenElseExpr) Sprint() string {
+// 	return fmt.Sprintf("if %s then %s else %s",p.If.Sprint(),p.Then.Sprint(),p.Else.Sprint())
+// }
+// func (p PredExpr) Sprint() string {
+// 	return p.Pred.Sprint()
+// }
 
 //
 // Expression Node constructors
 //
+func newNumExprStream(numexpif interface{}) NumExprStream {
+	return NumExprStream{numexpif.(common.NumExpr)}
+}
 func newAggregatorExpr(op, str, ses interface{}) AggregatorExpr {
 	operation := op.(string)
 	stream    := str.(common.Identifier).Val
@@ -258,170 +258,9 @@ func newPredExpr(p interface{}) PredExpr {
 	return PredExpr{p.(common.Predicate)}
 }
 
-func newIntPathExpr(p interface{}) (IntPathExpr) {
-	path := p.(common.PathName).Val
-	return IntPathExpr{dt.JSONPath(path)}
-}
-
 func newStringPathExpr(p interface{}) (StringPathExpr) {
 	path := p.(common.PathName).Val
 	return StringPathExpr{dt.JSONPath(path)}
-}
-
-//
-// Numeric:
-//  NumExpressions and NumComparison
-//
-type NumComparisonVisitor interface {
-    visitNumLess(NumLess)
-    visitNumLessEq(NumLessEq)
-    visitNumEq(NumEq)
-    visitNumGreater(NumGreater)
-    visitNumGreaterEq(NumGreaterEq)
-    visitNumNotEq(NumNotEq)
-}
-
-type NumComparison interface {
-	Sprint() string
-    Accept (NumComparisonVisitor)
-//	Eval() bool // miss context to perform the evaluation
-}
-
-type NumLess struct {
-	Left  NumExpr
-	Right NumExpr
-}
-
-type NumLessEq struct {
-	Left  NumExpr
-	Right NumExpr
-}
-
-type NumEq struct {
-	Left  NumExpr
-	Right NumExpr
-}
-
-type NumGreater struct {
-	Left  NumExpr
-	Right NumExpr
-}
-
-type NumGreaterEq struct {
-	Left  NumExpr
-	Right NumExpr
-}
-
-type NumNotEq struct {
-	Left  NumExpr
-	Right NumExpr
-}
-
-func newNumLess(a,b interface{}) NumLess {
-	return NumLess{a.(NumExpr),b.(NumExpr)}
-}
-func newNumLessEq(a,b interface{}) NumLessEq {
-	return NumLessEq{a.(NumExpr),b.(NumExpr)}
-}
-func newNumGreater(a,b interface{}) NumGreater {
-	return NumGreater{a.(NumExpr),b.(NumExpr)}
-}
-func newNumGreaterEq(a,b interface{}) NumGreaterEq {
-	return NumGreaterEq{a.(NumExpr),b.(NumExpr)}
-}
-func newNumEq(a,b interface{}) NumEq {
-	return NumEq{a.(NumExpr),b.(NumExpr)}
-}
-func newNumNotEq(a,b interface{}) NumNotEq {
-	return NumNotEq{a.(NumExpr),b.(NumExpr)}
-}
-
-//
-// Numeric Expressions
-// 
-
-type NumExprVisitor interface {
-    visitIntLiteralExpr(IntLiteralExpr)
-    visitFloatLiteralExpr(FloatLiteralExpr)
-    visitNumStreamExpr(NumStreamExpr)
-    visitNumMulExpr(NumMulExpr)
-    visitNumDivExpr(NumDivExpr)
-    visitNumPlusExpr(NumPlusExpr)
-    visitNumMinusExpr(NumMinusExpr)
-}
-type NumExpr interface {
-	Sprint() string
-    Accept (NumExprVisitor)
-}
-
-type IntLiteralExpr struct {
-	Num int
-}
-type FloatLiteralExpr struct {
-	Num float32
-}
-type NumStreamExpr struct {
-	StreamName striverdt.StreamName
-}
-type NumMulExpr struct {
-	Left  NumExpr
-	Right NumExpr
-}
-type NumDivExpr struct {
-	Left NumExpr
-	Right NumExpr
-}
-type NumPlusExpr struct {
-	Left NumExpr
-	Right NumExpr
-}
-type NumMinusExpr struct {
-	Left NumExpr
-	Right NumExpr
-}
-
-func newMulExpr(a,b interface{}) NumMulExpr {
-	return NumMulExpr{a.(NumExpr),b.(NumExpr)}
-}
-func newDivExpr(a,b interface{}) NumDivExpr {
-	return NumDivExpr{a.(NumExpr),b.(NumExpr)}
-}
-func newPlusExpr(a,b interface{}) NumPlusExpr {
-	return NumPlusExpr{a.(NumExpr),b.(NumExpr)}
-}
-func newMinusExpr(a,b interface{}) NumMinusExpr {
-	return NumMinusExpr{a.(NumExpr),b.(NumExpr)}
-}
-func newNumStreamExpr(a interface{}) NumStreamExpr {
-	return NumStreamExpr{striverdt.StreamName(a.(common.Identifier).Val)}
-}
-func newIntLiteralExpr(a interface{}) IntLiteralExpr {
-	return IntLiteralExpr{a.(int)}
-}
-func newFloatLiteralExpr(a interface{}) FloatLiteralExpr {
-	return FloatLiteralExpr{a.(float32)}
-}
-
-func (e NumMulExpr) Sprint() string {
-	return fmt.Sprintf("(%s)%s(%s)",e.Left.Sprint(),'*',e.Right.Sprint())
-}
-func (e NumDivExpr) Sprint() string {
-	return fmt.Sprintf("(%s)%s(%s)",e.Left.Sprint(),'/',e.Right.Sprint())
-}
-func (e NumPlusExpr) Sprint() string {
-	return fmt.Sprintf("(%s)%s(%s)",e.Left.Sprint(),'+',e.Right.Sprint())
-}
-func (e NumMinusExpr) Sprint() string {
-	return fmt.Sprintf("(%s)%s(%s)",e.Left.Sprint(),'-',e.Right.Sprint())
-}
-func (e NumStreamExpr) Sprint() string {
-	return string(e.StreamName)
-}
-func (e IntLiteralExpr) Sprint() string {
-	return strconv.Itoa(e.Num)
-}
-func (e FloatLiteralExpr) Sprint() string {
-	return strconv.FormatFloat(float64(e.Num),'f',4,32)
 }
 
 //
@@ -503,16 +342,16 @@ func Print(mon MonitorMachine) {
 	fmt.Printf("There are %d predicates\n", len(mon.Preds))
 
 	for _,v := range mon.Stampers {
-		fmt.Printf("when %s do %s\n", v.Pred.Sprint(), v.Tag)
+		fmt.Printf("when %s do %s\n", v.Pred, v.Tag)
 	}
 	for _,v := range mon.Sessions {
-		fmt.Printf("session %s := (begin=>%s,end=>%s)\n",v.Name,v.Begin.Sprint(),v.End.Sprint())
+		fmt.Printf("session %s := (begin=>%s,end=>%s)\n",v.Name,v.Begin,v.End)
 	}
 	for _,v := range mon.Streams {
-		fmt.Printf("stream %s %s := %s\n",v.Type.Sprint(),v.Name,v.Expr.Sprint())
+		fmt.Printf("stream %s %s := %s\n",v.Type,v.Name,v.Expr)
 	}
 	for _,v := range mon.Triggers {
-		fmt.Printf("trigger %s do %s\n",v.Pred.Sprint(),v.Action.Sprint())
+		fmt.Printf("trigger %s do %s\n",v.Pred,v.Action)
 	}
 
 }

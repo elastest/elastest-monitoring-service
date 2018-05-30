@@ -14,11 +14,11 @@ type PredicateVisitor interface {
     visitStrPredicate(StrPredicate)
     visitTagPredicate(TagPredicate)
     visitNamedPredicate(NamedPredicate)
+    visitNumComparisonPredicate(NumComparisonPredicate)
 }
 
 type Predicate interface {
     Accept (PredicateVisitor)
-	Sprint() string // TODO remove later on
 }
 
 type TruePredicate  struct {}
@@ -94,6 +94,14 @@ func (this NamedPredicate) Accept (visitor PredicateVisitor) {
     visitor.visitNamedPredicate(this)
 }
 
+type NumComparisonPredicate struct {
+    NumComparison NumComparison
+}
+
+func (this NumComparisonPredicate) Accept (visitor PredicateVisitor) {
+    visitor.visitNumComparisonPredicate(this)
+}
+
 var (
 	True  TruePredicate
 	False FalsePredicate
@@ -154,6 +162,10 @@ func NewTagPredicate(t interface{}) (TagPredicate) {
 func NewNamedPredicate(n interface{}) NamedPredicate {
 	name := n.(Identifier).Val
 	return NamedPredicate{name}
+}
+
+func NewNumComparisonPredicate(n interface{}) NumComparisonPredicate {
+    return NumComparisonPredicate{n.(NumComparison)}
 }
 
 // Helper functions
