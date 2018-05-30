@@ -103,18 +103,18 @@ type NumExprVisitor interface {
     VisitNumDivExpr(NumDivExpr)
     VisitNumPlusExpr(NumPlusExpr)
     VisitNumMinusExpr(NumMinusExpr)
-    VisitIntPathExpr(IntPathExpr)
+    VisitNumPathExpr(NumPathExpr)
 }
 type NumExpr interface {
 	Sprint() string
     Accept (NumExprVisitor)
 }
 
-type IntPathExpr struct {
+type NumPathExpr struct {
 	Path dt.JSONPath
 }
-func (this IntPathExpr) Accept(visitor NumExprVisitor) {
-    visitor.VisitIntPathExpr(this)
+func (this NumPathExpr) Accept(visitor NumExprVisitor) {
+    visitor.VisitNumPathExpr(this)
 }
 
 type IntLiteralExpr struct {
@@ -170,9 +170,9 @@ func (this NumMinusExpr) Accept(visitor NumExprVisitor) {
     visitor.VisitNumMinusExpr(this)
 }
 
-func NewIntPathExpr(p interface{}) (IntPathExpr) {
+func NewNumPathExpr(p interface{}) (NumPathExpr) {
 	path := p.(PathName).Val
-	return IntPathExpr{dt.JSONPath(path)}
+	return NumPathExpr{dt.JSONPath(path)}
 }
 func NewMulExpr(a,b interface{}) NumMulExpr {
 	return NumMulExpr{a.(NumExpr),b.(NumExpr)}
@@ -196,7 +196,7 @@ func NewFloatLiteralExpr(val float64) FloatLiteralExpr {
 	return FloatLiteralExpr{float32(val)}
 }
 
-func (i IntPathExpr) Sprint() string {
+func (i NumPathExpr) Sprint() string {
 	return fmt.Sprintf("e.getint(%s)",i.Path)
 }
 

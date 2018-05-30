@@ -81,7 +81,7 @@ func newTrigger(p, a interface{}) (Trigger) {
 
 type StreamType int
 const (
-	IntT  StreamType   = iota
+	NumT  StreamType   = iota
 	BoolT
 	StringT
 	LastType = StringT
@@ -142,6 +142,7 @@ type StreamExprVisitor interface {
     VisitNumExprStream(NumExprStream)
     VisitPredExpr(PredExpr)
     VisitStringPathExpr(StringPathExpr)
+    VisitPrevExpr(PrevExpr)
 }
 
 type StreamExpr interface {
@@ -198,6 +199,14 @@ func (this PredExpr) Accept(visitor StreamExprVisitor) {
     visitor.VisitPredExpr(this)
 }
 
+type PrevExpr struct {
+	Stream string
+}
+
+func (this PrevExpr) Accept(visitor StreamExprVisitor) {
+    visitor.VisitPrevExpr(this)
+}
+
 type StringPathExpr struct {
 	Path dt.JSONPath
 }
@@ -238,6 +247,9 @@ func newPredExpr(p interface{}) PredExpr {
 func newStringPathExpr(p interface{}) (StringPathExpr) {
 	path := p.(common.PathName).Val
 	return StringPathExpr{dt.JSONPath(path)}
+}
+func newPrevExpr(p interface{}) (PrevExpr) {
+	return PrevExpr{p.(string)}
 }
 
 //

@@ -94,5 +94,5 @@ func (visitor *SignalNamesFromPredicateVisitor) VisitNumMinusExpr(exp common.Num
     exp.Left.Accept(visitor)
     exp.Right.Accept(visitor)
 }
-func (visitor *SignalNamesFromPredicateVisitor) VisitIntPathExpr(exp common.IntPathExpr) {
+func (visitor *SignalNamesFromPredicateVisitor) VisitNumPathExpr(exp common.NumPathExpr) {
 }

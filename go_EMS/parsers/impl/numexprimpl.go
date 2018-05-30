@@ -11,7 +11,7 @@ type NumExprToStriverVisitor struct {
     streamvisitor StreamExprToStriverVisitor
 }
 
-func (visitor NumExprToStriverVisitor) VisitIntPathExpr(ipathexpr common.IntPathExpr) {
+func (visitor NumExprToStriverVisitor) VisitNumPathExpr(ipathexpr common.NumPathExpr) {
     makeIntPathStream(ipathexpr.Path, visitor.streamvisitor.streamname, visitor.streamvisitor.momvisitor)
 }
 func (visitor NumExprToStriverVisitor) VisitFloatLiteralExpr(common.FloatLiteralExpr) {

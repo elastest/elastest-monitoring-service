@@ -34,6 +34,9 @@ func (visitor StreamExprToStriverVisitor) VisitIfThenElseExpr(session.IfThenElse
 func (visitor StreamExprToStriverVisitor) VisitPredExpr(predExp session.PredExpr) {
     makePredicateStream(predExp.Pred, visitor.streamname, visitor.momvisitor)
 }
+func (visitor StreamExprToStriverVisitor) VisitPrevExpr(predExp session.PrevExpr) {
+    panic("not implemented")
+}
 func (visitor StreamExprToStriverVisitor) VisitStringPathExpr(session.StringPathExpr) {
     panic("not implemented")
 }

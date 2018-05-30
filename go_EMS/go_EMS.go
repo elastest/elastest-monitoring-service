@@ -43,10 +43,10 @@ func main() {
         signals.FuncSignalDefinition{"increasing", []striverdt.StreamName{"condavg", "cpuload"}, signals.SignalsLT64{}},
     }*/
     defs := `pred otrohost := e.strcmp(beat.hostname,"otrohost")
-    stream int load := if otrohost then e.getint(system.load.1)
+    stream num load := if otrohost then e.getnum(system.load.1)
     stream bool high_load := load > 0.4
     stream bool pred := otrohost
-    stream int avgcond := avg(load within pred)
+    stream num avgcond := avg(load within pred)
     trigger e.strcmp(beat.hostname,"otrohost") do emit load on #outchannel
     trigger true do emit high_load on #outhighload`
     eventproc.DeploySignals01(defs)

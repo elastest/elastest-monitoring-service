@@ -163,6 +163,6 @@ func (visitor *EvalNumVisitor) VisitNumMinusExpr(exp common.NumMinusExpr) {
     rRight := visitor.Result
 	visitor.Result = rLeft - rRight
 }
-func (visitor *EvalNumVisitor) VisitIntPathExpr(exp common.IntPathExpr) {
+func (visitor *EvalNumVisitor) VisitNumPathExpr(exp common.NumPathExpr) {
     panic("not implemented")
 }
