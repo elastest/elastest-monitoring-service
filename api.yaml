@@ -130,6 +130,7 @@ paths:
 
   /subscriber/elastest:
     post:
+      deprecated: true
       tags:
       - "Subscribers"
       summary: "Subscribe default elastest endpoints to a channel"
@@ -157,55 +158,127 @@ paths:
            items: 
               type: "string"
 
-  /announcement:
+  /stamper:
+    get:
+      tags:
+      - "Stamper"
+      summary: "Get the list of deployed Stampers"
+      description: "Retrieves the list of deployed Stampers."
+      operationId: "getDeployedStampers"
+      produces:
+      - "application/json"
+      responses:
+        200:
+          description: "Array of Stampers deployed."
+          schema:
+           type: "array"
+           items: 
+              $ref: "#/definitions/DeployedStamper"
+      # security:
+      # - petstore_auth:
+      #   - "write:pets"
+      #   - "read:pets"
     post:
       tags:
-      - "Announcements"
-      summary: "Register a new announcement rule"
-      description: "TORM/EPM/ESM may register a rule to infer the channel to route raw events when it is not explicitly defined."
-      operationId: "register"
+      - "Stamper"
+      summary: "Deploy a new Stamper"
+      description: "Through this method, a client deploys a new Stamper."
+      operationId: "postStamper"
       consumes:
       - "application/json"
       produces:
       - "application/json"
       parameters:
       - in: "body"
-        name: "routingRule"
-        description: "Rule to be registered."
+        name: "stamper"
+        description: "Stamper to be deployed."
         required: true
         schema:
-          $ref: "#/definitions/AnnouncementRule"
+          $ref: "#/definitions/Stamper"
       responses:
-        405:
-          description: "Invalid input."
         200:
-          description: "Announcement successfully registered."
+          description: "Stamper successfully deployed."
           schema:
             type: "string"
-            description: "Id of registration."
-  /announcement/{regId}:
-    delete:
+            description: "id of deployed Stamper."
+      # security:
+      # - petstore_auth:
+      #   - "write:pets"
+      #   - "read:pets"
+  /stamper/{StamperId}:
+    get:
       tags:
-      - "Announcements"
-      summary: "Drop an announcement rule"
-      description: "Through this method, a client removes an announcement rule."
-      operationId: "unregister"
+      - "Stamper"
+      summary: "Find Stamper by Id"
+      description: "Returns a single Stamper."
+      operationId: "getStamperById"
       produces:
       - "application/json"
       parameters:
-      - name: "regId"
+      - name: "StamperId"
         in: "path"
-        description: "Registration id to drop."
+        description: "Id of Stamper to return."
         required: true
         type: "string"
       responses:
         200:
-          description: "Announcement successfully removed."
+          description: "Stamper found and returned."
+          schema:
+            $ref: '#/definitions/Stamper'
+        404:
+          description: "Stamper not found."
+    put:
+      tags:
+      - "Stamper"
+      summary: "Update an existing Stamper"
+      description: "."
+      operationId: "updateStamper"
+      consumes:
+      - "application/json"
+      produces:
+      - "application/json"
+      parameters:
+      - name: "StamperId"
+        in: "path"
+        description: "Id of Stamper to return."
+        required: true
+        type: "string"
+      - in: "body"
+        name: "stamper"
+        description: "New Stamper definition."
+        required: true
+        schema:
+          $ref: "#/definitions/Stamper"
+      responses:
+        200:
+          description: "Stamper successfully updated."
+        400:
+          description: "Invalid Stamper supplied."
+        404:
+          description: "Stamper not found."
+    delete:
+      tags:
+      - "Stamper"
+      summary: "Deletes a Stamper"
+      description: "."
+      operationId: "deleteStamper"
+      produces:
+      - "application/xml"
+      - "application/json"
+      parameters:
+      - name: "StamperId"
+        in: "path"
+        description: "Id of Stamper to delete."
+        required: true
+        type: "string"
+      responses:
+        200:
+          description: "Stamper successfully deleted."
         400:
           description: "Invalid Id supplied."
         404:
-          description: "Announcement not found."
-      
+          description: "Stamper not found."
+
   /MonitoringMachine:
     get:
       tags:
@@ -389,6 +462,20 @@ definitions:
       timestamp:
         type: "integer"
         format: "int64"
+  Stamper:
+    type: "object"
+    properties:
+      definition:
+        type: "string"
+      version:
+        type: "string"
+  DeployedStamper:
+    type: "object"
+    properties:
+        id:
+          type: "string"
+        stamper:
+          $ref: "#/definitions/Stamper"
   MoM:
     type: "object"
     properties:
@@ -445,11 +532,6 @@ definitions:
         items: 
           type: string
           enum: [persistence, dashboard]
-  AnnouncementRule:
-    type: "object"
-    properties:
-      inferenceRule:
-        type: "string"
   HealthSummary:
     type: "object"
     properties:
