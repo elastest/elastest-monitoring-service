@@ -16,6 +16,8 @@ func (visitor StreamExprToStriverVisitor) VisitAggregatorExpr(aggexp session.Agg
     switch aggexp.Operation {
     case "avg":
         makeAvgOutStream(aggexp.Stream, aggexp.Session, visitor.streamname, visitor.momvisitor)
+    case "gradient":
+        makeGradientOutStream(aggexp.Stream, aggexp.Session, visitor.streamname, visitor.momvisitor)
     default:
         panic("Operation "+aggexp.Operation+" not implemented")
     }
@@ -158,3 +160,32 @@ func makePredicateStream(pred parsercommon.Predicate, mysignalname striverdt.Str
     predStream := striverdt.OutStream{mysignalname, striverdt.SrcTickerNode{visitor.InSignalName}, predVal}
     visitor.OutStreams = append(visitor.OutStreams, predStream)
 }
+
+func makeGradientOutStream(inSignalName, sessionSignalName, outSignalName striverdt.StreamName, visitor *MoMToStriverVisitor) {
+    gradFun := func (args...striverdt.EvPayload) striverdt.EvPayload {
+        cond := args[0]
+        if !cond.IsSet || !cond.Val.(striverdt.EvPayload).Val.(bool) {
+            return striverdt.NothingPayload
+        }
+        if !args[1].IsSet {
+            return striverdt.NothingPayload
+        }
+        prevt := args[1].Val.(striverdt.Time)
+        prevval := args[2].Val.(striverdt.EvPayload).Val.(float32)
+        nowt := args[3].Val.(striverdt.Time)
+        nowval := args[4].Val.(striverdt.EvPayload).Val.(float32)
+        numerator := nowval - prevval
+        denominator := float32(nowt - prevt)
+        return striverdt.Some(numerator/denominator)
+    }
+    gradVal := striverdt.FuncNode{[]striverdt.ValNode{
+        &striverdt.PrevEqValNode{striverdt.TNode{}, sessionSignalName, []striverdt.Event{}},
+        &striverdt.PrevNode{striverdt.TNode{}, inSignalName, []striverdt.Event{}},
+        &striverdt.PrevValNode{striverdt.TNode{}, inSignalName, []striverdt.Event{}},
+        &striverdt.PrevEqNode{striverdt.TNode{}, inSignalName, []striverdt.Event{}},
+        &striverdt.PrevEqValNode{striverdt.TNode{}, inSignalName, []striverdt.Event{}},
+    }, gradFun}
+    gradStream := striverdt.OutStream{outSignalName, striverdt.SrcTickerNode{inSignalName}, gradVal}
+    visitor.OutStreams = append(visitor.OutStreams, gradStream)
+}
+

@@ -75,6 +75,7 @@ StreamExpr <- '(' _? s:StreamExpr ')' _? {
 PrevExpr <- PREV n:Name { return newPrevExpr(n),nil }
 
 Builtin <- AVG { return "avg",nil }
+	/ GRAD { return "gradient",nil }
 	/ COUNT { return "count",nil }
 
 NumPathExpr <- "e.getnum(" _? p:JSONPath _? ")" _? {
@@ -212,6 +213,7 @@ BOOL   <- "bool" _
 STRING <- "string" _
 AVG <- "avg" _?
 COUNT   <- "count" _?
+GRAD    <- "gradient" _?
 TRIGGER <- "trigger" _
 DO      <- "do" _
 EMIT    <- "emit" _

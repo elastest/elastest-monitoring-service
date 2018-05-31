@@ -43,7 +43,10 @@ func main() {
     defs := `
     pred isnet := e.strcmp(system.network.name,"eth0")
     stream num inbytes := if isnet then e.getnum(system.network.in.bytes)
-    trigger isnet do emit inbytes on #bytesval`
+    stream bool tru := true
+    stream num gradcond := gradient(inbytes within tru)
+    trigger isnet do emit inbytes on #bytesval
+    trigger isnet do emit gradcond on #bytesgrad`
     /*stream num load := if otrohost then e.getnum(system.load.1)
     stream bool high_load := load > 0.4
     stream num avgcond := avg(load within pred)
