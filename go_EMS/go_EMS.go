@@ -29,8 +29,6 @@ func main() {
 
     tagdef := `version 1.0
     when true do #EDS
-    when e.path(beat.version) do #TJob
-    when e.strcmp(beat.version,"5.4.0") do #GoodVersion
     when e.tag(#TJob) do #TORM`
     et.DeployTaggerv01(tagdef)
 
@@ -42,13 +40,17 @@ func main() {
         signals.ConditionalAvgSignalDefinition{"condavg", "cpuload", "hostnameiselastest"},
         signals.FuncSignalDefinition{"increasing", []striverdt.StreamName{"condavg", "cpuload"}, signals.SignalsLT64{}},
     }*/
-    defs := `pred otrohost := e.strcmp(beat.hostname,"otrohost")
-    stream num load := if otrohost then e.getnum(system.load.1)
+    defs := `
+    pred isnet := e.path(system.network.in.bytes)
+    stream bool isnetstr := isnet
+    trigger true do emit isnetstr on #outpred
+    stream num inbytes := if isnet then e.getnum(system.network.in.bytes)
+    trigger true do emit inbytes on #bytesval`
+    /*stream num load := if otrohost then e.getnum(system.load.1)
     stream bool high_load := load > 0.4
-    stream bool pred := otrohost
     stream num avgcond := avg(load within pred)
     trigger e.strcmp(beat.hostname,"otrohost") do emit load on #outchannel
-    trigger true do emit high_load on #outhighload`
+    trigger true do emit high_load on #outhighload`*/
     eventproc.DeploySignals01(defs)
     // Up to here
 

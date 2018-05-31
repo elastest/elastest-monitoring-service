@@ -12,7 +12,7 @@ type NumExprToStriverVisitor struct {
 }
 
 func (visitor NumExprToStriverVisitor) VisitNumPathExpr(ipathexpr common.NumPathExpr) {
-    makeIntPathStream(ipathexpr.Path, visitor.streamvisitor.streamname, visitor.streamvisitor.momvisitor)
+    makeNumPathStream(ipathexpr.Path, visitor.streamvisitor.streamname, visitor.streamvisitor.momvisitor)
 }
 func (visitor NumExprToStriverVisitor) VisitFloatLiteralExpr(common.FloatLiteralExpr) {
     panic("not implemented")
@@ -36,7 +36,7 @@ func (visitor NumExprToStriverVisitor) VisitNumMinusExpr(common.NumMinusExpr) {
     panic("not implemented")
 }
 
-func makeIntPathStream(path dt.JSONPath, mysignalname striverdt.StreamName, visitor *MoMToStriverVisitor) {
+func makeNumPathStream(path dt.JSONPath, mysignalname striverdt.StreamName, visitor *MoMToStriverVisitor) {
     extractFun := func (args...striverdt.EvPayload) striverdt.EvPayload {
         rawevent := args[0]
         if !rawevent.IsSet {

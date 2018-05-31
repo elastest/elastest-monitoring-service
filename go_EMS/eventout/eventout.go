@@ -31,6 +31,7 @@ func StartSender(staticout string, dynout string) {
 
         for {
             evt := <-sendchan
+            evt.Payload = shallowCopyPayload(evt.Payload)
             et.TagEvent(&evt)
             evt.Payload["@timestamp"] = evt.Timestamp
             evt.Payload["channels"] = sets.SetToList(evt.Channels)
@@ -57,4 +58,12 @@ func StartSender(staticout string, dynout string) {
 
 func GetSendChannel() chan dt.Event {
     return sendchan
+}
+
+func shallowCopyPayload(payload map[string] interface{}) map[string]interface{} {
+    retmap := make(map[string]interface{})
+    for k,v := range payload {
+        retmap[k] = v
+    }
+    return retmap
 }

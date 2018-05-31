@@ -4,6 +4,7 @@ import (
     "errors"
     "strings"
 	dt "github.com/elastest/elastest-monitoring-service/go_EMS/datatypes"
+    //"fmt"
 )
 
 func ExtractFromMap(themap map[string]interface{}, strpath dt.JSONPath) (interface{}, error) {
