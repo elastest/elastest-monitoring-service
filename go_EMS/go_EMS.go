@@ -41,11 +41,9 @@ func main() {
         signals.FuncSignalDefinition{"increasing", []striverdt.StreamName{"condavg", "cpuload"}, signals.SignalsLT64{}},
     }*/
     defs := `
-    pred isnet := e.path(system.network.in.bytes)
-    stream bool isnetstr := isnet
-    trigger true do emit isnetstr on #outpred
+    pred isnet := e.strcmp(system.network.name,"eth0")
     stream num inbytes := if isnet then e.getnum(system.network.in.bytes)
-    trigger true do emit inbytes on #bytesval`
+    trigger isnet do emit inbytes on #bytesval`
     /*stream num load := if otrohost then e.getnum(system.load.1)
     stream bool high_load := load > 0.4
     stream num avgcond := avg(load within pred)
