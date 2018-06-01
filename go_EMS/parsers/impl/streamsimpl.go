@@ -105,6 +105,9 @@ func makeIfThenStream(ifpred parsercommon.Predicate, thensignalname, mysignalnam
         then := args[1]
         argsMap := map[striverdt.StreamName]interface{}{}
         for i,sname := range signalNames {
+            if !args[i+2].IsSet {
+                return striverdt.NothingPayload
+            }
             argsMap[sname] = args[i+2].Val.(striverdt.EvPayload).Val
         }
         theEvalVisitor := EvalVisitor{false, theEvent, visitor.Preds, argsMap}
@@ -140,6 +143,9 @@ func makePredicateStream(pred parsercommon.Predicate, mysignalname striverdt.Str
         theEvent := rawevent.Val.(striverdt.EvPayload).Val.(dt.Event)
         argsMap := map[striverdt.StreamName]interface{}{}
         for i,sname := range signalNames {
+            if !args[i+1].IsSet {
+                return striverdt.NothingPayload
+            }
             argsMap[sname] = args[i+1].Val.(striverdt.EvPayload).Val
         }
         theEvalVisitor := EvalVisitor{false, theEvent, visitor.Preds, argsMap}

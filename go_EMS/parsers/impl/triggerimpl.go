@@ -24,6 +24,9 @@ func makeTriggerStreams(visitor *MoMToStriverVisitor, predicate parsercommon.Pre
         then := args[1]
         argsMap := map[striverdt.StreamName]interface{}{}
         for i,sname := range signalNames {
+            if !args[i+2].IsSet {
+                return striverdt.NothingPayload
+            }
             argsMap[sname] = args[i+2].Val.(striverdt.EvPayload).Val
         }
         theEvalVisitor := EvalVisitor{false, theEvent, visitor.Preds, argsMap}
