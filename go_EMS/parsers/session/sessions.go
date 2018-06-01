@@ -135,14 +135,14 @@ func (this Session) Accept(visitor MoMVisitor) {
 //
 
 type StreamExprVisitor interface {
-    VisitAggregatorExpr(AggregatorExpr)
-    VisitIfThenExpr(IfThenExpr)
-    VisitIfThenElseExpr(IfThenElseExpr)
-    // VisittringExpr(StringExpr)
-    VisitNumExprStream(NumExprStream)
-    VisitPredExpr(PredExpr)
-    VisitStringPathExpr(StringPathExpr)
-    VisitPrevExpr(PrevExpr)
+	VisitAggregatorExpr(AggregatorExpr)
+	VisitIfThenExpr(IfThenExpr)
+	VisitIfThenElseExpr(IfThenElseExpr)
+	// VisittringExpr(StringExpr)
+	VisitNumStreamExpr(NumStreamExpr)
+	VisitPredExpr(PredExpr)
+	VisitStringPathExpr(StringPathExpr)
+	VisitPrevExpr(PrevExpr)
 }
 
 type StreamExpr interface {
@@ -150,12 +150,13 @@ type StreamExpr interface {
     Accept (StreamExprVisitor)
 }
 
-type NumExprStream struct {
-    NumExpr common.NumExpr
+type NumStreamExpr struct {
+    Expr common.NumExpr
 }
-func (this NumExprStream) Accept(visitor StreamExprVisitor) {
-    visitor.VisitNumExprStream(this)
+func (this NumStreamExpr) Accept(visitor StreamExprVisitor) {
+    visitor.VisitNumStreamExpr(this)
 }
+
 
 type AggregatorExpr struct {
 	Operation string
@@ -218,8 +219,8 @@ func (this StringPathExpr) Accept(visitor StreamExprVisitor) {
 //
 // Expression Node constructors
 //
-func newNumExprStream(numexpif interface{}) NumExprStream {
-	return NumExprStream{numexpif.(common.NumExpr)}
+func newNumStreamExpr(n interface{}) NumStreamExpr {
+	return NumStreamExpr{n.(common.NumExpr)}
 }
 func newAggregatorExpr(op, str, ses interface{}) AggregatorExpr {
 	operation := op.(string)
@@ -244,7 +245,7 @@ func newPredExpr(p interface{}) PredExpr {
 	return PredExpr{p.(common.Predicate)}
 }
 
-func newStringPathExpr(p interface{}) (StringPathExpr) {
+func newStringPathExpr(p interface{}) StringPathExpr {
 	path := p.(common.PathName).Val
 	return StringPathExpr{dt.JSONPath(path)}
 }

@@ -106,8 +106,69 @@ type NumExprVisitor interface {
     VisitNumPathExpr(NumPathExpr)
 }
 type NumExpr interface {
-	Sprint() string
+    Sprint() string
     Accept (NumExprVisitor)
+}
+
+//
+// Flatten ExpressionLists
+//
+type RightSubexpr interface{
+	buildBinaryExpr(left NumExpr, right NumExpr) NumExpr
+	getInner() NumExpr
+}
+type RightMultExpr   struct { E NumExpr }
+type RightDivExpr    struct { E NumExpr }
+type RightPlusExpr   struct { E NumExpr }
+type RightMinusExpr  struct { E NumExpr }
+
+func (r RightMultExpr) buildBinaryExpr(left NumExpr, right NumExpr) NumExpr {
+	return NewMulExpr(left,right)
+}
+func (r RightMultExpr) getInner() NumExpr { return r.E }
+func (r RightDivExpr) buildBinaryExpr(left NumExpr, right NumExpr) NumExpr {
+	return NewDivExpr(left,right)
+}
+func (r RightDivExpr) getInner() NumExpr { return r.E }
+
+func (r RightPlusExpr) buildBinaryExpr(left NumExpr, right NumExpr) NumExpr {
+	return NewPlusExpr(left,right)
+}
+func (r RightPlusExpr) getInner() NumExpr { return r.E }
+func (r RightMinusExpr) buildBinaryExpr(left NumExpr, right NumExpr) NumExpr {
+	return NewMinusExpr(left,right)
+}
+func (r RightMinusExpr) getInner() NumExpr { return r.E }
+
+
+func NewRightMultExpr(a interface{}) RightMultExpr {
+	return RightMultExpr{a.(NumExpr)}
+}
+func NewRightDivExpr(a interface{}) RightDivExpr {
+	return RightDivExpr{a.(NumExpr)}
+}
+func NewRightPlusExpr(a interface{}) RightPlusExpr {
+	return RightPlusExpr{a.(NumExpr)}
+}
+func NewRightMinusExpr(a interface{}) RightMinusExpr {
+	return RightMinusExpr{a.(NumExpr)}
+}
+
+func Flatten(a,b interface{}) NumExpr {
+	exprs := ToSlice(b)
+	first := a.(NumExpr)
+	if len(exprs)==0 {
+		return first
+	}
+	right := exprs[len(exprs)-1].(RightSubexpr)
+	curr  := right.getInner()
+	for i := len(exprs)-2; i>=0; i-- {
+		left:=  exprs[i].(RightSubexpr)
+		curr = right.buildBinaryExpr(left.getInner(),curr)
+		right = left
+	}
+	ret := right.buildBinaryExpr(first,curr)
+	return ret
 }
 
 type NumPathExpr struct {

@@ -41,3 +41,8 @@ func NewQuotedString(s string) (QuotedString) {
     s = s[1:len(s)-1]
 	return QuotedString{s}
 }
+
+
+
+// type Term interface{}
+

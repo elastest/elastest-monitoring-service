@@ -1,13 +1,13 @@
 {
 package session
 
+
 import(
 //	"stamp"
 	"strconv"
     "github.com/elastest/elastest-monitoring-service/go_EMS/parsers/common"
     dt "github.com/elastest/elastest-monitoring-service/go_EMS/datatypes"
 )
-
 }
 
 Input  <- _? d:(Declaration*)  EOF {
@@ -31,8 +31,6 @@ PredDef <- PRED n:Name ":=" _? p:Predicate _? {
 	return newPredicateDeclaration(n,p),nil
 }
 
-
-
 Session <- SESSION n:Name ":" _? "[" _? beg:Predicate "," _? end:Predicate "]" _? {
 	return newSessionDeclaration(n,beg,end),nil
 }
@@ -46,31 +44,79 @@ Type <- NUM { return NumT,nil}
      /  BOOL    { return BoolT, nil }
      /  STRING  { return StringT,nil}
 
-StreamExpr <- '(' _? s:StreamExpr ')' _? {
-	   return s,nil
-       }
-       / b:Builtin "(" _? s:Name WITHIN w:Name _? ")" _? {
-          return newAggregatorExpr(b,s,w), nil
-       }
+
+StreamExpr <- '(' _? s:StreamExpr ')' _? { return s,nil }
        / IF p:Predicate THEN a:StreamExpr ELSE b:StreamExpr {
        	 return newIfThenElseExpr(p,a,b),nil
        }
-//       / i:IntPathExpr { return i,nil }
-       / n:NumPathExpr { return newNumExprStream(n),nil }
-       / s:StrPathExpr { return s,nil }
-       / IF p:Predicate THEN s:StreamExpr {
-          return newIfThenExpr(p,s),nil
-       }
-       / p:Predicate { //Boolean Expression
-       	 return newPredExpr(p),nil
-       }
-       / n:NumExpr {
-       	 return n,nil
-       }
-       / p:PrevExpr {
-       	 return p,nil
-       }
+       / IF p:Predicate THEN s:StreamExpr { return newIfThenExpr(p,s),nil }
+       / e:SubExpr { return e,nil }
 
+SubExpr <- e:Ors { return e,nil }
+Ors       <- a:Ands b:(OrExpr*)        {
+	  preds := common.ToSlice(b)
+	  if len(preds)==0 { return a,nil } else {
+	  	  return common.NewOrPredicate(a,b),nil
+	     }
+	  }
+OrExpr    <- "\\/" _? p:Ands           { return p,nil }
+Ands      <- a:NegExpr b:(AndExpr*)    {
+	  preds := common.ToSlice(b)
+          if len(preds)==0 { return a,nil } else {
+	      return common.NewAndPredicate(a,b),nil
+	  }
+  	 }
+AndExpr   <- "/\\" _? p:NegExpr        { return p,nil }
+NegExpr   <- "~" _? p:NegExpr          { return common.NewNotPredicate(p),nil }
+	  /  '(' _? p:StreamExpr ')' _?   { return p,nil }
+ 	  / n:NumComparison  {
+	      return PredExpr{common.NewNumComparisonPredicate(n)},nil
+	    }
+	  / e:NumExpr { 
+	       if _,ok := e.(common.NumExpr) ; ok{
+	       	  return newNumStreamExpr(e),nil
+	       }
+	       return e,nil
+	    }
+	        
+
+NumComparison <- a:NumExpr "<"  _? b:NumExpr { return common.NewNumLess(a,b),nil }
+              /  a:NumExpr "<=" _? b:NumExpr { return common.NewNumLessEq(a,b),nil }
+              /  a:NumExpr "="  _? b:NumExpr { return common.NewNumEq(a,b),nil }
+              /  a:NumExpr ">"  _? b:NumExpr { return common.NewNumGreater(a,b),nil }
+              /  a:NumExpr ">=" _? b:NumExpr { return common.NewNumGreaterEq(a,b),nil }
+	      /	 a:NumExpr "!=" _? b:NumExpr { return common.NewNumNotEq(a,b),nil }
+
+NumExpr   <- a:Mults b:(Plus*)  {
+	    exprs := common.ToSlice(b)
+	    if len(exprs)==0 { return a,nil }
+	    return common.Flatten(a,b),nil
+	  }
+Plus      <- '+' _? e:Mults     { return common.NewRightPlusExpr(e),nil  }
+           / '-' _? e:Mults     { return common.NewRightMinusExpr(e),nil }
+Mults     <- a:BasicNumExpr b:(MoreMults*) { return common.Flatten(a,b),nil }
+MoreMults <- '*' _? e:BasicNumExpr { return common.NewRightMultExpr(e),nil }
+          /  '/' _? e:BasicNumExpr { return common.NewRightDivExpr(e),nil }
+BasicNumExpr <- '(' _? n:NumExpr ')' _?   {  return n,nil }
+          / a:Atom { return a,nil }
+
+Atom <- TRUE        { return common.False,nil }
+     / FALSE        { return common.True,nil }
+     / b:Builtins   { return b,nil }
+     / s:StreamName { return common.NewStreamNameExpr(s),nil } // this is polimorphic
+     / n:NumLiteral _? { return n,nil }
+
+StreamName <- n:Name { return n,nil }
+
+NumLiteral <- p:([0-9]+('.'[0-9]+)?) {
+	      x,err := strconv.ParseFloat(string(c.text),32)
+	      return common.NewFloatLiteralExpr(x), err
+	   }
+
+Builtins <- b:Builtin "(" _? s:Name WITHIN w:Name _? ")" _? { return newAggregatorExpr(b,s,w), nil }
+     / n:NumPathExpr { return n,nil }
+     / s:StrPathExpr { return s,nil }
+     / p:PrevExpr    { return p,nil }
 
 PrevExpr <- PREV n:Name { return newPrevExpr(n),nil }
 
@@ -88,8 +134,6 @@ StrPathExpr <- "e.getstr" _? '(' _? p:JSONPath _? ")" _? {
       return newStringPathExpr(p),nil		
 }
 
-
-
 Trigger <-TRIGGER p:Predicate DO a:Action _? {
 	return newTrigger(p,a),nil
 }
@@ -104,58 +148,6 @@ Filter <- WHEN p:Predicate DO t:Tag _? {
        return Filter{p.(common.Predicate),t.(common.Tag).Tag},nil
        }
 
-//
-// IDEA: Instead of replicating all Boolean expressions for
-//       stream declarations of type Boolean (from preds on events)
-//       it is better to just have a larger expression parser for
-//       the Boolean type and reject semantically expressions for
-//       event predicates that fetch streams
-//
-
-Predicate <- a:Ands    b:(OrExpr*) _? { return common.NewOrPredicate(a,b),nil }
-Ands      <- a:NegExpr b:(AndExpr*) { return common.NewAndPredicate(a,b),nil }
-AndExpr   <- "/\\" _? p:NegExpr      { return p,nil }
-OrExpr    <- "\\/" _? p:Ands         { return p,nil }
-NegExpr   <- "~" _? p:NegExpr        { return common.NewNotPredicate(p),nil }
-	 /  p:Primary             { return p,nil }
-Primary   <- '(' _? p:Predicate ')' _?  { return p,nil }
-         / a:AtomicPredicate	 { return a,nil }
-AtomicPredicate <- p:PathPredicate  { return p,nil }
-	  / p:StrPredicate     { return p,nil }
-	  / p:HasTagPredicate  { return p,nil }
-	  / p:"true" _? { return common.True,nil }
-	  / p:"false" _? { return common.False,nil }
-	  / n:NumComparison  { return common.NewNumComparisonPredicate(n),nil }
-          / n:NamedPredicate  { return n,nil }   
-
-//
-// NumericComparison and Expressions
-//
-NumComparison <- a:NumExpr "<"  _? b:NumExpr { return common.NewNumLess(a,b),nil }
-              /  a:NumExpr "<=" _? b:NumExpr { return common.NewNumLessEq(a,b),nil }
-              /  a:NumExpr "="  _? b:NumExpr { return common.NewNumEq(a,b),nil }
-              /  a:NumExpr ">"  _? b:NumExpr { return common.NewNumGreater(a,b),nil }
-              /  a:NumExpr ">=" _? b:NumExpr { return common.NewNumGreaterEq(a,b),nil }
-	      /	 a:NumExpr "!=" _? b:NumExpr { return common.NewNumNotEq(a,b),nil }
-
-NumExpr  <- a:Mults "+" _? b:Mults { return common.NewPlusExpr(a,b),nil  }
-          / a:Mults "-" _? b:Mults { return common.NewMinusExpr(a,b),nil }
-	  / a:Mults                { return a,nil}
-Mults    <- a:BasicNumExpr "*" _? b:Mults { return common.NewMulExpr(a,b),nil }
-          / a:BasicNumExpr "/" _? b:Mults { return common.NewDivExpr(a,b),nil }
-	  / a:BasicNumExpr { return a,nil}
-BasicNumExpr <- '(' _? n:NumExpr ')' _?   { return n,nil }
-           / a:AtomicNumExpr { return a,nil }
-AtomicNumExpr <- n:NumStream { return common.NewStreamNameExpr(n),nil }
-//	      / l:IntLiteral { return l,nil }
-	      / n:NumLiteral { return n,nil }
-
-NumStream <- n:Name { return n,nil }
-
-NumLiteral <- p:([0-9]+('.'[0-9]+)?) {
-	      x,err := strconv.ParseFloat(string(c.text),32)
-	      return common.NewFloatLiteralExpr(x), err
-	   }
 
 NamedPredicate <- n:Name _? { return common.NewNamedPredicate(n),nil  } 
 
@@ -226,3 +218,5 @@ ELSE <- "else" _
 PREV <- "Prev" _
 ONCE <- "Once" _
 WASALWAYS <-"WasAlways" _
+FALSE <- "false" _
+TRUE <- "true" _
