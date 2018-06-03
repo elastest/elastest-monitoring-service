@@ -1,2 +1,2 @@
-session fst := (begin => e.tag(#TJob) , end => e.tag(#SuT))
-session snd := (begin => e.tag(#SuT) , end => e.tag(#TJob))
+session fst := [e.tag(#TJob) , e.tag(#SuT) ]
+session snd := [e.tag(#SuT) , e.tag(#TJob) ]

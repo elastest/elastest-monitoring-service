@@ -113,7 +113,7 @@ const (
 type Stream struct { // a Stream is a Name:=Expr
 	Type StreamType
 	Name striverdt.StreamName
-	Expr StreamExpr
+	Expr common.StreamExpr
 }
 
 func (this Stream) Accept(visitor MoMVisitor) {
@@ -130,128 +130,6 @@ func (this Session) Accept(visitor MoMVisitor) {
     visitor.VisitSession(this)
 }
 
-//
-// Expressions
-//
-
-type StreamExprVisitor interface {
-	VisitAggregatorExpr(AggregatorExpr)
-	VisitIfThenExpr(IfThenExpr)
-	VisitIfThenElseExpr(IfThenElseExpr)
-	// VisittringExpr(StringExpr)
-	VisitNumStreamExpr(NumStreamExpr)
-	VisitPredExpr(PredExpr)
-	VisitStringPathExpr(StringPathExpr)
-	VisitPrevExpr(PrevExpr)
-}
-
-type StreamExpr interface {
-	// add functions here
-    Accept (StreamExprVisitor)
-}
-
-type NumStreamExpr struct {
-    Expr common.NumExpr
-}
-func (this NumStreamExpr) Accept(visitor StreamExprVisitor) {
-    visitor.VisitNumStreamExpr(this)
-}
-
-
-type AggregatorExpr struct {
-	Operation string
-	Stream    striverdt.StreamName //StreamName
-	Session   striverdt.StreamName //StreamName
-}
-
-func (this AggregatorExpr) Accept(visitor StreamExprVisitor) {
-    visitor.VisitAggregatorExpr(this)
-}
-
-type IfThenExpr struct {
-	If   common.Predicate
-	Then StreamExpr
-}
-
-func (this IfThenExpr) Accept(visitor StreamExprVisitor) {
-    visitor.VisitIfThenExpr(this)
-}
-
-type IfThenElseExpr struct {
-	If   common.Predicate
-	Then StreamExpr
-	Else StreamExpr
-}
-
-func (this IfThenElseExpr) Accept(visitor StreamExprVisitor) {
-    visitor.VisitIfThenElseExpr(this)
-}
-
-// Is this ever used?
-//type StringExpr struct {
-//	Path string// so far only e.get(path) claiming to return a string
-//}
-
-type PredExpr struct {
-	Pred common.Predicate
-}
-
-func (this PredExpr) Accept(visitor StreamExprVisitor) {
-    visitor.VisitPredExpr(this)
-}
-
-type PrevExpr struct {
-	Stream string
-}
-
-func (this PrevExpr) Accept(visitor StreamExprVisitor) {
-    visitor.VisitPrevExpr(this)
-}
-
-type StringPathExpr struct {
-	Path dt.JSONPath
-}
-
-func (this StringPathExpr) Accept(visitor StreamExprVisitor) {
-    visitor.VisitStringPathExpr(this)
-}
-
-//
-// Expression Node constructors
-//
-func newNumStreamExpr(n interface{}) NumStreamExpr {
-	return NumStreamExpr{n.(common.NumExpr)}
-}
-func newAggregatorExpr(op, str, ses interface{}) AggregatorExpr {
-	operation := op.(string)
-	stream    := str.(common.Identifier).Val
-	session   := ses.(common.Identifier).Val
-
-	return AggregatorExpr{operation,striverdt.StreamName(stream),striverdt.StreamName(session)}
-}
-
-func newIfThenExpr(p,e interface{}) IfThenExpr {
-	if_part   := p.(common.Predicate)
-	then_part := e.(StreamExpr)
-	return IfThenExpr{if_part,then_part}
-}
-func newIfThenElseExpr(p,a,b interface{}) IfThenElseExpr {
-	if_part   := p.(common.Predicate)
-	then_part := a.(StreamExpr)
-	else_part := b.(StreamExpr)
-	return IfThenElseExpr{if_part, then_part, else_part}
-}
-func newPredExpr(p interface{}) PredExpr {
-	return PredExpr{p.(common.Predicate)}
-}
-
-func newStringPathExpr(p interface{}) StringPathExpr {
-	path := p.(common.PathName).Val
-	return StringPathExpr{dt.JSONPath(path)}
-}
-func newPrevExpr(p interface{}) (PrevExpr) {
-	return PrevExpr{p.(string)}
-}
 
 //
 // Declaration Node constructors
@@ -260,7 +138,7 @@ func newPrevExpr(p interface{}) (PrevExpr) {
 func newStreamDeclaration(t,n,e interface{}) Stream {
 	the_type := t.(StreamType)
 	name     := n.(common.Identifier).Val
-	expr     := e.(StreamExpr)
+	expr     := e.(common.StreamExpr)
 	return Stream{the_type,striverdt.StreamName(name),expr}
 }
 

@@ -43,6 +43,3 @@ func NewQuotedString(s string) (QuotedString) {
 }
 
 
-
-// type Term interface{}
-

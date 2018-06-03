@@ -1,0 +1,2 @@
+pred kk := 0.7 < a
+pred ll := 0.7 * b < a

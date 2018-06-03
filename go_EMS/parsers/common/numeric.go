@@ -2,9 +2,10 @@ package common
 
 import(
     dt "github.com/elastest/elastest-monitoring-service/go_EMS/datatypes"
-    striverdt "gitlab.software.imdea.org/felipe.gorostiaga/striver-go/datatypes"
+//    striverdt "gitlab.software.imdea.org/felipe.gorostiaga/striver-go/datatypes"
     "fmt"
-    "strconv"
+	"strconv"
+	"errors"
 )
 
 //
@@ -21,7 +22,8 @@ type NumComparisonVisitor interface {
 }
 
 type NumComparison interface {
-    Accept (NumComparisonVisitor)
+	Accept(NumComparisonVisitor)
+	Sprint() string
 }
 
 type NumLess struct {
@@ -31,6 +33,9 @@ type NumLess struct {
 func (this NumLess) Accept(visitor NumComparisonVisitor) {
     visitor.VisitNumLess(this)
 }
+func (this NumLess) Sprint() string {
+	return fmt.Sprintf("%s < %s",this.Left.Sprint(),this.Right.Sprint())
+}
 
 type NumLessEq struct {
 	Left  NumExpr
@@ -38,6 +43,9 @@ type NumLessEq struct {
 }
 func (this NumLessEq) Accept(visitor NumComparisonVisitor) {
     visitor.VisitNumLessEq(this)
+}
+func (this NumLessEq) Sprint() string {
+	return fmt.Sprintf("%s <= %s",this.Left.Sprint(),this.Right.Sprint())
 }
 
 type NumEq struct {
@@ -47,6 +55,10 @@ type NumEq struct {
 func (this NumEq) Accept(visitor NumComparisonVisitor) {
     visitor.VisitNumEq(this)
 }
+func (this NumEq) Sprint() string {
+	return fmt.Sprintf("%s = %s",this.Left.Sprint(),this.Right.Sprint())
+}
+
 
 type NumGreater struct {
 	Left  NumExpr
@@ -55,6 +67,10 @@ type NumGreater struct {
 func (this NumGreater) Accept(visitor NumComparisonVisitor) {
     visitor.VisitNumGreater(this)
 }
+func (this NumGreater) Sprint() string {
+	return fmt.Sprintf("%s > %s",this.Left.Sprint(),this.Right.Sprint())
+}
+
 
 type NumGreaterEq struct {
 	Left  NumExpr
@@ -62,6 +78,9 @@ type NumGreaterEq struct {
 }
 func (this NumGreaterEq) Accept(visitor NumComparisonVisitor) {
     visitor.VisitNumGreaterEq(this)
+}
+func (this NumGreaterEq) Sprint() string {
+	return fmt.Sprintf("%s >= %s",this.Left.Sprint(),this.Right.Sprint())
 }
 
 type NumNotEq struct {
@@ -71,24 +90,39 @@ type NumNotEq struct {
 func (this NumNotEq) Accept(visitor NumComparisonVisitor) {
     visitor.VisitNumNotEq(this)
 }
+func (this NumNotEq) Sprint() string {
+	return fmt.Sprintf("%s != %s",this.Left.Sprint(),this.Right.Sprint())
+}
 
 func NewNumLess(a,b interface{}) NumLess {
-	return NumLess{a.(NumExpr),b.(NumExpr)}
+	left,_  := getNumExpr(a)
+	right,_ := getNumExpr(b)
+	return NumLess{left,right}
 }
 func NewNumLessEq(a,b interface{}) NumLessEq {
-	return NumLessEq{a.(NumExpr),b.(NumExpr)}
+	left,_  := getNumExpr(a)
+	right,_ := getNumExpr(b)
+	return NumLessEq{left,right}
 }
 func NewNumGreater(a,b interface{}) NumGreater {
-	return NumGreater{a.(NumExpr),b.(NumExpr)}
+	left,_  := getNumExpr(a)
+	right,_ := getNumExpr(b)
+	return NumGreater{left,right}
 }
 func NewNumGreaterEq(a,b interface{}) NumGreaterEq {
-	return NumGreaterEq{a.(NumExpr),b.(NumExpr)}
+	left,_  := getNumExpr(a)
+	right,_ := getNumExpr(b)
+	return NumGreaterEq{left,right}
 }
 func NewNumEq(a,b interface{}) NumEq {
-	return NumEq{a.(NumExpr),b.(NumExpr)}
+	left,_  := getNumExpr(a)
+	right,_ := getNumExpr(b)
+	return NumEq{left,right}
 }
 func NewNumNotEq(a,b interface{}) NumNotEq {
-	return NumNotEq{a.(NumExpr),b.(NumExpr)}
+	left,_  := getNumExpr(a)
+	right,_ := getNumExpr(b)
+	return NumNotEq{left,right}
 }
 
 //
@@ -105,9 +139,22 @@ type NumExprVisitor interface {
     VisitNumMinusExpr(NumMinusExpr)
     VisitNumPathExpr(NumPathExpr)
 }
+
 type NumExpr interface {
     Sprint() string
-    Accept (NumExprVisitor)
+    AcceptNum(NumExprVisitor)
+}
+
+// transforms a StreamNumExpr or StreamNameExpr into a NumExpr
+func getNumExpr(e interface{}) (NumExpr,error) {
+	if v,ok:=e.(StreamNumExpr);ok {
+		return v.Expr,nil
+	} else if v,ok:=e.(StreamNameExpr);ok {
+		return v,nil
+	} else {
+		str := fmt.Sprintf("cannot convert to num \"%s\"\n",e.(StreamExpr).Sprint())
+		return nil,errors.New(str)
+	}
 }
 
 //
@@ -123,42 +170,45 @@ type RightPlusExpr   struct { E NumExpr }
 type RightMinusExpr  struct { E NumExpr }
 
 func (r RightMultExpr) buildBinaryExpr(left NumExpr, right NumExpr) NumExpr {
-	return NewMulExpr(left,right)
+	return NumMulExpr{left,right}
 }
 func (r RightMultExpr) getInner() NumExpr { return r.E }
 func (r RightDivExpr) buildBinaryExpr(left NumExpr, right NumExpr) NumExpr {
-	return NewDivExpr(left,right)
+	return NumDivExpr{left,right}
 }
 func (r RightDivExpr) getInner() NumExpr { return r.E }
 
 func (r RightPlusExpr) buildBinaryExpr(left NumExpr, right NumExpr) NumExpr {
-	return NewPlusExpr(left,right)
+	return NumPlusExpr{left,right}
 }
 func (r RightPlusExpr) getInner() NumExpr { return r.E }
 func (r RightMinusExpr) buildBinaryExpr(left NumExpr, right NumExpr) NumExpr {
-	return NewMinusExpr(left,right)
+	return NumMinusExpr{left,right}
 }
 func (r RightMinusExpr) getInner() NumExpr { return r.E }
 
-
 func NewRightMultExpr(a interface{}) RightMultExpr {
-	return RightMultExpr{a.(NumExpr)}
+	n,_ := getNumExpr(a)
+	return RightMultExpr{n}
 }
 func NewRightDivExpr(a interface{}) RightDivExpr {
-	return RightDivExpr{a.(NumExpr)}
+	n,_ := getNumExpr(a)
+	return RightDivExpr{n}
 }
 func NewRightPlusExpr(a interface{}) RightPlusExpr {
-	return RightPlusExpr{a.(NumExpr)}
+	n,_ := getNumExpr(a)
+	return RightPlusExpr{n}
 }
 func NewRightMinusExpr(a interface{}) RightMinusExpr {
-	return RightMinusExpr{a.(NumExpr)}
+	n,_ := getNumExpr(a)
+	return RightMinusExpr{n}
 }
 
-func Flatten(a,b interface{}) NumExpr {
+func Flatten(a,b interface{}) StreamNumExpr {
 	exprs := ToSlice(b)
-	first := a.(NumExpr)
+	first,_ := getNumExpr(a)
 	if len(exprs)==0 {
-		return first
+		return NewStreamNumExpr(first)
 	}
 	right := exprs[len(exprs)-1].(RightSubexpr)
 	curr  := right.getInner()
@@ -167,35 +217,35 @@ func Flatten(a,b interface{}) NumExpr {
 		curr = right.buildBinaryExpr(left.getInner(),curr)
 		right = left
 	}
-	ret := right.buildBinaryExpr(first,curr)
+	ret := NewStreamNumExpr(right.buildBinaryExpr(first,curr))
 	return ret
 }
 
 type NumPathExpr struct {
 	Path dt.JSONPath
 }
-func (this NumPathExpr) Accept(visitor NumExprVisitor) {
+func (this NumPathExpr) AcceptNum(visitor NumExprVisitor) {
     visitor.VisitNumPathExpr(this)
 }
 
 type IntLiteralExpr struct {
 	Num int
 }
-func (this IntLiteralExpr) Accept(visitor NumExprVisitor) {
+func (this IntLiteralExpr) AcceptNum(visitor NumExprVisitor) {
     visitor.VisitIntLiteralExpr(this)
 }
 
 type FloatLiteralExpr struct {
 	Num float32
 }
-func (this FloatLiteralExpr) Accept(visitor NumExprVisitor) {
+func (this FloatLiteralExpr) AcceptNum(visitor NumExprVisitor) {
     visitor.VisitFloatLiteralExpr(this)
 }
 
-type StreamNameExpr struct {
-	StreamName striverdt.StreamName
-}
-func (this StreamNameExpr) Accept(visitor NumExprVisitor) {
+// type StreamNameExpr struct {
+//	StreamName striverdt.StreamName
+//}
+func (this StreamNameExpr) AcceptNum(visitor NumExprVisitor) {
     visitor.VisitStreamNameExpr(this)
 }
 
@@ -203,7 +253,7 @@ type NumMulExpr struct {
 	Left  NumExpr
 	Right NumExpr
 }
-func (this NumMulExpr) Accept(visitor NumExprVisitor) {
+func (this NumMulExpr) AcceptNum(visitor NumExprVisitor) {
     visitor.VisitNumMulExpr(this)
 }
 
@@ -211,7 +261,7 @@ type NumDivExpr struct {
 	Left NumExpr
 	Right NumExpr
 }
-func (this NumDivExpr) Accept(visitor NumExprVisitor) {
+func (this NumDivExpr) AcceptNum(visitor NumExprVisitor) {
     visitor.VisitNumDivExpr(this)
 }
 
@@ -219,7 +269,7 @@ type NumPlusExpr struct {
 	Left NumExpr
 	Right NumExpr
 }
-func (this NumPlusExpr) Accept(visitor NumExprVisitor) {
+func (this NumPlusExpr) AcceptNum(visitor NumExprVisitor) {
     visitor.VisitNumPlusExpr(this)
 }
 
@@ -227,7 +277,7 @@ type NumMinusExpr struct {
 	Left NumExpr
 	Right NumExpr
 }
-func (this NumMinusExpr) Accept(visitor NumExprVisitor) {
+func (this NumMinusExpr) AcceptNum(visitor NumExprVisitor) {
     visitor.VisitNumMinusExpr(this)
 }
 
@@ -236,23 +286,32 @@ func NewNumPathExpr(p interface{}) (NumPathExpr) {
 	return NumPathExpr{dt.JSONPath(path)}
 }
 func NewMulExpr(a,b interface{}) NumMulExpr {
-	return NumMulExpr{a.(NumExpr),b.(NumExpr)}
+	left,_  := getNumExpr(a)
+	right,_ := getNumExpr(b)
+	return NumMulExpr{left,right}
 }
 func NewDivExpr(a,b interface{}) NumDivExpr {
-	return NumDivExpr{a.(NumExpr),b.(NumExpr)}
+	left ,_ := getNumExpr(a)
+	right,_ := getNumExpr(b)
+	return NumDivExpr{left,right}
 }
 func NewPlusExpr(a,b interface{}) NumPlusExpr {
-	return NumPlusExpr{a.(NumExpr),b.(NumExpr)}
+	left,_  := getNumExpr(a)
+	right,_ := getNumExpr(b)
+	return NumPlusExpr{left,right}
 }
 func NewMinusExpr(a,b interface{}) NumMinusExpr {
-	return NumMinusExpr{a.(NumExpr),b.(NumExpr)}
+	left,_  := getNumExpr(a)
+	right,_ := getNumExpr(b)
+	return NumMinusExpr{left,right}
 }
-func NewStreamNameExpr(a interface{}) StreamNameExpr {
-	return StreamNameExpr{striverdt.StreamName(a.(Identifier).Val)}
-}
+//func NewStreamNameExpr(a interface{}) StreamNameExpr {
+//	return StreamNameExpr{striverdt.StreamName(a.(Identifier).Val)}
+//}
 func NewIntLiteralExpr(a interface{}) IntLiteralExpr {
 	return IntLiteralExpr{a.(int)}
 }
+//func NewFloatLiteralExpr(val float64) FloatLiteralExpr {
 func NewFloatLiteralExpr(val float64) FloatLiteralExpr {
 	return FloatLiteralExpr{float32(val)}
 }
@@ -273,9 +332,9 @@ func (e NumPlusExpr) Sprint() string {
 func (e NumMinusExpr) Sprint() string {
 	return fmt.Sprintf("(%s)%s(%s)",e.Left.Sprint(),'-',e.Right.Sprint())
 }
-func (e StreamNameExpr) Sprint() string {
-	return string(e.StreamName)
-}
+//func (e StreamNameExpr) Sprint() string {
+//	return string(e.Stream)
+//}
 func (e IntLiteralExpr) Sprint() string {
 	return strconv.Itoa(e.Num)
 }

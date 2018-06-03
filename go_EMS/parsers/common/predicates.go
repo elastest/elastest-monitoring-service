@@ -1,7 +1,9 @@
 package common
 
 import(
-    dt "github.com/elastest/elastest-monitoring-service/go_EMS/datatypes"
+	dt "github.com/elastest/elastest-monitoring-service/go_EMS/datatypes"
+	"fmt"
+	"errors"
 )
 
 type PredicateVisitor interface {
@@ -13,84 +15,104 @@ type PredicateVisitor interface {
     VisitPathPredicate(PathPredicate)
     VisitStrPredicate(StrPredicate)
     VisitTagPredicate(TagPredicate)
-    VisitNamedPredicate(NamedPredicate)
+    VisitNamedPredicate(StreamNameExpr)
     VisitNumComparisonPredicate(NumComparisonPredicate)
 }
 
 type Predicate interface {
-    Accept (PredicateVisitor)
+	AcceptPred(PredicateVisitor)
+	Sprint() string
+}
+
+//
+// Predicates can become StreamExpr
+//
+func getStreamExpr(p Predicate) StreamExpr {
+	return NewPredExpr(p)
 }
 
 type TruePredicate  struct {}
 
-func (this TruePredicate) Accept (visitor PredicateVisitor) {
+func (this TruePredicate) AcceptPred (visitor PredicateVisitor) {
     visitor.VisitTruePredicate(this)
 }
-
+func (this TruePredicate) Sprint () string {
+	return "true"
+}
 type FalsePredicate struct {}
 
-func (this FalsePredicate) Accept (visitor PredicateVisitor) {
+func (this FalsePredicate) AcceptPred(visitor PredicateVisitor) {
     visitor.VisitFalsePredicate(this)
+}
+func (this FalsePredicate) Sprint () string {
+	return "false"
 }
 
 type NotPredicate struct {
 	Inner Predicate
 }
-
-func (this NotPredicate) Accept (visitor PredicateVisitor) {
+func (this NotPredicate) AcceptPred(visitor PredicateVisitor) {
     visitor.VisitNotPredicate(this)
 }
-
+func (this NotPredicate) Sprint () string {
+	return fmt.Sprint("~ %s", this.Inner.Sprint())
+}
 type AndPredicate struct {
 	Left  Predicate
 	Right Predicate
 }
-
-func (this AndPredicate) Accept (visitor PredicateVisitor) {
+func (this AndPredicate) AcceptPred(visitor PredicateVisitor) {
     visitor.VisitAndPredicate(this)
 }
-
+func (this AndPredicate) Sprint () string {
+	return fmt.Sprint("%s /\\ %s",this.Left.Sprint(),this.Right.Sprint())
+}
 type OrPredicate struct {
 	Left  Predicate
 	Right Predicate
 }
-
-func (this OrPredicate) Accept (visitor PredicateVisitor) {
+func (this OrPredicate) AcceptPred(visitor PredicateVisitor) {
     visitor.VisitOrPredicate(this)
 }
-
+func (this OrPredicate) Sprint () string {
+	return fmt.Sprint("%s \\/ %s",this.Left.Sprint(),this.Right.Sprint())
+}
 type PathPredicate struct {
 	Path string
 }
-
-func (this PathPredicate) Accept (visitor PredicateVisitor) {
+func (this PathPredicate) AcceptPred(visitor PredicateVisitor) {
     visitor.VisitPathPredicate(this)
 }
-
+func (this PathPredicate) Sprint () string {
+	return fmt.Sprint("e.Path(%s)",this.Path)
+}
 type StrPredicate struct {
 	Path string
 	Expected string
 }
-
-func (this StrPredicate) Accept (visitor PredicateVisitor) {
+func (this StrPredicate) AcceptPred(visitor PredicateVisitor) {
     visitor.VisitStrPredicate(this)
 }
-
+func (this StrPredicate) Sprint () string {
+	return fmt.Sprint("e.strcmp(%s,%s)",this.Path,this.Expected)
+}
 type TagPredicate struct {
 	Tag dt.Channel
 }
-
-func (this TagPredicate) Accept (visitor PredicateVisitor) {
+func (this TagPredicate) AcceptPred(visitor PredicateVisitor) {
     visitor.VisitTagPredicate(this)
 }
-
-type NamedPredicate struct {
-	// This can be either a predicate "foo" defined with "pred foo :="
-	// or a stream named "foo" defined "stream boolean foo :=.."
-	Name string
+func (this TagPredicate) Sprint () string {
+	return fmt.Sprint("e.tag(%s)",this.Tag)
 }
 
-func (this NamedPredicate) Accept (visitor PredicateVisitor) {
+// type NamedPredicate struct {
+//	// This can be either a predicate "foo" defined with "pred foo :="
+//	// or a stream named "foo" defined "stream boolean foo :=.."
+//	Name string
+//}
+
+func (this StreamNameExpr) AcceptPred(visitor PredicateVisitor) {
     visitor.VisitNamedPredicate(this)
 }
 
@@ -98,27 +120,41 @@ type NumComparisonPredicate struct {
     NumComparison NumComparison
 }
 
-func (this NumComparisonPredicate) Accept (visitor PredicateVisitor) {
+func (this NumComparisonPredicate) AcceptPred(visitor PredicateVisitor) {
     visitor.VisitNumComparisonPredicate(this)
+}
+func (this NumComparisonPredicate) Sprint() string {
+	return this.NumComparison.Sprint()
 }
 
 var (
 	True  TruePredicate
 	False FalsePredicate
+	TrueExpr = PredExpr{True}
+	FalseExpr = PredExpr{False}
 )
 
 
-// Constructors
+func getPredExpr(a interface{}) (Predicate,error) {
+	if v,ok:=a.(PredExpr) ; ok {
+		return v.Pred,nil
+	} else if v,ok:=a.(StreamNameExpr); ok {
+		return v,nil         // StreamNAmeExpr implements Predicate
+	} else {
+		str := fmt.Sprintf("cannot convert to pred \"%s\"\n",a.(StreamExpr).Sprint())
+		return nil,errors.New(str)
+	}
+}
 
 func NewAndPredicate(a, b interface{}) (Predicate) {
 	preds := ToSlice(b)
-	first := a.(Predicate)
+	first,_ := getPredExpr(a)
 	if len(preds)==0 {
 		return first
 	}
-	right := preds[len(preds)-1].(Predicate)
+	right,_ := getPredExpr(preds[len(preds)-1])
 	for i := len(preds)-2; i >= 0; i-- {
-		left := preds[i].(Predicate)
+		left,_ := getPredExpr(preds[i])
 		right = AndPredicate{left,right}
 	}
 	ret := AndPredicate{first,right}
@@ -126,14 +162,14 @@ func NewAndPredicate(a, b interface{}) (Predicate) {
 }
 
 func NewOrPredicate(a, b interface{}) (Predicate) {
-	preds := ToSlice(b)
-	first := a.(Predicate)
+	preds  := ToSlice(b)
+	first,_:= getPredExpr(a)
 	if len(preds)==0 {
 		return first
 	}
-	right := preds[len(preds)-1].(Predicate)
+	right,_ :=getPredExpr(preds[len(preds)-1])
 	for i := len(preds)-2; i >= 0; i-- {
-		left := preds[i].(Predicate)
+		left,_ := getPredExpr(preds[i])
 		right = OrPredicate{left,right}
 	}
 	return OrPredicate{first,right}
@@ -159,10 +195,10 @@ func NewTagPredicate(t interface{}) (TagPredicate) {
 	return TagPredicate{tag}
 }
 
-func NewNamedPredicate(n interface{}) NamedPredicate {
-	name := n.(Identifier).Val
-	return NamedPredicate{name}
-}
+// func NewNamedPredicate(n interface{}) NamedPredicate {
+// 	name := n.(Identifier).Val
+//	return NamedPredicate{name}
+//}
 
 func NewNumComparisonPredicate(n interface{}) NumComparisonPredicate {
     return NumComparisonPredicate{n.(NumComparison)}
