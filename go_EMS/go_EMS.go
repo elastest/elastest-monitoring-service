@@ -27,26 +27,35 @@ func main() {
 
     // Remove this
 
+    /* This is broken now
     tagdef := `version 1.0
     when true do #EDS
     when e.tag(#TJob) do #TORM`
     et.DeployTaggerv01(tagdef)
+    */
 
 
-    /*defs := []signals.SignalDefinition {
-        signals.SampledSignalDefinition{"cpuload", "chan", "system.load.1"},
-        signals.SampledSignalDefinition{"hostname", "chan", "beat.hostname"},
-        signals.FuncSignalDefinition{"hostnameiselastest", []striverdt.StreamName{"hostname"}, signals.SignalEqualsLiteral{"host_elastest"}},
-        signals.ConditionalAvgSignalDefinition{"condavg", "cpuload", "hostnameiselastest"},
-        signals.FuncSignalDefinition{"increasing", []striverdt.StreamName{"condavg", "cpuload"}, signals.SignalsLT64{}},
-    }*/
     defs := `
+    pred istjobmark := e.path(TJobMark)
     pred isnet := e.strcmp(system.network.name,"eth0")
+    stream bool truestream := true
     stream num inbytes := if isnet then e.getnum(system.network.in.bytes)
-    stream bool tru := true
-    stream num gradcond := gradient(inbytes within tru)
+
+    stream bool low_is_running := if istjobmark then e.strcmp(TJobMark, "LOW_START")
+    stream num gradlow := gradient(inbytes within low_is_running)
+    stream num avggradlow := avg(gradlow within truestream)
+
+    stream bool high_is_running := if istjobmark then e.strcmp(TJobMark, "HIGH_START")
+    stream num gradhigh := gradient(inbytes within high_is_running)
+    stream num avggradhigh := avg(gradhigh within truestream)
+
+    stream bool testcorrect := avggradhigh * 0.7 < avggradlow
+
     trigger isnet do emit inbytes on #bytesval
-    trigger isnet do emit gradcond on #bytesgrad`
+    trigger isnet do emit avggradlow on #bytesgradlow
+    trigger isnet do emit avggradhigh on #bytesgradhigh
+    trigger isnet do emit testcorrect on #testresult
+    `
     /*stream num load := if otrohost then e.getnum(system.load.1)
     stream bool high_load := load > 0.4
     stream num avgcond := avg(load within pred)
