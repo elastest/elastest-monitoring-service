@@ -125,7 +125,7 @@ MoreMults <- '*' _? e:BasicNumExpr { return common.NewRightMultExpr(e),nil }
 BasicNumExpr <- '(' _? n:NumExpr ')' _?   {  return n,nil }
           / a:Atom { return a,nil }
 
-Atom <- "true" _?    { return common.TrueExpr,nil }
+Atom <- TRUE _?    { return common.TrueExpr,nil }
      / FALSE        { return common.FalseExpr,nil }
      / b:Builtins   { return b,nil }
      / s:StreamName {
