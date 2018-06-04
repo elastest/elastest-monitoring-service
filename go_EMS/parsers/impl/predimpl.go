@@ -22,9 +22,9 @@ type EvalNumVisitor struct {
 }
 
 func (visitor *EvalVisitor) VisitAndPredicate(p common.AndPredicate) {
-    p.Left.Accept(visitor)
+    p.Left.AcceptPred(visitor)
     rLeft := visitor.Result
-    p.Right.Accept(visitor)
+    p.Right.AcceptPred(visitor)
     rRight := visitor.Result
 	visitor.Result = rLeft && rRight
 }
@@ -35,13 +35,13 @@ func (visitor *EvalVisitor) VisitFalsePredicate(p common.FalsePredicate) {
     visitor.Result = false
 }
 func (visitor *EvalVisitor) VisitNotPredicate(p common.NotPredicate) {
-	p.Inner.Accept(visitor)
+	p.Inner.AcceptPred(visitor)
     visitor.Result = !visitor.Result
 }
 func (visitor *EvalVisitor) VisitOrPredicate(p common.OrPredicate) {
-    p.Left.Accept(visitor)
+    p.Left.AcceptPred(visitor)
     rLeft := visitor.Result
-    p.Right.Accept(visitor)
+    p.Right.AcceptPred(visitor)
     rRight := visitor.Result
 	visitor.Result = rLeft || rRight
 }
@@ -62,11 +62,11 @@ func (visitor *EvalVisitor) VisitStrPredicate(p common.StrPredicate) {
 func (visitor *EvalVisitor) VisitTagPredicate(p common.TagPredicate) {
     visitor.Result = sets.SetIn(p.Tag, visitor.Event.Channels)
 }
-func (visitor *EvalVisitor) VisitNamedPredicate(p common.NamedPredicate) {
-    if thepred, ok := visitor.Preds[p.Name]; ok {
-        thepred.Accept(visitor)
+func (visitor *EvalVisitor) VisitNamedPredicate(p common.StreamNameExpr) {
+    if thepred, ok := visitor.Preds[p.Stream]; ok {
+        thepred.AcceptPred(visitor)
     } else {
-        visitor.Result = visitor.ArgsMap[striverdt.StreamName(p.Name)].(bool)
+        visitor.Result = visitor.ArgsMap[striverdt.StreamName(p.Stream)].(bool)
     }
 }
 func (visitor *EvalVisitor) VisitNumComparisonPredicate(p common.NumComparisonPredicate) {
@@ -77,49 +77,49 @@ func (visitor *EvalVisitor) VisitNumComparisonPredicate(p common.NumComparisonPr
 
 func (visitor *EvalVisitor) VisitNumLess(exp common.NumLess) {
     numvisitor := EvalNumVisitor{0, visitor.Event, visitor.ArgsMap}
-    exp.Left.Accept(&numvisitor)
+    exp.Left.AcceptNum(&numvisitor)
     a := numvisitor.Result
-    exp.Right.Accept(&numvisitor)
+    exp.Right.AcceptNum(&numvisitor)
     b := numvisitor.Result
     visitor.Result = a<b
 }
 func (visitor *EvalVisitor) VisitNumLessEq(exp common.NumLessEq) {
     numvisitor := EvalNumVisitor{0, visitor.Event, visitor.ArgsMap}
-    exp.Left.Accept(&numvisitor)
+    exp.Left.AcceptNum(&numvisitor)
     a := numvisitor.Result
-    exp.Right.Accept(&numvisitor)
+    exp.Right.AcceptNum(&numvisitor)
     b := numvisitor.Result
     visitor.Result = a<=b
 }
 func (visitor *EvalVisitor) VisitNumEq(exp common.NumEq) {
     numvisitor := EvalNumVisitor{0, visitor.Event, visitor.ArgsMap}
-    exp.Left.Accept(&numvisitor)
+    exp.Left.AcceptNum(&numvisitor)
     a := numvisitor.Result
-    exp.Right.Accept(&numvisitor)
+    exp.Right.AcceptNum(&numvisitor)
     b := numvisitor.Result
     visitor.Result = a==b
 }
 func (visitor *EvalVisitor) VisitNumGreater(exp common.NumGreater) {
     numvisitor := EvalNumVisitor{0, visitor.Event, visitor.ArgsMap}
-    exp.Left.Accept(&numvisitor)
+    exp.Left.AcceptNum(&numvisitor)
     a := numvisitor.Result
-    exp.Right.Accept(&numvisitor)
+    exp.Right.AcceptNum(&numvisitor)
     b := numvisitor.Result
     visitor.Result = a>b
 }
 func (visitor *EvalVisitor) VisitNumGreaterEq(exp common.NumGreaterEq) {
     numvisitor := EvalNumVisitor{0, visitor.Event, visitor.ArgsMap}
-    exp.Left.Accept(&numvisitor)
+    exp.Left.AcceptNum(&numvisitor)
     a := numvisitor.Result
-    exp.Right.Accept(&numvisitor)
+    exp.Right.AcceptNum(&numvisitor)
     b := numvisitor.Result
     visitor.Result = a>=b
 }
 func (visitor *EvalVisitor) VisitNumNotEq(exp common.NumNotEq) {
     numvisitor := EvalNumVisitor{0, visitor.Event, visitor.ArgsMap}
-    exp.Left.Accept(&numvisitor)
+    exp.Left.AcceptNum(&numvisitor)
     a := numvisitor.Result
-    exp.Right.Accept(&numvisitor)
+    exp.Right.AcceptNum(&numvisitor)
     b := numvisitor.Result
     visitor.Result = a!=b
 }
@@ -133,33 +133,33 @@ func (visitor *EvalNumVisitor) VisitFloatLiteralExpr(exp common.FloatLiteralExpr
     visitor.Result = exp.Num
 }
 func (visitor *EvalNumVisitor) VisitStreamNameExpr(exp common.StreamNameExpr) {
-    visitor.Result = visitor.ArgsMap[exp.StreamName].(float32)
+    visitor.Result = visitor.ArgsMap[striverdt.StreamName(exp.Stream)].(float32)
 }
 func (visitor *EvalNumVisitor) VisitNumMulExpr(exp common.NumMulExpr) {
-    exp.Left.Accept(visitor)
+    exp.Left.AcceptNum(visitor)
     rLeft := visitor.Result
-    exp.Right.Accept(visitor)
+    exp.Right.AcceptNum(visitor)
     rRight := visitor.Result
 	visitor.Result = rLeft * rRight
 }
 func (visitor *EvalNumVisitor) VisitNumDivExpr(exp common.NumDivExpr) {
-    exp.Left.Accept(visitor)
+    exp.Left.AcceptNum(visitor)
     rLeft := visitor.Result
-    exp.Right.Accept(visitor)
+    exp.Right.AcceptNum(visitor)
     rRight := visitor.Result
 	visitor.Result = rLeft / rRight
 }
 func (visitor *EvalNumVisitor) VisitNumPlusExpr(exp common.NumPlusExpr) {
-    exp.Left.Accept(visitor)
+    exp.Left.AcceptNum(visitor)
     rLeft := visitor.Result
-    exp.Right.Accept(visitor)
+    exp.Right.AcceptNum(visitor)
     rRight := visitor.Result
 	visitor.Result = rLeft + rRight
 }
 func (visitor *EvalNumVisitor) VisitNumMinusExpr(exp common.NumMinusExpr) {
-    exp.Left.Accept(visitor)
+    exp.Left.AcceptNum(visitor)
     rLeft := visitor.Result
-    exp.Right.Accept(visitor)
+    exp.Right.AcceptNum(visitor)
     rRight := visitor.Result
 	visitor.Result = rLeft - rRight
 }

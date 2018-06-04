@@ -4,7 +4,6 @@ import(
     striverdt "gitlab.software.imdea.org/felipe.gorostiaga/striver-go/datatypes"
     parsercommon "github.com/elastest/elastest-monitoring-service/go_EMS/parsers/common"
 	dt "github.com/elastest/elastest-monitoring-service/go_EMS/datatypes"
-	"github.com/elastest/elastest-monitoring-service/go_EMS/parsers/session"
 )
 
 type StreamExprToStriverVisitor struct {
@@ -12,7 +11,7 @@ type StreamExprToStriverVisitor struct {
     streamname striverdt.StreamName
 }
 
-func (visitor StreamExprToStriverVisitor) VisitAggregatorExpr(aggexp session.AggregatorExpr) {
+func (visitor StreamExprToStriverVisitor) VisitAggregatorExpr(aggexp parsercommon.AggregatorExpr) {
     switch aggexp.Operation {
     case "avg":
         makeAvgOutStream(aggexp.Stream, aggexp.Session, visitor.streamname, visitor.momvisitor)
@@ -23,27 +22,30 @@ func (visitor StreamExprToStriverVisitor) VisitAggregatorExpr(aggexp session.Agg
     }
 }
 
-func (visitor StreamExprToStriverVisitor) VisitIfThenExpr(ifthen session.IfThenExpr) {
+func (visitor StreamExprToStriverVisitor) VisitIfThenExpr(ifthen parsercommon.IfThenExpr) {
     mysignalname := visitor.streamname
     thensignalname := "ifthen_thenstream::"+mysignalname
     visitor.streamname = thensignalname
     ifthen.Then.Accept(visitor)
     makeIfThenStream(ifthen.If, thensignalname, mysignalname, visitor.momvisitor)
 }
-func (visitor StreamExprToStriverVisitor) VisitIfThenElseExpr(session.IfThenElseExpr) {
+func (visitor StreamExprToStriverVisitor) VisitIfThenElseExpr(parsercommon.IfThenElseExpr) {
     panic("not implemented")
 }
-func (visitor StreamExprToStriverVisitor) VisitPredExpr(predExp session.PredExpr) {
+func (visitor StreamExprToStriverVisitor) VisitPredExpr(predExp parsercommon.PredExpr) {
     makePredicateStream(predExp.Pred, visitor.streamname, visitor.momvisitor)
 }
-func (visitor StreamExprToStriverVisitor) VisitPrevExpr(predExp session.PrevExpr) {
+func (visitor StreamExprToStriverVisitor) VisitPrevExpr(predExp parsercommon.PrevExpr) {
     panic("not implemented")
 }
-func (visitor StreamExprToStriverVisitor) VisitStringPathExpr(session.StringPathExpr) {
+func (visitor StreamExprToStriverVisitor) VisitStringPathExpr(parsercommon.StringPathExpr) {
     panic("not implemented")
 }
-func (visitor StreamExprToStriverVisitor) VisitNumExprStream(nes session.NumExprStream) {
-    nes.NumExpr.Accept(NumExprToStriverVisitor{visitor})
+func (visitor StreamExprToStriverVisitor) VisitStreamNumExpr(nes parsercommon.StreamNumExpr) {
+    nes.Expr.AcceptNum(NumExprToStriverVisitor{visitor})
+}
+func (visitor StreamExprToStriverVisitor) VisitStreamNameExpr(nes parsercommon.StreamNameExpr) {
+    panic("not implemented")
 }
 
 func makeAvgOutStream(inSignalName, sessionSignalName, outSignalName striverdt.StreamName, visitor *MoMToStriverVisitor) {
@@ -94,7 +96,7 @@ func makeAvgOutStream(inSignalName, sessionSignalName, outSignalName striverdt.S
 
 func makeIfThenStream(ifpred parsercommon.Predicate, thensignalname, mysignalname striverdt.StreamName, visitor *MoMToStriverVisitor) {
     signalNamesVisitor := SignalNamesFromPredicateVisitor{visitor.Preds, []striverdt.StreamName{}}
-    ifpred.Accept(&signalNamesVisitor)
+    ifpred.AcceptPred(&signalNamesVisitor)
     signalNames := signalNamesVisitor.SNames
     condFun := func (args...striverdt.EvPayload) striverdt.EvPayload {
         rawevent := args[0]
@@ -111,7 +113,7 @@ func makeIfThenStream(ifpred parsercommon.Predicate, thensignalname, mysignalnam
             argsMap[sname] = args[i+2].Val.(striverdt.EvPayload).Val
         }
         theEvalVisitor := EvalVisitor{false, theEvent, visitor.Preds, argsMap}
-        ifpred.Accept(&theEvalVisitor)
+        ifpred.AcceptPred(&theEvalVisitor)
         if theEvalVisitor.Result && then.IsSet {
             return then.Val.(striverdt.EvPayload)
         } else {
@@ -133,7 +135,7 @@ func makeIfThenStream(ifpred parsercommon.Predicate, thensignalname, mysignalnam
 
 func makePredicateStream(pred parsercommon.Predicate, mysignalname striverdt.StreamName, visitor *MoMToStriverVisitor) {
     signalNamesVisitor := SignalNamesFromPredicateVisitor{visitor.Preds, []striverdt.StreamName{}}
-    pred.Accept(&signalNamesVisitor)
+    pred.AcceptPred(&signalNamesVisitor)
     signalNames := signalNamesVisitor.SNames
     predFun := func (args...striverdt.EvPayload) striverdt.EvPayload {
         rawevent := args[0]
@@ -149,7 +151,7 @@ func makePredicateStream(pred parsercommon.Predicate, mysignalname striverdt.Str
             argsMap[sname] = args[i+1].Val.(striverdt.EvPayload).Val
         }
         theEvalVisitor := EvalVisitor{false, theEvent, visitor.Preds, argsMap}
-        pred.Accept(&theEvalVisitor)
+        pred.AcceptPred(&theEvalVisitor)
         return striverdt.Some(theEvalVisitor.Result)
     }
 

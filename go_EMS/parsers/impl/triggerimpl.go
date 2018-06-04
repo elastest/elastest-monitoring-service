@@ -13,7 +13,7 @@ func makeTriggerStreams(visitor *MoMToStriverVisitor, predicate parsercommon.Pre
     inputSignalName := triggerAction.StreamName
     outputSignalName := TRIGGER_PREFIX + inputSignalName
     signalNamesVisitor := SignalNamesFromPredicateVisitor{visitor.Preds, []striverdt.StreamName{}}
-    predicate.Accept(&signalNamesVisitor)
+    predicate.AcceptPred(&signalNamesVisitor)
     signalNames := signalNamesVisitor.SNames
     predFun := func (args...striverdt.EvPayload) striverdt.EvPayload {
         rawevent := args[0]
@@ -30,7 +30,7 @@ func makeTriggerStreams(visitor *MoMToStriverVisitor, predicate parsercommon.Pre
             argsMap[sname] = args[i+2].Val.(striverdt.EvPayload).Val
         }
         theEvalVisitor := EvalVisitor{false, theEvent, visitor.Preds, argsMap}
-        predicate.Accept(&theEvalVisitor)
+        predicate.AcceptPred(&theEvalVisitor)
         if theEvalVisitor.Result && then.IsSet {
             theVal := then.Val.(striverdt.EvPayload).Val
             return striverdt.Some(dt.Event{

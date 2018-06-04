@@ -108,7 +108,7 @@ func (this StreamNameExpr) Accept(visitor StreamExprVisitor) {
 	visitor.VisitStreamNameExpr(this)
 }
 func (this StreamNameExpr) Sprint() string {
-	return this.Stream
+	return string(this.Stream)
 }
 
 type StringPathExpr struct {
