@@ -49,7 +49,9 @@ func main() {
     stream num gradhigh := gradient(inbytes within high_is_running)
     stream num avggradhigh := avg(gradhigh within truestream)
 
-    stream bool testcorrect := avggradhigh * 0.7 < avggradlow
+    stream num scaledavg := avggradhigh * 0.7
+
+    stream bool testcorrect := avggradhigh * 0.7 > avggradlow
 
     trigger isnet do emit inbytes on #bytesval
     trigger isnet do emit avggradlow on #bytesgradlow
