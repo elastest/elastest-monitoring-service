@@ -42,8 +42,8 @@ func (visitor StreamExprToStriverVisitor) VisitPredExpr(predExp parsercommon.Pre
         return striverdt.Some(theEvalVisitor.Result)
     })
 }
-func (visitor StreamExprToStriverVisitor) VisitPrevExpr(predExp parsercommon.PrevExpr) {
-    panic("not implemented")
+func (visitor StreamExprToStriverVisitor) VisitPrevExpr(prevExp parsercommon.PrevExpr) {
+    makePrevOutStream(prevExp.Stream,visitor.streamname, visitor.momvisitor)
 }
 func (visitor StreamExprToStriverVisitor) VisitStringPathExpr(parsercommon.StringPathExpr) {
     panic("not implemented")
@@ -60,6 +60,22 @@ func (visitor StreamExprToStriverVisitor) VisitStreamNumExpr(numExp parsercommon
 }
 func (visitor StreamExprToStriverVisitor) VisitStreamNameExpr(nes parsercommon.StreamNameExpr) {
     panic("not implemented")
+}
+
+func makePrevOutStream (inSignalName, outSignalName striverdt.StreamName, visitor *MoMToStriverVisitor) {
+    hasEverFun := func (args...striverdt.EvPayload) striverdt.EvPayload {
+        myprev := args[1]
+        if myprev.IsSet && myprev.Val.(striverdt.EvPayload).Val.(bool) {
+            return striverdt.Some(true)
+        }
+        return args[0].Val.(striverdt.EvPayload)
+    }
+    hasEverVal := striverdt.FuncNode{[]striverdt.ValNode{
+        &striverdt.PrevEqValNode{striverdt.TNode{}, inSignalName, []striverdt.Event{}},
+        &striverdt.PrevValNode{striverdt.TNode{}, outSignalName, []striverdt.Event{}},
+    }, hasEverFun}
+    hasEverStream := striverdt.OutStream{outSignalName, striverdt.SrcTickerNode{inSignalName}, hasEverVal}
+    visitor.OutStreams = append(visitor.OutStreams, hasEverStream)
 }
 
 func makeAvgOutStream(inSignalName, sessionSignalName, outSignalName striverdt.StreamName, visitor *MoMToStriverVisitor) {

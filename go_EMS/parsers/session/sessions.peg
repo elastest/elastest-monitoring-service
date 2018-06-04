@@ -152,7 +152,7 @@ Builtins <- b:Builtin "(" _? s:Name WITHIN w:Name _? ")" _? { return common.NewA
      / t:HasTagPredicate { return t,nil}
      / p:StrcmpPredicate { return p,nil }
      
-PrevExpr <- PREV n:Name { return common.NewPrevExpr(n),nil }
+PrevExpr <- PREV n:Name _? { return common.NewPrevExpr(n),nil }
 
 Builtin <- AVG { return "avg",nil }
 	 / GRAD { return "gradient",nil }

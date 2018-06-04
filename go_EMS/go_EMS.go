@@ -49,14 +49,14 @@ func main() {
     stream num gradhigh := gradient(inbytes within high_is_running)
     stream num avggradhigh := avg(gradhigh within truestream)
 
-    stream num scaledavg := avggradhigh * 0.7
-
-    stream bool testcorrect := avggradhigh * 0.7 > avggradlow
+    stream bool testcorrect := avggradhigh > avggradlow * 0.9
+    stream bool evercorrect := Prev testcorrect
 
     trigger isnet do emit inbytes on #bytesval
     trigger isnet do emit avggradlow on #bytesgradlow
     trigger isnet do emit avggradhigh on #bytesgradhigh
     trigger isnet do emit testcorrect on #testresult
+    trigger isnet do emit evercorrect on #everresult
     `
     /*stream num load := if otrohost then e.getnum(system.load.1)
     stream bool high_load := load > 0.4

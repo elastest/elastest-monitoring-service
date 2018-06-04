@@ -90,7 +90,7 @@ func (this PredExpr) Sprint() string {
 }
 
 type PrevExpr struct {
-	Stream string
+	Stream striverdt.StreamName
 }
 
 
@@ -157,7 +157,7 @@ func NewStringPathExpr(p interface{}) StringPathExpr {
 	return StringPathExpr{dt.JSONPath(path)}
 }
 func NewPrevExpr(p interface{}) (PrevExpr) {
-	return PrevExpr{p.(Identifier).Val}
+	return PrevExpr{striverdt.StreamName(p.(Identifier).Val)}
 }
 
 func NewStreamNameExpr(p interface{}) StreamNameExpr {
