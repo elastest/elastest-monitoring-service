@@ -16,11 +16,15 @@ type Filters struct {
 
 type Monitor Filters
 
+var Verbose bool = false
+
 func Print(mon Monitor) {
-	fmt.Printf("There are %d stampers\n",len(mon.Defs))
+
+	if Verbose {
+		fmt.Printf("There are %d stampers\n",len(mon.Defs))
+	}
 	for _,v := range mon.Defs {
-		//fmt.Printf("when %s do %s\n", v.pred.pred, v.tag.tag)
-		if (v == v) {}
+		fmt.Printf("when %s do %s\n", v.Pred.Sprint(), v.Tag.Tag)
 	}
 }
 

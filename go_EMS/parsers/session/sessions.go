@@ -87,6 +87,19 @@ const (
 	LastType = StringT
 )
 
+func (e StreamType) Sprint() string {
+	switch e {
+	case NumT:
+		return "num"
+	case BoolT:
+		return "bool"
+	case StringT:
+		return "string"
+	default:
+		return "*error*" // error
+	}
+}
+
 // func (t StreamType) Sprint() string {
 // 
 // 	type_names := []string{"int","bool","string"}
@@ -111,7 +124,7 @@ const (
 // We need a dictionary of streams (so all streams used are defined)
 //
 type Stream struct { // a Stream is a Name:=Expr
-	Type StreamType
+	SType StreamType
 	Name striverdt.StreamName
 	Expr common.StreamExpr
 }
@@ -202,21 +215,27 @@ func ProcessDeclarations(ds []interface{}) MonitorMachine {
 	return machine
 }
 
-func Print(mon MonitorMachine) {
-	fmt.Printf("There are %d stampers\n",len(mon.Stampers))
-	fmt.Printf("There are %d sessions\n",len(mon.Sessions))
-	fmt.Printf("There are %d streams\n", len(mon.Streams))
-	fmt.Printf("There are %d triggers\n", len(mon.Triggers))
-	fmt.Printf("There are %d predicates\n", len(mon.Preds))
+var (
+	Verbose bool
+)
 
+func Print(mon MonitorMachine) {
+	if Verbose {
+		fmt.Printf("There are %d stampers\n",len(mon.Stampers))
+		fmt.Printf("There are %d sessions\n",len(mon.Sessions))
+		fmt.Printf("There are %d streams\n", len(mon.Streams))
+		fmt.Printf("There are %d triggers\n", len(mon.Triggers))
+		fmt.Printf("There are %d predicates\n", len(mon.Preds))
+	}		
+		
 	for _,v := range mon.Stampers {
-		fmt.Printf("when %s do %s\n", v.Pred, v.Tag)
+		fmt.Printf("when %s do %s\n", v.Pred.Sprint(), v.Tag)
 	}
 	for _,v := range mon.Sessions {
-		fmt.Printf("session %s := (begin=>%s,end=>%s)\n",v.Name,v.Begin,v.End)
+		fmt.Printf("session %s := [%s, %s]\n",v.Name,v.Begin,v.End)
 	}
 	for _,v := range mon.Streams {
-		fmt.Printf("stream %s %s := %s\n",v.Type,v.Name,v.Expr)
+		fmt.Printf("stream %s %s := %s\n",v.SType.Sprint(),v.Name,v.Expr.Sprint())
 	}
 	for _,v := range mon.Triggers {
 		fmt.Printf("trigger %s do %s\n",v.Pred,v.Action)

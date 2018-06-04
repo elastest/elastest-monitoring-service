@@ -2,6 +2,7 @@ package common
 
 import(
 	dt "github.com/elastest/elastest-monitoring-service/go_EMS/datatypes"
+    striverdt "gitlab.software.imdea.org/felipe.gorostiaga/striver-go/datatypes"
 	"fmt"
 	"errors"
 )
@@ -16,7 +17,10 @@ type PredicateVisitor interface {
     VisitStrPredicate(StrPredicate)
     VisitTagPredicate(TagPredicate)
     VisitNamedPredicate(StreamNameExpr)
-    VisitNumComparisonPredicate(NumComparisonPredicate)
+	VisitNumComparisonPredicate(NumComparisonPredicate)
+	VisitIfThenElsePredicate(IfThenElsePredicate)
+	VisitPrevPredicate(PrevPredicate)
+
 }
 
 type Predicate interface {
@@ -55,7 +59,7 @@ func (this NotPredicate) AcceptPred(visitor PredicateVisitor) {
     visitor.VisitNotPredicate(this)
 }
 func (this NotPredicate) Sprint () string {
-	return fmt.Sprint("~ %s", this.Inner.Sprint())
+	return fmt.Sprintf("~ %s", this.Inner.Sprint())
 }
 type AndPredicate struct {
 	Left  Predicate
@@ -65,7 +69,7 @@ func (this AndPredicate) AcceptPred(visitor PredicateVisitor) {
     visitor.VisitAndPredicate(this)
 }
 func (this AndPredicate) Sprint () string {
-	return fmt.Sprint("%s /\\ %s",this.Left.Sprint(),this.Right.Sprint())
+	return fmt.Sprintf("%s /\\ %s",this.Left.Sprint(),this.Right.Sprint())
 }
 type OrPredicate struct {
 	Left  Predicate
@@ -75,7 +79,7 @@ func (this OrPredicate) AcceptPred(visitor PredicateVisitor) {
     visitor.VisitOrPredicate(this)
 }
 func (this OrPredicate) Sprint () string {
-	return fmt.Sprint("%s \\/ %s",this.Left.Sprint(),this.Right.Sprint())
+	return fmt.Sprintf("%s \\/ %s",this.Left.Sprint(),this.Right.Sprint())
 }
 type PathPredicate struct {
 	Path string
@@ -84,7 +88,7 @@ func (this PathPredicate) AcceptPred(visitor PredicateVisitor) {
     visitor.VisitPathPredicate(this)
 }
 func (this PathPredicate) Sprint () string {
-	return fmt.Sprint("e.Path(%s)",this.Path)
+	return fmt.Sprintf("e.Path(%s)",this.Path)
 }
 type StrPredicate struct {
 	Path string
@@ -94,7 +98,7 @@ func (this StrPredicate) AcceptPred(visitor PredicateVisitor) {
     visitor.VisitStrPredicate(this)
 }
 func (this StrPredicate) Sprint () string {
-	return fmt.Sprint("e.strcmp(%s,%s)",this.Path,this.Expected)
+	return fmt.Sprintf("e.strcmp(%s,%s)",this.Path,this.Expected)
 }
 type TagPredicate struct {
 	Tag dt.Channel
@@ -103,7 +107,7 @@ func (this TagPredicate) AcceptPred(visitor PredicateVisitor) {
     visitor.VisitTagPredicate(this)
 }
 func (this TagPredicate) Sprint () string {
-	return fmt.Sprint("e.tag(%s)",this.Tag)
+	return fmt.Sprintf("e.tag(%s)",this.Tag)
 }
 
 // type NamedPredicate struct {
@@ -127,6 +131,37 @@ func (this NumComparisonPredicate) Sprint() string {
 	return this.NumComparison.Sprint()
 }
 
+type IfThenElsePredicate struct {
+	If Predicate
+	Then StreamExpr
+	Else StreamExpr
+}
+func (this IfThenElsePredicate) AcceptPred(visitor PredicateVisitor) {
+    visitor.VisitIfThenElsePredicate(this)
+}
+func (this IfThenElsePredicate) Sprint() string {
+	expr := IfThenElseExpr{this.If,this.Then,this.Else}
+	return expr.Sprint()
+}
+func IfThenElseExpr2Pred(e IfThenElseExpr) IfThenElsePredicate {
+	return IfThenElsePredicate{e.If,e.Then,e.Else}
+}
+
+type PrevPredicate struct {
+	Stream striverdt.StreamName
+}
+
+func (this PrevPredicate) AcceptPred(visitor PredicateVisitor) {
+    visitor.VisitPrevPredicate(this)
+}
+func (this PrevPredicate) Sprint() string {
+	return fmt.Sprintf("Prev %s",this.Stream)
+}
+func NewPrevPred(p interface{}) (PrevPredicate) {
+	return PrevPredicate{striverdt.StreamName(p.(Identifier).Val)}
+}
+
+
 var (
 	True  TruePredicate
 	False FalsePredicate
@@ -142,6 +177,7 @@ func getPredExpr(a interface{}) (Predicate,error) {
 		return v,nil         // StreamNAmeExpr implements Predicate
 	} else {
 		str := fmt.Sprintf("cannot convert to pred \"%s\"\n",a.(StreamExpr).Sprint())
+		fmt.Printf(str)
 		return nil,errors.New(str)
 	}
 }

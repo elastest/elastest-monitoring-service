@@ -15,7 +15,6 @@ type StreamExprVisitor interface {
 	VisitStreamNumExpr(StreamNumExpr)
 	VisitPredExpr(PredExpr)
 	VisitStringPathExpr(StringPathExpr)
-	VisitPrevExpr(PrevExpr)
 	VisitStreamNameExpr(StreamNameExpr)
 }
 
@@ -89,17 +88,6 @@ func (this PredExpr) Sprint() string {
 	return this.Pred.Sprint()
 }
 
-type PrevExpr struct {
-	Stream striverdt.StreamName
-}
-
-
-func (this PrevExpr) Accept(visitor StreamExprVisitor) {
-    visitor.VisitPrevExpr(this)
-}
-func (this PrevExpr) Sprint() string {
-	return fmt.Sprintf("Prev %s",this.Stream)
-}
 
 type StreamNameExpr struct {
 	Stream string
@@ -155,9 +143,6 @@ func NewPredExpr(p interface{}) PredExpr {
 func NewStringPathExpr(p interface{}) StringPathExpr {
 	path := p.(PathName).Val
 	return StringPathExpr{dt.JSONPath(path)}
-}
-func NewPrevExpr(p interface{}) (PrevExpr) {
-	return PrevExpr{striverdt.StreamName(p.(Identifier).Val)}
 }
 
 func NewStreamNameExpr(p interface{}) StreamNameExpr {

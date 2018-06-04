@@ -1,4 +1,3 @@
-version 1.0
 when true do #EDS
 when e.path(sender) /\ e.path(sender) do #TJob
 when e.path(sender) /\ e.strcmp(sender,"tjob") do #TJob

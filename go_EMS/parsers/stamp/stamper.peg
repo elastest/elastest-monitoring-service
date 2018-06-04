@@ -8,8 +8,11 @@ import(
 
 }
 
-Input  <- v:Version s:Filters EOF {
-       return s,nil
+//Input  <- v:Version s:Filters EOF 
+
+Input  <- s:Filters EOF
+       {
+         return s,nil
        }
 
 Version <- _? "version" _ ver:VersionNum _?  {
@@ -29,23 +32,89 @@ Filters  <- fs:Filter+ {
 	 }
 
 Filter <- "when" _? p:Predicate "do" _ t:Tag _? {
-       return Filter{p.(common.Predicate),t.(common.Tag)},nil
+       pred := p.(common.PredExpr).Pred
+       return Filter{pred,t.(common.Tag)},nil
        }
 
-
-Predicate <- a:Ands    b:(OrExpr*)  { return common.NewOrPredicate(a,b),nil }
-Ands      <- a:NegExpr b:(AndExpr*) { return common.NewAndPredicate(a,b),nil }
-AndExpr   <- "/\\" _? p:NegExpr      { return p,nil }
+Predicate <- a:Ands    b:(OrExpr*)  {
+	    preds := common.ToSlice(b)
+	    if len(preds)==0 {
+	       return a,nil
+	    } else {
+	      return common.NewPredExpr(common.NewOrPredicate(a,b)),nil
+	    }
+}
 OrExpr    <- "\\/" _? p:Ands         { return p,nil }
-NegExpr   <- "~" _? p:NegExpr        { return common.NewNotPredicate(p),nil }
-	 /  p:Primary             { return p,nil }
-Primary   <- '(' _? p:Predicate ')' _?  { return p,nil }
-         / a:AtomicPredicate	 { return a,nil }
+Ands      <- a:NegExpr b:(AndExpr*)    {
+	    preds := common.ToSlice(b)
+            if len(preds)==0 {
+	       return a,nil
+	    } else {
+	      return common.NewPredExpr(common.NewAndPredicate(a,b)),nil
+	    }
+  	 }
+AndExpr   <- "/\\" _? p:NegExpr      { return p,nil }
+NegExpr   <- "~" _? p:NegExpr        {
+	     	 pred := common.NewNotPredicate(p.(common.PredExpr).Pred) 
+	         return common.NewPredExpr(pred),nil
+         }
+	 / '(' _? p:Predicate ')' _?  { return p,nil }
+	 / n:NumComparison { return common.NewPredExpr(n),nil }
+         / a:AtomicPredicate { return common.NewPredExpr(a),nil }
+
+
+NumComparison <- a:NumExpr "<"  _? b:NumExpr {
+	      	return common.NewNumComparisonPredicate(common.NewNumLess(a,b)),nil }
+              /  a:NumExpr "<=" _? b:NumExpr {
+	      	 return common.NewNumComparisonPredicate(common.NewNumLessEq(a,b)),nil }
+              /  a:NumExpr "="  _? b:NumExpr {
+	      	 return common.NewNumComparisonPredicate(common.NewNumEq(a,b)),nil }
+              /  a:NumExpr ">"  _? b:NumExpr {
+	      	 return common.NewNumComparisonPredicate(common.NewNumGreater(a,b)),nil }
+              /  a:NumExpr ">=" _? b:NumExpr {
+	      	 return common.NewNumComparisonPredicate(common.NewNumGreaterEq(a,b)),nil }
+	      /	 a:NumExpr "!=" _? b:NumExpr {
+	      	 return common.NewNumComparisonPredicate(common.NewNumNotEq(a,b)),nil }
+
+NumExpr   <- a:Mults b:(Plus*)  {
+	    exprs := common.ToSlice(b)
+	    if len(exprs)==0 {
+	       return a,nil
+	    } else {
+	      return common.Flatten(a,b),nil }
+	    }
+Plus      <- '+' _? e:Mults     { return common.NewRightPlusExpr(e),nil  }
+           / '-' _? e:Mults     { return common.NewRightMinusExpr(e),nil }
+Mults     <- a:BasicNumExpr b:(MoreMults*) {
+	     exprs := common.ToSlice(b)
+	     if len(exprs)==0 { return a,nil }
+	     return common.Flatten(a,b),nil
+	  }
+MoreMults <- '*' _? e:BasicNumExpr { return common.NewRightMultExpr(e),nil }
+          /  '/' _? e:BasicNumExpr { return common.NewRightDivExpr(e),nil }
+BasicNumExpr <- '(' _? n:NumExpr ')' _?   {  return n,nil }
+	 / n:NumLiteral _? {
+          num := n.(common.FloatLiteralExpr)
+          return common.NewStreamNumExpr(num),nil
+        }
+        / n:NumPathExpr { return n,nil }
+
+NumLiteral <- p:([0-9]+('.'[0-9]+)?) {
+	      x,err := strconv.ParseFloat(string(c.text),32)
+	      return common.NewFloatLiteralExpr(x), err
+	   }
+
+
+NumPathExpr <- "e.getnum(" _? p:JSONPath _? ")" _? {
+             return common.NewStreamNumExpr(common.NewNumPathExpr(p)),nil
+	   }
+
 AtomicPredicate <- p:PathPredicate _? { return p,nil }
 	  / p:StrPredicate   _?  { return p,nil }
 	  / p:HasTagPredicate _? { return p,nil }
 	  / p:"true" _? { return common.True,nil }
 	  / p:"false" _? { return common.False,nil }
+
 PathPredicate <- "e.path(" _? p:JSONPath _? ")" _? {
 	      return common.NewPathPredicate(p),nil		
 }
