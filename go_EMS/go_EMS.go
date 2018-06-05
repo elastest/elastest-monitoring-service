@@ -27,12 +27,11 @@ func main() {
 
     // Remove this
 
-    /* This is broken
-    tagdef := `version 1.0
-    when true do #EDS
-    when e.tag(#TJob) do #TORM`
+    tagdef := `when true do #EDS
+    when e.tag(#TJob) do #TORM
+    when e.path(TJobMark) do #TJob
+    `
     et.DeployTaggerv01(tagdef)
-    */
 
 
     defs := `
