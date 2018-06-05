@@ -27,16 +27,14 @@ func main() {
 
     // Remove this
 
-    tagdef := `when true do #EDS
-    when e.tag(#TJob) do #TORM
-    when e.path(TJobMark) do #TJob
+    tagdef := `when e.path(TJobMark) do #TJob
+    when e.strcmp(system.network.name,"eth0") do #NetData
     `
     et.DeployTaggerv01(tagdef)
 
-
     defs := `
-    pred istjobmark := e.path(TJobMark)
-    pred isnet := e.strcmp(system.network.name,"eth0")
+    pred istjobmark := e.tag(#TJob)
+    pred isnet := e.tag(#NetData)
     stream bool truestream := true
     stream num inbytes := if isnet then e.getnum(system.network.in.bytes)
 
@@ -48,14 +46,12 @@ func main() {
     stream num gradhigh := gradient(inbytes within high_is_running)
     stream num avggradhigh := avg(gradhigh within truestream)
 
-    stream bool testcorrect := avggradhigh > avggradlow * 0.9
-    stream bool evercorrect := Prev low_is_running /\ Prev high_is_running
+    stream bool testcorrect := Prev low_is_running /\ Prev high_is_running /\ avggradhigh > avggradlow * 0.9
 
     trigger isnet do emit inbytes on #bytesval
     trigger isnet do emit avggradlow on #bytesgradlow
     trigger isnet do emit avggradhigh on #bytesgradhigh
     trigger isnet do emit testcorrect on #testresult
-    trigger isnet do emit evercorrect on #everresult
     `
     /*stream num load := if otrohost then e.getnum(system.load.1)
     stream bool high_load := load > 0.4
