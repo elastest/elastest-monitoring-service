@@ -27,7 +27,7 @@ func main() {
 
     // Remove this
 
-    /* This is broken now
+    /* This is broken
     tagdef := `version 1.0
     when true do #EDS
     when e.tag(#TJob) do #TORM`
@@ -50,7 +50,7 @@ func main() {
     stream num avggradhigh := avg(gradhigh within truestream)
 
     stream bool testcorrect := avggradhigh > avggradlow * 0.9
-    stream bool evercorrect := Prev testcorrect
+    stream bool evercorrect := Prev low_is_running /\ Prev high_is_running
 
     trigger isnet do emit inbytes on #bytesval
     trigger isnet do emit avggradlow on #bytesgradlow

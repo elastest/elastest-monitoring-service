@@ -73,6 +73,14 @@ func (visitor *EvalVisitor) VisitNumComparisonPredicate(p common.NumComparisonPr
     p.NumComparison.Accept(visitor)
 }
 
+func (visitor *EvalVisitor) VisitIfThenElsePredicate(p common.IfThenElsePredicate) {
+    panic("not implemented")
+}
+
+func (visitor *EvalVisitor) VisitPrevPredicate(p common.PrevPredicate) {
+    visitor.Result = visitor.ArgsMap["prevOf::"+p.Stream].(bool)
+}
+
 // It also visits numcomparisons!
 
 func (visitor *EvalVisitor) VisitNumLess(exp common.NumLess) {

@@ -33,7 +33,7 @@ func (visitor StreamExprToStriverVisitor) VisitIfThenElseExpr(parsercommon.IfThe
     panic("not implemented")
 }
 func (visitor StreamExprToStriverVisitor) VisitPredExpr(predExp parsercommon.PredExpr) {
-    signalNamesVisitor := SignalNamesFromPredicateVisitor{visitor.momvisitor.Preds, []striverdt.StreamName{}}
+    signalNamesVisitor := SignalNamesFromPredicateVisitor{visitor.momvisitor.Preds, []striverdt.StreamName{}, visitor.momvisitor}
     predExp.Pred.AcceptPred(&signalNamesVisitor)
     signalNames := signalNamesVisitor.SNames
     makeGeneralStream(signalNames, visitor.streamname, visitor.momvisitor, func(theEvent dt.Event, argsMap map[striverdt.StreamName]interface{}) striverdt.EvPayload {
@@ -42,14 +42,11 @@ func (visitor StreamExprToStriverVisitor) VisitPredExpr(predExp parsercommon.Pre
         return striverdt.Some(theEvalVisitor.Result)
     })
 }
-func (visitor StreamExprToStriverVisitor) VisitPrevExpr(prevExp parsercommon.PrevExpr) {
-    makePrevOutStream(prevExp.Stream,visitor.streamname, visitor.momvisitor)
-}
 func (visitor StreamExprToStriverVisitor) VisitStringPathExpr(parsercommon.StringPathExpr) {
     panic("not implemented")
 }
 func (visitor StreamExprToStriverVisitor) VisitStreamNumExpr(numExp parsercommon.StreamNumExpr) {
-    signalNamesVisitor := SignalNamesFromPredicateVisitor{visitor.momvisitor.Preds, []striverdt.StreamName{}}
+    signalNamesVisitor := SignalNamesFromPredicateVisitor{visitor.momvisitor.Preds, []striverdt.StreamName{}, visitor.momvisitor}
     numExp.Expr.AcceptNum(&signalNamesVisitor)
     signalNames := signalNamesVisitor.SNames
     makeGeneralStream(signalNames, visitor.streamname, visitor.momvisitor, func(theEvent dt.Event, argsMap map[striverdt.StreamName]interface{}) striverdt.EvPayload {
@@ -60,22 +57,6 @@ func (visitor StreamExprToStriverVisitor) VisitStreamNumExpr(numExp parsercommon
 }
 func (visitor StreamExprToStriverVisitor) VisitStreamNameExpr(nes parsercommon.StreamNameExpr) {
     panic("not implemented")
-}
-
-func makePrevOutStream (inSignalName, outSignalName striverdt.StreamName, visitor *MoMToStriverVisitor) {
-    hasEverFun := func (args...striverdt.EvPayload) striverdt.EvPayload {
-        myprev := args[1]
-        if myprev.IsSet && myprev.Val.(striverdt.EvPayload).Val.(bool) {
-            return striverdt.Some(true)
-        }
-        return args[0].Val.(striverdt.EvPayload)
-    }
-    hasEverVal := striverdt.FuncNode{[]striverdt.ValNode{
-        &striverdt.PrevEqValNode{striverdt.TNode{}, inSignalName, []striverdt.Event{}},
-        &striverdt.PrevValNode{striverdt.TNode{}, outSignalName, []striverdt.Event{}},
-    }, hasEverFun}
-    hasEverStream := striverdt.OutStream{outSignalName, striverdt.SrcTickerNode{inSignalName}, hasEverVal}
-    visitor.OutStreams = append(visitor.OutStreams, hasEverStream)
 }
 
 func makeAvgOutStream(inSignalName, sessionSignalName, outSignalName striverdt.StreamName, visitor *MoMToStriverVisitor) {
@@ -125,7 +106,7 @@ func makeAvgOutStream(inSignalName, sessionSignalName, outSignalName striverdt.S
 }
 
 func makeIfThenStream(ifpred parsercommon.Predicate, thensignalname, mysignalname striverdt.StreamName, visitor *MoMToStriverVisitor) {
-    signalNamesVisitor := SignalNamesFromPredicateVisitor{visitor.Preds, []striverdt.StreamName{}}
+    signalNamesVisitor := SignalNamesFromPredicateVisitor{visitor.Preds, []striverdt.StreamName{}, visitor}
     ifpred.AcceptPred(&signalNamesVisitor)
     signalNames := signalNamesVisitor.SNames
     condFun := func (args...striverdt.EvPayload) striverdt.EvPayload {
