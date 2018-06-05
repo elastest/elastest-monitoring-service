@@ -1,0 +1,2 @@
+const bool zz := a /\ true
+const bool y  := false

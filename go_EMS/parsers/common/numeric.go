@@ -9,8 +9,7 @@ import(
 )
 
 //
-// Numeric:
-//  NumExpressions and NumComparison
+//  NumComparisons
 //
 type NumComparisonVisitor interface {
     VisitNumLess(NumLess)
@@ -128,7 +127,6 @@ func NewNumNotEq(a,b interface{}) NumNotEq {
 //
 // Numeric Expressions
 // 
-
 type NumExprVisitor interface {
     VisitIntLiteralExpr(IntLiteralExpr)
     VisitFloatLiteralExpr(FloatLiteralExpr)

@@ -88,7 +88,6 @@ func (this PredExpr) Sprint() string {
 	return this.Pred.Sprint()
 }
 
-
 type StreamNameExpr struct {
 	Stream string
 }
