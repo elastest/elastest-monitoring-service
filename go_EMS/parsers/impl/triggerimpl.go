@@ -12,7 +12,7 @@ var TRIGGER_PREFIX striverdt.StreamName = "trigger::"
 func makeTriggerStreams(visitor *MoMToStriverVisitor, predicate parsercommon.Predicate, triggerAction session.EmitAction) {
     inputSignalName := triggerAction.StreamName
     outputSignalName := TRIGGER_PREFIX + inputSignalName
-    signalNamesVisitor := SignalNamesFromPredicateVisitor{visitor.Preds, []striverdt.StreamName{}}
+    signalNamesVisitor := SignalNamesFromPredicateVisitor{visitor.Preds, []striverdt.StreamName{}, visitor}
     predicate.AcceptPred(&signalNamesVisitor)
     signalNames := signalNamesVisitor.SNames
     predFun := func (args...striverdt.EvPayload) striverdt.EvPayload {
