@@ -219,5 +219,5 @@ IF   <- "if" _
 THEN <- "then" _
 ELSE <- "else" _
 ASSIGN <- ":=" _?
-TRUE <- "true" _?
-FALSE <- "false" _?
+TRUE <- "true" _ / "true" EOF
+FALSE <- "false" _ / "false" EOF
