@@ -12,20 +12,20 @@
                 "description": "Basic plan for EMS usage",
                 "metadata": {
                     "costs": {
-                        "name": "On Demand 5 + Charges",
-                        "type": "ONDEMAND",
-                        "fix_cost": {
-                            "deployment": 5
+                            "description": "cost model for ems",
+                            "currency": "eur",
+                            "model": "pay-as-you-go",
+                            "model_param": {
+                            "setup_cost": 4.2
                         },
-                        "var_rate": {
-                            "disk": 1,
-                            "memory": 10,
-                            "cpus": 50
-                        },
-                        "components": {
-                            
-                        },
-                        "description": "On Demand 5 per deployment, 50 per core, 10 per GB ram and 1 per GB disk"
+                        "meter_list": [
+                            {
+                              "meter_name": "disk_storage",
+                              "meter_type": "gauge",
+                              "unit_cost": 0.125,
+                              "unit": "gb-hour"
+                            }
+                        ]
                     }
                 }
             }
