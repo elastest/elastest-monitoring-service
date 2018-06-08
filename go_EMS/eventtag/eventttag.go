@@ -35,15 +35,21 @@ func deployRealStamperv01(monitor stamp.Filters, momid int) {
 
 func TagEvent(ev *dt.Event) {
     checkDefs := []stamp.Filter{}
+    tagAsWS := true
     for _,monitor := range tagMonitors {
         for _,def := range monitor.Defs {
             checkDefs = append(checkDefs, def)
+            if "#websocket" == string(def.Tag.Tag) {
+                tagAsWS = false
+            }
         }
     }
+    if tagAsWS {
+        (*ev).Channels = sets.SetAdd(ev.Channels, dt.Channel("#websocket"))
+    }
+
     dirty:=true
-
     theEvalVisitor := parserimpl.EvalVisitor{false, *ev, nil, nil} // FIXME no nil
-
     for (dirty) {
         dirty=false
 
