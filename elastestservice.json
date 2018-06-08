@@ -64,6 +64,12 @@
                         "path": "/"
                     },
                     {
+                        "name": "httpsinevents",
+                        "protocol": "https",
+                        "port": 8182,
+                        "path": "/"
+                    },
+                    {
                         "name": "tcp_testlogs",
                         "protocol": "tcp",
                         "port": 5000
