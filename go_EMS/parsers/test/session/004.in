@@ -1,0 +1,4 @@
+pred  high_begin  := e.path(msg) /\ e.strcmp(msg,"BEGIN HIGH")
+pred  high_end    := e.path(msg) /\ e.strcmp(msg,"END HIGH")
+pred  low_begin   := e.path(msg) /\ e.strcmp(msg,"BEGIN LOW")
+pred  low_end     := e.path(msg) /\ e.strcmp(msg,"END LOW")

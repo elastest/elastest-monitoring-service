@@ -1,0 +1,1 @@
+stream bool testcorrect := avggradhigh * 0.7 > avggradlow

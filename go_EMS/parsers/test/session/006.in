@@ -1,0 +1,1 @@
+pred istjobmark := e.path(TJobMark)

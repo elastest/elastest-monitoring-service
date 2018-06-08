@@ -1,0 +1,1 @@
+stream bool evercorrect := Prev testcorrect /\ Prev testincorrect

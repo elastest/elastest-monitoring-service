@@ -2,6 +2,8 @@ package data
 
 type Channel string
 
+type JSONPath string
+
 type ChannelSet map[Channel]interface{}
 
 type Event struct {

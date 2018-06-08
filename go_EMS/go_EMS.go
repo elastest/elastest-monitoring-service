@@ -8,83 +8,94 @@ import (
     "bufio"
     "io"
 	dt "github.com/elastest/elastest-monitoring-service/go_EMS/datatypes"
-    et "github.com/elastest/elastest-monitoring-service/go_EMS/eventproc"
+    et "github.com/elastest/elastest-monitoring-service/go_EMS/eventtag"
     "github.com/elastest/elastest-monitoring-service/go_EMS/jsonrw"
     internalsv "github.com/elastest/elastest-monitoring-service/go_EMS/internalapiserver"
 	pe "github.com/elastest/elastest-monitoring-service/go_EMS/eventscounter"
-	sets "github.com/elastest/elastest-monitoring-service/go_EMS/setoperators"
+	"github.com/elastest/elastest-monitoring-service/go_EMS/eventout"
+	"github.com/elastest/elastest-monitoring-service/go_EMS/eventproc"
 )
 
 func main() {
     fmt.Println("Serving server")
     go internalsv.Serve()
     fmt.Println("Server served. Starting scans")
-	openAndLoop("/usr/share/logstash/pipes/leftpipe",scanStdIn)
-}
 
+    staticout := os.Args[1]
+    dynout := os.Args[2]
+    eventout.StartSender(staticout, dynout)
 
-func openAndLoop(pipename string, callback func(reader io.Reader)) {
+    // Remove this
+
+    tagdef := `when e.path(TJobMark) do #TJob
+    when e.strcmp(system.network.name,"eth0") do #NetData
+    `
+    et.DeployTaggerv01(tagdef)
+
+    defs := `
+    pred istjobmark := e.tag(#TJob)
+    pred isnet := e.tag(#NetData)
+    stream bool truestream := true
+    stream num inbytes := if isnet then e.getnum(system.network.in.bytes)
+
+    stream bool low_is_running := if istjobmark then e.strcmp(TJobMark, "LOW_START")
+    stream num gradlow := gradient(inbytes within low_is_running)
+    stream num avggradlow := avg(gradlow within truestream)
+
+    stream bool high_is_running := if istjobmark then e.strcmp(TJobMark, "HIGH_START")
+    stream num gradhigh := gradient(inbytes within high_is_running)
+    stream num avggradhigh := avg(gradhigh within truestream)
+
+    stream bool testcorrect := Prev low_is_running /\ Prev high_is_running /\ avggradhigh > avggradlow * 0.9
+
+    trigger isnet do emit inbytes on #bytesval
+    trigger isnet do emit avggradlow on #bytesgradlow
+    trigger isnet do emit avggradhigh on #bytesgradhigh
+    trigger isnet do emit testcorrect on #testresult
+    `
+    /*stream num load := if otrohost then e.getnum(system.load.1)
+    stream bool high_load := load > 0.4
+    stream num avgcond := avg(load within pred)
+    trigger e.strcmp(beat.hostname,"otrohost") do emit load on #outchannel
+    trigger true do emit high_load on #outhighload`*/
+    eventproc.DeploySignals01(defs)
+    // Up to here
+
+    pipename := "/usr/share/logstash/pipes/leftpipe"
 	file, err := os.Open(pipename)
     if err != nil {
         panic(err)
     }
     defer file.Close()
-
 	for {
-		callback(file)
+		scanStdIn(file)
         fmt.Println("RELOADING " + pipename)
 	}
 	panic("leaving!")
 }
 
 func scanStdIn(file io.Reader) {
-    // Opening staticout
-    staticout := os.Args[1]
-    fstatic, err := os.OpenFile(staticout, os.O_APPEND|os.O_WRONLY, 0600)
-    if err != nil {
-        panic(err)
-    }
-    defer fstatic.Close()
-
-    // Opening dynout
-    dynout := os.Args[2]
-    fdyn, err := os.OpenFile(dynout, os.O_APPEND|os.O_WRONLY, 0600)
-    if err != nil {
-        panic(err)
-    }
-    defer fdyn.Close()
-
 	scanner := bufio.NewScanner(file)
     var rawEvent map[string]interface{}
+    sendchan := eventout.GetSendChannel()
 	for scanner.Scan() {
+        // Remove this
+        i := pe.GetProcessedEvents()
+        if i==5 {
+            eventproc.UndeploySignals01(444)
+        }
+        // Up to here
 		rawEvent = nil
 		thetextbytes := []byte(scanner.Text())
-        fmt.Println("Read event")
+        fmt.Println("Read event ",i)
 
 		if err := json.Unmarshal(thetextbytes, &rawEvent); err != nil {
 			fmt.Println("No JSON. Error: " + err.Error())
 		} else {
             var evt dt.Event = jsonrw.ReadEvent(rawEvent)
             et.TagEvent(&evt)
-            evt.Payload["@timestamp"] = evt.Timestamp
-            evt.Payload["channels"] = sets.SetToList(evt.Channels)
-            newJSON, _ := json.Marshal(evt.Payload)
-            evstring := string(newJSON)+"\n"
-            if _, err = fstatic.WriteString(evstring); err != nil {
-                panic(err)
-            }
-            if _, err = fdyn.WriteString(evstring); err != nil {
-				fmt.Println("Broken dynamic output. Retrying...")
-                fdyn, err = os.OpenFile(dynout, os.O_APPEND|os.O_WRONLY, 0600)
-                if err != nil {
-                    panic(err)
-                }
-                if _, err = fdyn.WriteString(evstring); err != nil {
-                    fmt.Println("Broken retry, panicking")
-                    panic(err)
-                }
-                fmt.Println("Recovered dyn output")
-            }
+            eventproc.ProcessEvent(evt)
+            sendchan <- evt
 		}
         pe.IncrementProcessedEvents()
 	}

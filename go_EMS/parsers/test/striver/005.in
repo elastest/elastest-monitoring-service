@@ -1,0 +1,4 @@
+input num foo
+output num bar
+define num bar t := bar(~t)
+ticks bar := { c } U { d } U e

@@ -1,0 +1,2 @@
+session fst := [e.tag(#TJob) , e.tag(#SuT) ]
+session snd := [e.tag(#SuT) , e.tag(#TJob) ]

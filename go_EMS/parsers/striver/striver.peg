@@ -1,0 +1,223 @@
+{
+package striver
+
+import(
+	"strconv"
+)
+
+}
+
+Input  <- _? d:(Declaration*)  EOF {
+       // returns a []interface{} where all elements are
+       //    Const, Input, Output, Ticks or Definitions
+       return d,nil
+       }
+
+Declaration <- i:InputStreamDecl   { return i,nil }
+	    / k:Const              { return k,nil }
+	    / o:OutputStreamDecl       { return o,nil }
+	    / t:TicksDecl          { return t,nil }
+	    / d:OutputDefinition   { return d,nil }
+
+Const <- CONST t:Type n:Name ASSIGN e:Expr { 
+      // if !checkGround(e) { return nil,err }
+      fmt.Sprintf("")
+      return NewConstDecl(n,t,e),nil 
+}
+
+InputStreamDecl <- INPUT t:Type n:Name {
+    return NewInputDecl(n,t),nil
+}
+
+OutputStreamDecl <- OUTPUT t:Type n:Name {
+    return NewOutputDecl(n,t),nil	  
+}
+
+TicksDecl <- TICKS n:Name ASSIGN t:TickingExpr {
+    return NewTicksDecl(n,t),nil
+}
+
+OutputDefinition <- DEFINE t:Type n:Name "t" _? ASSIGN e:Block {
+    return NewOutputDefinition(n,t,e),nil      		 		 
+}
+
+TickingExpr <-  a:TickingAtom UNION b:TickingExpr { return NewUnionTickingExpr(a,b),nil }
+            / b:TickingAtom { return b,nil }
+
+TickingAtom <- '{' _? t:TimeConstant '}' _? { return NewTimeConstantTickingExpr(t),nil}
+	    / DELAY d:DelayExpr { return NewDelayTickingExpr(d),nil } 
+	    / n:Name { return NewStreamTickingExpr(n),nil }
+
+DelayExpr <- '(' _? d:DelayExpr ')' _? { return d,nil }
+	  / SCONST t:TimeConstant n:Name { return NewSconstDelayExpr(t,n),nil } 
+	   / n:Name                    { return NewNamedDelayExpr(n),nil } 
+
+Block <- LET n:Name ASSIGN e:Expr IN b:Block _? { return NewLetExpr(n,e,b),nil }
+      / e:Expr                                  { return e,nil }
+
+Expr <- '(' _? s:Expr ')' _? { return s,nil }
+     / IF p:Expr THEN a:Expr ELSE b:Expr { return NewIfThenElseExpr(p,a,b),nil }
+//     / IF p:Expr THEN a:Expr             { return NewIFThenExpr(p,a),nil }
+     / b:BooleanExpr {
+        return b,nil
+       }
+//     / t:TimeExpr                        { return NewTimeExpr(t),nil }
+     / OUTSIDE                           { return TheOutsideExpr,nil }
+     / NOTICK                            { return TheNoTickExpr,nil }
+
+//
+// BooleanExpressions
+//
+BooleanExpr <- a:Ands    b:(OrExpr*)      {
+	       preds := ToSlice(b)
+	       if len(preds)==0 { return a,nil }
+	       return BooleanExprToExpr(NewOrPredicate(a,b)),nil
+	    }
+Ands        <- a:NegExpr b:(AndExpr*)     {
+	       preds := ToSlice(b)
+	       if len(preds)==0 { return a,nil }
+	       return BooleanExprToExpr(NewAndPredicate(a,b)),nil
+	    }
+AndExpr     <- "/\\" _? p:NegExpr         { return p,nil }
+OrExpr      <- "\\/" _? p:Ands            { return p,nil }
+NegExpr     <- "~" _? p:NegExpr           {
+	     	 pred := NewNotPredicate(p.(BoolExpr).BExpr) 
+	         return NewBoolExpr(pred),nil
+		 }
+	 /  p:Primary                     { return p,nil }
+Primary   <- '(' _? p:BooleanExpr ')' _?  { return p,nil }
+         / a:BasicExpr                    { return a,nil }
+BasicExpr <- n:NumComparison              { return NewNumComparisonPredicate(n),nil }
+         / n:NumExpr                      { return n,nil }
+
+NumComparison <- a:NumExpr "<"  _? b:NumExpr { return NewNumLess(a,b),nil }
+              /  a:NumExpr "<=" _? b:NumExpr { return NewNumLessEq(a,b),nil }
+              /  a:NumExpr "="  _? b:NumExpr { return NewNumEq(a,b),nil }
+              /  a:NumExpr ">"  _? b:NumExpr { return NewNumGreater(a,b),nil }
+              /  a:NumExpr ">=" _? b:NumExpr { return NewNumGreaterEq(a,b),nil }
+	      /	 a:NumExpr "!=" _? b:NumExpr { return NewNumNotEq(a,b),nil }
+
+NumExpr  <- a:Mults b:(Plus*) {
+	     exprs := common.ToSlice(b)
+	     if len(exprs)==0 {
+	        return a,nil
+	     } else {
+	       return common.Flatten(a,b),nil
+	     }
+          }
+Plus    <- '+' _? e:Mults { return NewRightPlusExpr(e),nil  }
+         / '-' _? e:Mults { return NewRightMinusExpr(e),nil  }
+Mults    <- a:BasicNumExpr b:(MoreMults*) {
+	     exprs := common.ToSlice(b)
+	     if len(exprs)==0 { return a,nil }
+	     return common.Flatten(a,b),nil
+          }
+MoreMults <- '*' _? e:BasicNumExpr { return common.NewRightMultExpr(e),nil }
+          /  '/' _? e:BasicNumExpr { return common.NewRightDivExpr(e),nil }
+BasicNumExpr <- '(' _? n:NumExpr ')' _?   { return n,nil }
+           / a:Atomic { return a,nil }
+
+Atomic <- TRUE _?                   { return TrueExpr,nil }
+        / FALSE _?                  { return FalseExpr,nil }
+        / e:StreamExpr              { return NewStreamOffsetExpr(e),nil }
+	/ t:TimeExpr                { return NewTimeExpr(t),nil }
+        / k:ConstExpr               { return NewConstExpr(k),nil }
+        / l:NumLiteral              { return NewNumericExpr(l),nil }
+
+StreamExpr <-
+     n:Name "(~" _? t:TimeExpr   ")" _? { return NewPrevEqValExpr(n,t),nil  }
+   / n:Name "(<" _? t:TimeExpr   ")" _? { return NewPrevValExpr(n,t),nil }
+   / n:Name "("  _? t:TimeExpr  "~)" _? { return NewSuccEqValExpr(n,t),nil }
+   / n:Name "("  _? t:TimeExpr  ">)" _? { return NewSuccValExpr(n,t),nil }
+   / n:Name "("  _? t:OffsetExpr ")" _? { return NewStreamFetchExpr(n,t),nil }
+
+TimeExpr <- "t" { return T,nil }
+          / o:OffsetExpr { return o,nil }
+
+OffsetExpr <- n:Name PREVEQ t:TimeExpr  { return NewPrevEqExpr(n,t),nil }
+          /   n:Name PREV   t:TImeExpr  { return NewPrevExpr(n,t),nil }
+	  /   n:Name SUCC   t:TimeExpr  { return NewSuccExpr(n,t),nil }
+	  /   n:Name SUCCEQ t:TimeExpr  { return NewSuccEqExpr(n,t),nil }
+
+NumLiteral <- p:([0-9]+('.'[0-9]+)?) {
+//	      x,err := strconv.ParseFloat(p.(string),32)
+	      x,err := strconv.ParseFloat(string(c.text),32)
+	      return NewFloatLiteralExpr(x), err
+	   }
+
+ConstExpr <- n:Name { return n,nil } 
+
+// IntLiteral <- p:('-'?[0-9]+) {
+//               n,err := strconv.Atoi(p.(string))
+// 	      return NewIntLiteralExpr(n),err
+// 	   }
+
+Type <- NUM     { return NumT, nil  }
+     /  BOOL    { return BoolT, nil }
+     /  STRING  { return StringT,nil}
+
+TimeConstant <- n:NumLiteral _? { return NewTimeLiteral(n),nil } //  Expressed in secs. TODO: add units
+     / n:Name { return NewTimeConstant(n),nil }
+
+Name <- n:Identifier _? { return n.(Identifier),nil }
+
+QuotedString <- ('"'(([^'"''\\']*('\\'.[^'"''\\']*)*))'"')  {
+	        str := string(c.text)
+	     	inner := str[1:len(str)-1]
+     	        return NewQuotedString(inner),nil
+        }
+	
+JSONPath <- ([a-zA-Z0-9]+('.'[a-zA-Z0-9]+)*) {
+	 return NewPathName(string(c.text)),nil
+	 }	 
+
+Identifier <- ([a-zA-Z]['_''-''@'a-zA-Z0-9]*) {
+	   // IMPORTANT: cannot have '.' to distinguish from "e.path" "e.strcmp"
+	   return Identifier{string(c.text)}, nil
+	   }
+
+String   <- ([a-zA-Z0-9'#''_''-''@']+) 
+
+Alphanum <- ([a-zA-Z0-9]+) { return Alphanum{string(c.text)},nil }
+
+Tag  "tag"      <- ( '#'[a-zA-Z](['_''-''.'a-zA-Z0-9])* )    { return Tag{string(c.text)},nil }
+
+_ "whitespace" <- [ \t\n\r]+
+
+//EOL     <- _? Comment? ("\r\n" / "\n\r" / "\r" / "\n" / EOF)
+EOL     <- ("\r\n" / "\n\r" / "\r" / "\n")
+
+Comment <- "//" [^\r\n]*
+
+EOF     <- !.
+
+//
+// Striver Keywords
+//
+DOT_TICKS <- ".ticks" _?
+DELAY  <- "delay" _? 
+OUTPUT <- "output" _?
+INPUT  <- "input" _?
+TICKS  <- "ticks" _?
+CONST  <- "const" _?
+DEFINE <- "define" _?
+LET    <- "let" _?
+IN     <- "in" _?
+UNION  <- "U" _? 
+CONST <- "const" _
+OUTSIDE <- "outside" _?
+NOTICK  <- "notick" _?
+PREV   <- "<<" _?
+PREVEQ <- "<~" _?
+SUCC   <- ">>" _?
+SUCCEQ <- "~>" _?
+INT    <- "int" _
+NUM    <- "num" _
+BOOL   <- "bool" _
+STRING <- "string" _
+IF   <- "if" _
+THEN <- "then" _
+ELSE <- "else" _
+ASSIGN <- ":=" _?
+TRUE <- "true" _ / "true" EOF
+FALSE <- "false" _ / "false" EOF
