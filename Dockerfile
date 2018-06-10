@@ -44,9 +44,12 @@ WORKDIR /go/src/github.com/elastest/elastest-monitoring-service
 RUN go get github.com/golang/protobuf/proto
 RUN go get google.golang.org/grpc
 RUN go get google.golang.org/grpc/reflection
+RUN go get github.com/mna/pigeon
 COPY . /go/src/github.com/elastest/elastest-monitoring-service
 RUN mkdir -p /go/src/gitlab.software.imdea.org/felipe.gorostiaga
 RUN mv /go/src/github.com/elastest/elastest-monitoring-service/striver-go /go/src/gitlab.software.imdea.org/felipe.gorostiaga
+RUN cd go_EMS/parsers/session; make; cd -
+RUN cd go_EMS/parsers/stamp; make; cd -
 RUN CGO_ENABLED=0 GOOS=linux go build -o ems ./go_EMS
 
 FROM docker.elastic.co/logstash/logstash:5.4.0
