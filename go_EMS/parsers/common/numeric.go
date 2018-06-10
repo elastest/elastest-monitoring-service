@@ -319,16 +319,16 @@ func (i NumPathExpr) Sprint() string {
 }
 
 func (e NumMulExpr) Sprint() string {
-	return fmt.Sprintf("(%s)%s(%s)",e.Left.Sprint(),'*',e.Right.Sprint())
+	return fmt.Sprintf("(%s)%s(%s)",e.Left.Sprint(),"*",e.Right.Sprint())
 }
 func (e NumDivExpr) Sprint() string {
-	return fmt.Sprintf("(%s)%s(%s)",e.Left.Sprint(),'/',e.Right.Sprint())
+	return fmt.Sprintf("(%s)%s(%s)",e.Left.Sprint(),"/",e.Right.Sprint())
 }
 func (e NumPlusExpr) Sprint() string {
-	return fmt.Sprintf("(%s)%s(%s)",e.Left.Sprint(),'+',e.Right.Sprint())
+	return fmt.Sprintf("(%s)%s(%s)",e.Left.Sprint(),"+",e.Right.Sprint())
 }
 func (e NumMinusExpr) Sprint() string {
-	return fmt.Sprintf("(%s)%s(%s)",e.Left.Sprint(),'-',e.Right.Sprint())
+	return fmt.Sprintf("(%s)%s(%s)",e.Left.Sprint(),"-",e.Right.Sprint())
 }
 //func (e StreamNameExpr) Sprint() string {
 //	return string(e.Stream)

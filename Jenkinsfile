@@ -10,7 +10,7 @@ node('docker') {
                 echo ("Publishing code coverage")
                 sh "mkdir shared || true"
                 sh 'export PWD=$(pwd)'
-                sh 'docker run -v ${PWD}/shared:/shared -v ${PWD}:/go/src/github.com/elastest/elastest-monitoring-service golang /bin/bash -c "go get github.com/golang/protobuf/proto; go get google.golang.org/grpc; go get google.golang.org/grpc/reflection; cd src/github.com/elastest/elastest-monitoring-service/go_EMS; go test ./... -race -coverprofile=coverage.txt -covermode=atomic; mv coverage.txt /shared"'
+                sh 'docker run -v ${PWD}/shared:/shared -v ${PWD}/striver-go:/go/src/gitlab.software.imdea.org/felipe.gorostiaga/striver-go -v ${PWD}:/go/src/github.com/elastest/elastest-monitoring-service golang /bin/bash -c "go get github.com/golang/protobuf/proto; go get google.golang.org/grpc; go get google.golang.org/grpc/reflection; cd src/github.com/elastest/elastest-monitoring-service/go_EMS; go test ./... -race -coverprofile=coverage.txt -covermode=atomic; mv coverage.txt /shared"'
                 sh "curl -s https://codecov.io/bash > shared/curlout.txt"
                 sh "cd shared; JENKINS_URL= bash <curlout.txt -s - -t ${COB_EMS_TOKEN}; cd ..; rm -rf shared"
 

@@ -1,5 +1,6 @@
 package eventproc
 
+/*
 import (
 	"testing"
 	"encoding/json"
@@ -12,7 +13,6 @@ import (
 var theEvent dt.Event
 
 func TestChannelInference(t *testing.T) {
-
     correctdef0 := `{"inchannels":["a"], "filter":"true", "outchannel":"C"}`
     correctdef1 := `{"inchannels":["C","a"], "filter":"true", "outchannel":"D"}`
     if reply := DeployTaggerv01(correctdef0); reply.Deploymenterror != "" {

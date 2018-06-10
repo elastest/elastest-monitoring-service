@@ -1,5 +1,5 @@
 package main
-
+/*
 import (
 	"testing"
 	"os"
@@ -7,14 +7,10 @@ import (
 
 func TestRest(t *testing.T) {
 	//main()
-	file, err := os.Open("testinputs/testdefs.json")
-    if err != nil {
-        panic(err)
-    }
-	file, err = os.Open("testinputs/testEvents.txt")
+    file, err := os.Open("testinputs/orderedEvs.txt")
     if err != nil {
         panic(err)
     }
     os.Args = []string{"goEMS", "/dev/null", "/dev/null"}
 	scanStdIn(file)
-}
+}*/
