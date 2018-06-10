@@ -177,16 +177,16 @@ func NewFloatLiteralExpr(a interface{}) FloatLiteralExpr {
 }
 
 func (e NumMulExpr) Sprint() string {
-	return fmt.Sprintf("(%s)%s(%s)",e.Left.Sprint(),'*',e.Right.Sprint())
+	return fmt.Sprintf("(%s)%s(%s)",e.Left.Sprint(),"*",e.Right.Sprint())
 }
 func (e NumDivExpr) Sprint() string {
-	return fmt.Sprintf("(%s)%s(%s)",e.Left.Sprint(),'/',e.Right.Sprint())
+	return fmt.Sprintf("(%s)%s(%s)",e.Left.Sprint(),"/",e.Right.Sprint())
 }
 func (e NumPlusExpr) Sprint() string {
-	return fmt.Sprintf("(%s)%s(%s)",e.Left.Sprint(),'+',e.Right.Sprint())
+	return fmt.Sprintf("(%s)%s(%s)",e.Left.Sprint(),"+",e.Right.Sprint())
 }
 func (e NumMinusExpr) Sprint() string {
-	return fmt.Sprintf("(%s)%s(%s)",e.Left.Sprint(),'-',e.Right.Sprint())
+	return fmt.Sprintf("(%s)%s(%s)",e.Left.Sprint(),"-",e.Right.Sprint())
 }
 func (e IntLiteralExpr) Sprint() string {
 	return strconv.Itoa(e.Num)
