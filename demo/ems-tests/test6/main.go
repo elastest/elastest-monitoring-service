@@ -71,6 +71,7 @@ func main() {
             theinp := string(input)
             if strings.Contains(theinp, "SIMPLEX SESSION") {
                 fmt.Println(theinp)
+                exit 0
             }
 		}
 	}()
