@@ -63,7 +63,7 @@ func main() {
 
 	go func() {
 		defer close(done)
-		for {
+        for i:=0;i<1000;i++ {
 			_, input, err := c.ReadMessage()
 			if err != nil {
 				log.Println("read:", err)
