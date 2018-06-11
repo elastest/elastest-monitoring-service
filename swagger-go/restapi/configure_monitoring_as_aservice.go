@@ -76,7 +76,7 @@ func configureAPI(api *operations.MonitoringAsAServiceAPI) http.Handler {
 		return implementation.PostMOM(params)
 	})
 	api.StamperPostStamperHandler = stamper.PostStamperHandlerFunc(func(params stamper.PostStamperParams) middleware.Responder {
-		return middleware.NotImplemented("operation stamper.PostStamper has not yet been implemented")
+		return implementation.PostStamper(params)
 	})
 	api.PublishersPublishEventsHandler = publishers.PublishEventsHandlerFunc(func(params publishers.PublishEventsParams) middleware.Responder {
 		return middleware.NotImplemented("operation publishers.PublishEvents has not yet been implemented")

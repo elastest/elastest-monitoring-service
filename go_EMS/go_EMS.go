@@ -25,42 +25,6 @@ func main() {
     dynout := os.Args[2]
     eventout.StartSender(staticout, dynout)
 
-    // Remove this
-
-    tagdef := `when e.path(TJobMark) do #TJob
-    when e.strcmp(system.network.name,"eth0") do #NetData
-    `
-    et.DeployTaggerv01(tagdef)
-
-    defs := `
-    pred istjobmark := e.tag(#TJob)
-    pred isnet := e.tag(#NetData)
-    stream bool truestream := true
-    stream num inbytes := if isnet then e.getnum(system.network.in.bytes)
-
-    stream bool low_is_running := if istjobmark then e.strcmp(TJobMark, "LOW_START")
-    stream num gradlow := gradient(inbytes within low_is_running)
-    stream num avggradlow := avg(gradlow within truestream)
-
-    stream bool high_is_running := if istjobmark then e.strcmp(TJobMark, "HIGH_START")
-    stream num gradhigh := gradient(inbytes within high_is_running)
-    stream num avggradhigh := avg(gradhigh within truestream)
-
-    stream bool testcorrect := Prev low_is_running /\ Prev high_is_running /\ avggradhigh > avggradlow * 0.9
-
-    trigger isnet do emit inbytes on #bytesval
-    trigger isnet do emit avggradlow on #bytesgradlow
-    trigger isnet do emit avggradhigh on #bytesgradhigh
-    trigger isnet do emit testcorrect on #testresult
-    `
-    /*stream num load := if otrohost then e.getnum(system.load.1)
-    stream bool high_load := load > 0.4
-    stream num avgcond := avg(load within pred)
-    trigger e.strcmp(beat.hostname,"otrohost") do emit load on #outchannel
-    trigger true do emit high_load on #outhighload`*/
-    eventproc.DeploySignals01(defs)
-    // Up to here
-
     pipename := "/usr/share/logstash/pipes/leftpipe"
 	file, err := os.Open(pipename)
     if err != nil {
