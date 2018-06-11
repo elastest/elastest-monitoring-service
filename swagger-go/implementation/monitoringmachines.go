@@ -60,7 +60,7 @@ func PostMOM(params monitoring_machine.PostMoMParams) middleware.Responder {
         panic(err)
     }
 	fmt.Fprintln(file, string(newJSON))*/
-    req := pb.MomPostRequest{Momtype:params.Mom.MomType, Momdefinition:params.Mom.Definition}
+    req := pb.MomPostRequest{Momtype:params.Version, Momdefinition:*params.Mom}
 	conn, err := grpc.Dial(address, grpc.WithInsecure())
     if err != nil {
         log.Fatalf("did not connect: %v", err)

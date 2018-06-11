@@ -178,6 +178,7 @@ paths:
       # - petstore_auth:
       #   - "write:pets"
       #   - "read:pets"
+  /stamper/{Version}:
     post:
       tags:
       - "Stamper"
@@ -194,7 +195,12 @@ paths:
         description: "Stamper to be deployed."
         required: true
         schema:
-          $ref: "#/definitions/Stamper"
+            type: "string"
+      - in: "path"
+        name: "Version"
+        description: "Version of the MoM to deploy"
+        required: true
+        type: "string"
       responses:
         200:
           description: "Stamper successfully deployed."
@@ -202,7 +208,7 @@ paths:
             type: "string"
             description: "id of deployed Stamper."
       # security:
-      # - petstore_auth:
+        # - petstore_auth:
       #   - "write:pets"
       #   - "read:pets"
   /stamper/{StamperId}:
@@ -224,7 +230,7 @@ paths:
         200:
           description: "Stamper found and returned."
           schema:
-            $ref: '#/definitions/Stamper'
+              type: "string"
         404:
           description: "Stamper not found."
     put:
@@ -248,7 +254,7 @@ paths:
         description: "New Stamper definition."
         required: true
         schema:
-          $ref: "#/definitions/Stamper"
+            type: "string"
       responses:
         200:
           description: "Stamper successfully updated."
@@ -481,7 +487,7 @@ definitions:
         id:
           type: "string"
         stamper:
-          $ref: "#/definitions/Stamper"
+            type: "string"
   DeployedMoM:
     type: "object"
     properties:
