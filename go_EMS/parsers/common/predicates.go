@@ -15,6 +15,7 @@ type PredicateVisitor interface {
     VisitOrPredicate(OrPredicate)
     VisitPathPredicate(PathPredicate)
     VisitStrPredicate(StrPredicate)
+    VisitStrMatchPredicate(StrMatchPredicate)
     VisitTagPredicate(TagPredicate)
     VisitNamedPredicate(StreamNameExpr)
 	VisitNumComparisonPredicate(NumComparisonPredicate)
@@ -99,6 +100,16 @@ func (this StrPredicate) AcceptPred(visitor PredicateVisitor) {
 }
 func (this StrPredicate) Sprint () string {
 	return fmt.Sprintf("e.strcmp(%s,%s)",this.Path,this.Expected)
+}
+type StrMatchPredicate struct {
+	Path string
+	Expected string
+}
+func (this StrMatchPredicate) AcceptPred(visitor PredicateVisitor) {
+    visitor.VisitStrMatchPredicate(this)
+}
+func (this StrMatchPredicate) Sprint () string {
+	return fmt.Sprintf("e.strmatch(%s,%s)",this.Path,this.Expected)
 }
 type TagPredicate struct {
 	Tag dt.Channel
@@ -224,6 +235,12 @@ func NewStrPredicate(p,v interface{}) (StrPredicate) {
 	path     :=p.(PathName).Val
 	expected :=v.(QuotedString).Val
 	return StrPredicate{path,expected}
+}
+
+func NewStrMatchPredicate(p,v interface{}) (StrMatchPredicate) {
+	path     :=p.(PathName).Val
+	expected :=v.(QuotedString).Val
+	return StrMatchPredicate{path,expected}
 }
 
 func NewTagPredicate(t interface{}) (TagPredicate) {
