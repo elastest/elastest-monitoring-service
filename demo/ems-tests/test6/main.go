@@ -70,7 +70,7 @@ func main() {
 			json.Unmarshal(input, &e)
             theinp := string(input)
             if strings.Contains(theinp, "SIMPLEX SESSION") {
-                fmt.Println(theinp)
+                fmt.Println("RECEIVED:"+theinp)
                 fmt.Println("EXITING!!")
                 time.Sleep(5 * time.Second)
                 os.Exit(0)
