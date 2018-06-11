@@ -71,6 +71,8 @@ func main() {
             theinp := string(input)
             if strings.Contains(theinp, "SIMPLEX SESSION") {
                 fmt.Println(theinp)
+                fmt.Println("EXITING!!")
+                time.Sleep(5 * time.Second)
                 os.Exit(0)
             }
 		}
