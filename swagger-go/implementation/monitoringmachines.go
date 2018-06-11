@@ -10,6 +10,7 @@ import (
     "golang.org/x/net/context"
     "google.golang.org/grpc"
 	"../restapi/operations/monitoring_machine"
+	"../restapi/operations/stamper"
     pb "github.com/elastest/elastest-monitoring-service/protobuf"
 )
 
@@ -72,6 +73,26 @@ func PostMOM(params monitoring_machine.PostMoMParams) middleware.Responder {
     ctx, cancel := context.WithTimeout(context.Background(), time.Second)
     defer cancel()
     r, err := c.PostMoM(ctx, &req)
+    if err != nil {
+        log.Fatalf("could not greet: %v", err)
+        // return error instead
+    }
+	return MomPostReply(*r)
+}
+
+func PostStamper(params stamper.PostStamperParams) middleware.Responder {
+    req := pb.MomPostRequest{Momtype:params.Version, Momdefinition:*params.Stamper}
+	conn, err := grpc.Dial(address, grpc.WithInsecure())
+    if err != nil {
+        log.Fatalf("did not connect: %v", err)
+        // return error instead
+    }
+    defer conn.Close()
+    c := pb.NewEngineClient(conn)
+
+    ctx, cancel := context.WithTimeout(context.Background(), time.Second)
+    defer cancel()
+    r, err := c.PostStamper(ctx, &req)
     if err != nil {
         log.Fatalf("could not greet: %v", err)
         // return error instead
