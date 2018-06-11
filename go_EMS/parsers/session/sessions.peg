@@ -151,6 +151,7 @@ Builtins <- b:Builtin "(" _? s:Name WITHIN w:Name _? ")" _? { return common.NewA
      / p:PrevExpr    { return p,nil }
      / t:HasTagPredicate { return t,nil}
      / p:StrcmpPredicate { return p,nil }
+     / p:StrMatchPredicate { return p,nil }
      
 PrevExpr <- PREV n:Name _? {
 	   p := common.NewPrevPred(n)
@@ -191,6 +192,11 @@ PathExpr <- "e.path" _? "(" _? p:JSONPath _? ")" _? {
 
 StrcmpPredicate <- "e.strcmp(" _? p:JSONPath _? "," _? s:QuotedString _?")" _? {
 	     pred := common.NewStrPredicate(p,s)
+	     return common.NewPredExpr(pred),nil
+}
+
+StrMatchPredicate <- "e.strmatch(" _? p:JSONPath _? "," _? s:QuotedString _?")" _? {
+	     pred := common.NewStrMatchPredicate(p,s)
 	     return common.NewPredExpr(pred),nil
 }
 
