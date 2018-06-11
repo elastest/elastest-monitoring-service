@@ -63,7 +63,7 @@ func main() {
 
 	go func() {
 		defer close(done)
-        for i:=0;i<1000;i++ {
+        for {
 			_, input, err := c.ReadMessage()
 			if err != nil {
 				log.Println("read:", err)
@@ -71,7 +71,10 @@ func main() {
 			}
 			var e event
 			json.Unmarshal(input, &e)
-            fmt.Println(string(input))
+            theinp := string(input)
+            if strings.Contains(theinp, "SIMPLEX SESSION") {
+                fmt.Println(theinp)
+            }
 			if e.Type == "et_logs" && strings.Contains(e.Message, "STATUS_ON") {
 				if state == "" {
 					state = "on"
