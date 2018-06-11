@@ -71,6 +71,7 @@ func main() {
 			}
 			var e event
 			json.Unmarshal(input, &e)
+            fmt.Println(string(input))
 			if e.Type == "et_logs" && strings.Contains(e.Message, "STATUS_ON") {
 				if state == "" {
 					state = "on"
