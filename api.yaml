@@ -186,7 +186,7 @@ paths:
       description: "Through this method, a client deploys a new Stamper."
       operationId: "postStamper"
       consumes:
-      - "application/json"
+      - "text/plain"
       produces:
       - "application/json"
       parameters:
