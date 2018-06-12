@@ -1,4 +1,4 @@
-pred isnet := e.tag(#NetData) /\ e.strmatch(containerName, "full-teaching-openvidu-server-kms_1")
+pred isnet := e.tag(#NetData) /\ e.strmatch(containerName, "full-teaching-openvidu-server-kms_1$")
 
 stream bool lowstarted := e.strmatch(message, "STARTING SIMPLEX SESSION")
 stream bool lowended := e.strmatch(message, "ENDING SIMPLEX SESSION")
