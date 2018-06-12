@@ -1,10 +1,10 @@
-pred isnet := e.tag(#NetData) /\ e.strmatch(e.containerName, "full-teaching-openvidu-server-kms_1$")
+pred isnet := e.tag(#NetData) /\ e.strmatch(containerName, "full-teaching-openvidu-server-kms_1$")
 
-stream bool lowstarted := e.strmatch(e.Message, "STARTING SIMPLEX SESSION")
-stream bool lowended := e.strmatch(e.Message, "ENDING SIMPLEX SESSION")
-stream bool highstarted := e.strmatch(e.Message, "STARTING DUPLEX SESSION")
-stream bool highended:= e.strmatch(e.Message, "ENDING DUPLEX SESSION")
-stream bool tjobfinished := e.strmatch(e.Message, "Finished at")
+stream bool lowstarted := e.strmatch(message, "STARTING SIMPLEX SESSION")
+stream bool lowended := e.strmatch(message, "ENDING SIMPLEX SESSION")
+stream bool highstarted := e.strmatch(message, "STARTING DUPLEX SESSION")
+stream bool highended:= e.strmatch(message, "ENDING DUPLEX SESSION")
+stream bool tjobfinished := e.strmatch(message, "Finished at")
 
 stream num outBandwidth := if isnet then e.getnum(net.txBytes_ps)
 
