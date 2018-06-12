@@ -68,7 +68,7 @@ func (visitor *EvalVisitor) VisitStrMatchPredicate(p common.StrMatchPredicate) {
         return
     }
     matched, err := regexp.MatchString(p.Expected, strif.(string))
-    visitor.Result = err != nil && matched
+    visitor.Result = err == nil && matched
     // FIXME compile regex
     //fmt.Println("Comparing",strif, "with", p.Expected, "and the result is", visitor.Result)
 }
