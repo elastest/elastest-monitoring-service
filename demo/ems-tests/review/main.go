@@ -51,7 +51,7 @@ func main() {
 
 		var e event
 		json.Unmarshal(input, &e)
-        log.Printf("Received event:\n        %s\n", input)
+        log.Printf("Received event:[%s]", string(input))
 		if e.Type == "net" {
 			if strings.HasSuffix(e.ContainerName, "full-teaching-openvidu-server-kms_1") {
 				//log.Printf("Checking %f\n", e.Net.TxBytesPs)
