@@ -1,9 +1,10 @@
 pred isnet := e.tag(#NetData)
-pred lowstarted := e.strmatch(e.Message, "STARTING SIMPLEX SESSION")
-pred lowended := e.strmatch(e.Message, "ENDING SIMPLEX SESSION")
-pred highstarted := e.strmatch(e.Message, "STARTING DUPLEX SESSION")
-pred highended:= e.strmatch(e.Message, "ENDING DUPLEX SESSION")
-pred tjobfinished := e.strmatch(e.Message, "Finished at")
+
+stream bool lowstarted := e.strmatch(e.Message, "STARTING SIMPLEX SESSION")
+stream bool lowended := e.strmatch(e.Message, "ENDING SIMPLEX SESSION")
+stream bool highstarted := e.strmatch(e.Message, "STARTING DUPLEX SESSION")
+stream bool highended:= e.strmatch(e.Message, "ENDING DUPLEX SESSION")
+stream bool tjobfinished := e.strmatch(e.Message, "Finished at")
 
 stream num outBandwidth := if isnet then e.getnum(net.txBytes_ps)
 
