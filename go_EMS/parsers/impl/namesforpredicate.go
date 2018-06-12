@@ -30,6 +30,8 @@ func (visitor *SignalNamesFromPredicateVisitor) VisitPathPredicate(p common.Path
 }
 func (visitor *SignalNamesFromPredicateVisitor) VisitStrPredicate(p common.StrPredicate) {
 }
+func (visitor *SignalNamesFromPredicateVisitor) VisitStrMatchPredicate(p common.StrMatchPredicate) {
+}
 func (visitor *SignalNamesFromPredicateVisitor) VisitTagPredicate(p common.TagPredicate) {
 }
 func (visitor *SignalNamesFromPredicateVisitor) VisitNamedPredicate(p common.StreamNameExpr) {

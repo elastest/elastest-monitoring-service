@@ -6,6 +6,7 @@ import(
     "github.com/elastest/elastest-monitoring-service/go_EMS/jsonrw"
 	"github.com/elastest/elastest-monitoring-service/go_EMS/parsers/common"
     striverdt "gitlab.software.imdea.org/felipe.gorostiaga/striver-go/datatypes"
+    "regexp"
 )
 
 type EvalVisitor struct {
@@ -57,6 +58,18 @@ func (visitor *EvalVisitor) VisitStrPredicate(p common.StrPredicate) {
         return
     }
     visitor.Result = strif.(string) == p.Expected
+    //fmt.Println("Comparing",strif, "with", p.Expected, "and the result is", visitor.Result)
+}
+func (visitor *EvalVisitor) VisitStrMatchPredicate(p common.StrMatchPredicate) {
+    strif,err := jsonrw.ExtractFromMap(visitor.Event.Payload, dt.JSONPath(p.Path))
+    if err != nil {
+        visitor.Result = false
+        //fmt.Println("No string found in event ", visitor.Event)
+        return
+    }
+    matched, err := regexp.MatchString(p.Expected, strif.(string))
+    visitor.Result = err != nil && matched
+    // FIXME compile regex
     //fmt.Println("Comparing",strif, "with", p.Expected, "and the result is", visitor.Result)
 }
 func (visitor *EvalVisitor) VisitTagPredicate(p common.TagPredicate) {
