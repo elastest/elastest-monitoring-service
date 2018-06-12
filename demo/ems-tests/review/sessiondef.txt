@@ -1,0 +1,19 @@
+pred isnet := e.tag(#NetData)
+pred lowstarted := e.strmatch(e.Message, "STARTING SIMPLEX SESSION")
+pred lowended := e.strmatch(e.Message, "ENDING SIMPLEX SESSION")
+pred highstarted := e.strmatch(e.Message, "STARTING DUPLEX SESSION")
+pred highended:= e.strmatch(e.Message, "ENDING DUPLEX SESSION")
+pred tjobfinished := e.strmatch(e.Message, "Finished at")
+
+stream num outBandwidth := if isnet then e.getnum(net.txBytes_ps)
+
+stream bool low_is_running := Prev lowstarted /\ ~Prev lowended
+stream bool high_is_running := Prev highstarted /\ ~Prev highended
+
+stream num avgbwlow := avg(outBandwidth within low_is_running)
+stream num avgbwhigh := avg(outBandwidth within high_is_running)
+
+stream bool testcorrect := Prev low_is_running /\ Prev high_is_running /\ avggradhigh * 0.8 > avggradlow
+
+trigger tjobfinished do emit testcorrect on #testresult
+trigger isnet do emit outBandwidth on #outbw
