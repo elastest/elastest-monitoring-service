@@ -2,5 +2,3 @@ when e.strcmp(type,"net") do #NetData
 when e.path(message) do #TJobMsg
 
 when e.tag(#testresult) do #websocket 
-when e.tag(#outbw) do #websocket 
-when e.tag(#lowstarted) do #websocket 

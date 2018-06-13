@@ -17,6 +17,3 @@ stream num avgbwhigh := avg(outBandwidth within high_is_running)
 stream bool testcorrect := Prev low_is_running /\ Prev high_is_running /\ avgbwhigh * 0.8 > avgbwlow
 
 trigger tjobfinished do emit testcorrect on #testresult
-trigger tjobfinished do emit outBandwidth on #testresult
-trigger isnet do emit outBandwidth on #outbw
-trigger lowstarted do emit lowstarted on #lowstarted
