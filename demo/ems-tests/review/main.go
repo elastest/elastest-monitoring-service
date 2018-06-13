@@ -63,7 +63,7 @@ func main() {
 		if e.EmsType == "webrtc" {
 			log.Printf("8182 INPUT:\n        %s\n", input)
 		}
-		if strings.Contains(e.Message, "Finished at") {
+		if strings.Contains(string(input), "testresult") {
 			os.Exit(0)
 		}
 	}
