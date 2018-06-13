@@ -3,4 +3,4 @@ when e.path(message) do #TJobMsg
 
 when e.tag(#testresult) do #websocket 
 when e.tag(#outbw) do #websocket 
-when e.tag(#NetData) do #websocket 
+when e.tag(#lowstarted) do #websocket 

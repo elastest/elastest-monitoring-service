@@ -18,3 +18,4 @@ stream bool testcorrect := Prev low_is_running /\ Prev high_is_running /\ avgbwh
 
 trigger tjobfinished do emit testcorrect on #testresult
 trigger isnet do emit outBandwidth on #outbw
+trigger lowstarted do emit lowstarted on #lowstarted
