@@ -6,18 +6,14 @@ import (
 	"log"
 	"net/url"
 	"os"
-	"strings"
 	"time"
 
 	"github.com/gorilla/websocket"
 )
 
 type event struct {
-	Type          string `json:"type,omitempty"`
-	ContainerName string `json:"containerName,omitempty"`
-	Net           *Net   `json:"net,omitempty"`
-	Message       string `json:"message,omitempty"`
-	EmsType       string `json:"ems_type,omitempty"`
+    Channels      []string `json:"channels,omitempty"`
+    Value         bool `json:"value,omitempty"`
 }
 
 //Net net structure
@@ -51,22 +47,22 @@ func main() {
 
 		var e event
 		json.Unmarshal(input, &e)
-		if strings.Contains(string(input), "#websocket") {
-            log.Printf("Received event:[%s]", string(input))
-		}
-		if e.Type == "net" {
-			if strings.HasSuffix(e.ContainerName, "full-teaching-openvidu-server-kms_1") {
-				//log.Printf("Checking %f\n", e.Net.TxBytesPs)
-				if e.Net.TxBytesPs > 100000.0 {
-					os.Exit(1)
-				}
-			}
-		}
-		if e.EmsType == "webrtc" {
-			log.Printf("8182 INPUT:\n        %s\n", input)
-		}
-		if strings.Contains(string(input), "testresult") {
-			os.Exit(0)
-		}
+        log.Printf("Received event:[%s]", string(input))
+        if inList("#testresult", e.Channels) {
+            if e.Value {
+                os.Exit(0)
+            } else {
+                os.Exit(1)
+            }
+        }
 	}
+}
+
+func inList(in string, chans []string) bool {
+   for _, s := range chans {
+        if s == in {
+            return true
+        }
+    }
+    return false
 }
