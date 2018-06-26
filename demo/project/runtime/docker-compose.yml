@@ -1,0 +1,5 @@
+version: '3'
+services:
+  runtime:
+    image: imdeasoftware/java-go-runtime
+    build: .
