@@ -9,7 +9,7 @@ cd full-teaching-experiment
 mvn -Dtest=FullTeachingTestE2EDualVideoSession -B test &
 
 cd
-cd elastest-monitoring-service/demo/ems-tests/review
+cd elastest-monitoring-service/demo/project/testBeatsInEMS
 echo Posting stamper
 curl -H "Content-Type:text/plain"  --data-binary @stampers.txt http://${ET_EMS_LSBEATS_HOST}:8888/stamper/tag0.1
 echo Posting sessions
