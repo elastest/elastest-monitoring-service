@@ -4,3 +4,4 @@ WORKDIR /root
 
 RUN apk add --no-cache libc-dev go
 RUN go get github.com/gorilla/websocket
+RUN go get github.com/icza/dyno
