@@ -4,6 +4,7 @@ import(
     striverdt "gitlab.software.imdea.org/felipe.gorostiaga/striver-go/datatypes"
     parsercommon "github.com/elastest/elastest-monitoring-service/go_EMS/parsers/common"
 	dt "github.com/elastest/elastest-monitoring-service/go_EMS/datatypes"
+    "github.com/elastest/elastest-monitoring-service/go_EMS/jsonrw"
 )
 
 type StreamExprToStriverVisitor struct {
@@ -44,8 +45,17 @@ func (visitor StreamExprToStriverVisitor) VisitPredExpr(predExp parsercommon.Pre
         return striverdt.Some(theEvalVisitor.Result)
     })
 }
-func (visitor StreamExprToStriverVisitor) VisitStringPathExpr(parsercommon.StringPathExpr) {
-    panic("not implemented")
+func (visitor StreamExprToStriverVisitor) VisitStringPathExpr(exp parsercommon.StringPathExpr) {
+    makeGeneralStream([]striverdt.StreamName{}, visitor.streamname, visitor.momvisitor, func(theEvent dt.Event, argsMap map[striverdt.StreamName]interface{}) striverdt.EvPayload {
+        valif, err := jsonrw.ExtractFromMap(theEvent.Payload, exp.Path)
+        if err == nil {
+            /* This may not happen: the stream might be guarded by an if statement upper in the AST.
+            Perhaps we should panic and fix if statements to not evaluate
+            the inner function if the result is false? */
+            return striverdt.Some(valif.(string))
+        }
+        return striverdt.NothingPayload
+    })
 }
 func (visitor StreamExprToStriverVisitor) VisitStreamNumExpr(numExp parsercommon.StreamNumExpr) {
     signalNamesVisitor := SignalNamesFromPredicateVisitor{visitor.momvisitor.Preds, []striverdt.StreamName{}, visitor.momvisitor}

@@ -9,6 +9,19 @@ import(
     "regexp"
 )
 
+type ComparableStringEvaluator struct {
+    ArgsMap map[striverdt.StreamName]interface{}
+    Result string
+}
+
+func (visitor *ComparableStringEvaluator) VisitQuotedString(qs common.QuotedString) {
+    visitor.Result = qs.Val
+}
+
+func (visitor *ComparableStringEvaluator) VisitIdentifier(id common.Identifier) {
+    visitor.Result = visitor.ArgsMap[striverdt.StreamName(id.Val)].(string)
+}
+
 type EvalVisitor struct {
     Result bool
     Event dt.Event
@@ -50,14 +63,16 @@ func (visitor *EvalVisitor) VisitPathPredicate(p common.PathPredicate) {
     _,err := jsonrw.ExtractFromMap(visitor.Event.Payload, dt.JSONPath(p.Path))
 	visitor.Result = err == nil
 }
-func (visitor *EvalVisitor) VisitStrPredicate(p common.StrPredicate) {
+func (visitor *EvalVisitor) VisitStrCmpPredicate(p common.StrCmpPredicate) {
     strif,err := jsonrw.ExtractFromMap(visitor.Event.Payload, dt.JSONPath(p.Path))
     if err != nil {
         visitor.Result = false
         //fmt.Println("No string found in event ", visitor.Event)
         return
     }
-    visitor.Result = strif.(string) == p.Expected
+    compeval := ComparableStringEvaluator{visitor.ArgsMap, ""}
+    p.Expected.AcceptComparableStringVisitor(&compeval)
+    visitor.Result = compeval.Result == strif.(string)
     //fmt.Println("Comparing",strif, "with", p.Expected, "and the result is", visitor.Result)
 }
 func (visitor *EvalVisitor) VisitStrMatchPredicate(p common.StrMatchPredicate) {

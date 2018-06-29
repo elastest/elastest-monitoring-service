@@ -23,6 +23,10 @@ type Identifier struct{
 	Val string
 }
 
+func (id Identifier) AcceptComparableStringVisitor(visitor ComparableStringVisitor) {
+    visitor.VisitIdentifier(id)
+}
+
 type Alphanum struct {
 	Val string
 }
@@ -42,4 +46,15 @@ func NewQuotedString(s string) (QuotedString) {
 	return QuotedString{s}
 }
 
+func (qs QuotedString) AcceptComparableStringVisitor(visitor ComparableStringVisitor) {
+    visitor.VisitQuotedString(qs)
+}
 
+type ComparableStringVisitor interface {
+    VisitQuotedString(QuotedString)
+    VisitIdentifier(Identifier)
+}
+
+type ComparableString interface {
+    AcceptComparableStringVisitor(ComparableStringVisitor)
+}

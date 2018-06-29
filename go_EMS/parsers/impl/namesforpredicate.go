@@ -28,7 +28,8 @@ func (visitor *SignalNamesFromPredicateVisitor) VisitOrPredicate(p common.OrPred
 }
 func (visitor *SignalNamesFromPredicateVisitor) VisitPathPredicate(p common.PathPredicate) {
 }
-func (visitor *SignalNamesFromPredicateVisitor) VisitStrPredicate(p common.StrPredicate) {
+func (visitor *SignalNamesFromPredicateVisitor) VisitStrCmpPredicate(p common.StrCmpPredicate) {
+    p.Expected.AcceptComparableStringVisitor(visitor)
 }
 func (visitor *SignalNamesFromPredicateVisitor) VisitStrMatchPredicate(p common.StrMatchPredicate) {
 }
@@ -138,6 +139,14 @@ func (visitor *SignalNamesFromPredicateVisitor) VisitStreamNameExpr(exp common.S
     visitor.SNames = append(visitor.SNames, striverdt.StreamName(exp.Stream))
 }
 
+// Even comparable strings
+
+func (visitor *SignalNamesFromPredicateVisitor) VisitQuotedString(qs common.QuotedString) {
+}
+
+func (visitor *SignalNamesFromPredicateVisitor) VisitIdentifier(id common.Identifier) {
+    visitor.SNames = append(visitor.SNames, striverdt.StreamName(id.Val))
+}
 
 // constructors of streams
 

@@ -110,7 +110,7 @@ NumPathExpr <- "e.getnum(" _? p:JSONPath _? ")" _? {
 	   }
 
 AtomicPredicate <- p:PathPredicate _? { return p,nil }
-	  / p:StrPredicate   _?  { return p,nil }
+	  / p:StrCmpPredicate   _?  { return p,nil }
 	  / p:HasTagPredicate _? { return p,nil }
 	  / p:"true" _? { return common.True,nil }
 	  / p:"false" _? { return common.False,nil }
@@ -119,8 +119,8 @@ PathPredicate <- "e.path(" _? p:JSONPath _? ")" _? {
 	      return common.NewPathPredicate(p),nil		
 }
 
-StrPredicate <- "e.strcmp(" _? p:JSONPath _? "," _? s:QuotedString _?")" _? {
-	     return common.NewStrPredicate(p,s),nil
+StrCmpPredicate <- "e.strcmp(" _? p:JSONPath _? "," _? s:QuotedString _?")" _? {
+	     return common.NewStrCmpPredicate(p,s),nil
 }
 HasTagPredicate <- "e.tag(" _? t:Tag _? ")" _? {
 		return common.NewTagPredicate(t),nil

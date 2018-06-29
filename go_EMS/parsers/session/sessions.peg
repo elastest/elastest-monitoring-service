@@ -146,7 +146,7 @@ NumLiteral <- p:([0-9]+('.'[0-9]+)?) {
 
 Builtins <- b:Builtin "(" _? s:Name WITHIN w:Name _? ")" _? { return common.NewAggregatorExpr(b,s,w), nil }
         / n:NumPathExpr { return n,nil }
-//     / s:StrPathExpr { return s,nil }
+     / s:StrPathExpr { return s,nil }
      / p:PathExpr    { return p,nil }
      / p:PrevExpr    { return p,nil }
      / p:IsInitExpr  { return p,nil }
@@ -172,9 +172,9 @@ Builtin <- AVG { return "avg",nil }
 NumPathExpr <- "e.getnum(" _? p:JSONPath _? ")" _? {
       return common.NewStreamNumExpr(common.NewNumPathExpr(p)),nil		
 }
-// StrPathExpr <- "e.getstr" _? '(' _? p:JSONPath _? ")" _? {
-//       return newStringPathExpr(p),nil		
-// }
+StrPathExpr <- "e.getstr" _? '(' _? p:JSONPath _? ")" _? {
+      return common.NewStringPathExpr(p),nil		
+}
 
 Trigger <-TRIGGER p:Predicate DO a:Action _? {
 	return newTrigger(p,a),nil
@@ -197,10 +197,13 @@ PathExpr <- "e.path" _? "(" _? p:JSONPath _? ")" _? {
          return common.NewPredExpr(pred),nil		
 }
 
-StrcmpPredicate <- "e.strcmp(" _? p:JSONPath _? "," _? s:QuotedString _?")" _? {
-	     pred := common.NewStrPredicate(p,s)
+StrcmpPredicate <- "e.strcmp(" _? p:JSONPath _? "," _? cs:ComparableString _?")" _? {
+	     pred := common.NewStrCmpPredicate(p,cs)
 	     return common.NewPredExpr(pred),nil
 }
+
+ComparableString <- qs:QuotedString { return qs, nil }
+                    / n:Name { return n, nil }
 
 StrMatchPredicate <- "e.strmatch(" _? p:JSONPath _? "," _? s:QuotedString _?")" _? {
 	     pred := common.NewStrMatchPredicate(p,s)
@@ -217,7 +220,7 @@ QuotedString <- ('"'(([^'"''\\']*('\\'.[^'"''\\']*)*))'"')  {
             return common.NewQuotedString(str),nil
         }
 	
-JSONPath <- ([a-zA-Z0-9]+('.'[a-zA-Z0-9'_']+)*) {
+JSONPath <- ([a-zA-Z0-9]+'*'?('.'[a-zA-Z0-9'_']+'*'?)*) {
 	 return common.NewPathName(string(c.text)),nil
     }
 

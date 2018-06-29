@@ -14,7 +14,7 @@ type PredicateVisitor interface {
     VisitAndPredicate(AndPredicate)
     VisitOrPredicate(OrPredicate)
     VisitPathPredicate(PathPredicate)
-    VisitStrPredicate(StrPredicate)
+    VisitStrCmpPredicate(StrCmpPredicate)
     VisitStrMatchPredicate(StrMatchPredicate)
     VisitTagPredicate(TagPredicate)
     VisitNamedPredicate(StreamNameExpr)
@@ -91,14 +91,14 @@ func (this PathPredicate) AcceptPred(visitor PredicateVisitor) {
 func (this PathPredicate) Sprint () string {
 	return fmt.Sprintf("e.Path(%s)",this.Path)
 }
-type StrPredicate struct {
+type StrCmpPredicate struct {
 	Path string
-	Expected string
+	Expected ComparableString
 }
-func (this StrPredicate) AcceptPred(visitor PredicateVisitor) {
-    visitor.VisitStrPredicate(this)
+func (this StrCmpPredicate) AcceptPred(visitor PredicateVisitor) {
+    visitor.VisitStrCmpPredicate(this)
 }
-func (this StrPredicate) Sprint () string {
+func (this StrCmpPredicate) Sprint () string {
 	return fmt.Sprintf("e.strcmp(%s,%s)",this.Path,this.Expected)
 }
 type StrMatchPredicate struct {
@@ -244,10 +244,10 @@ func NewPathPredicate(p interface{}) (PathPredicate) {
 	return PathPredicate{path}
 }
 
-func NewStrPredicate(p,v interface{}) (StrPredicate) {
+func NewStrCmpPredicate(p,v interface{}) (StrCmpPredicate) {
 	path     :=p.(PathName).Val
-	expected :=v.(QuotedString).Val
-	return StrPredicate{path,expected}
+	expected :=v.(ComparableString)
+	return StrCmpPredicate{path,expected}
 }
 
 func NewStrMatchPredicate(p,v interface{}) (StrMatchPredicate) {
