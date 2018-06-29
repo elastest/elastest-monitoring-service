@@ -4,6 +4,7 @@ import(
     striverdt "gitlab.software.imdea.org/felipe.gorostiaga/striver-go/datatypes"
     parsercommon "github.com/elastest/elastest-monitoring-service/go_EMS/parsers/common"
 	dt "github.com/elastest/elastest-monitoring-service/go_EMS/datatypes"
+    "github.com/elastest/elastest-monitoring-service/go_EMS/jsonrw"
 )
 
 type StreamExprToStriverVisitor struct {
@@ -17,6 +18,8 @@ func (visitor StreamExprToStriverVisitor) VisitAggregatorExpr(aggexp parsercommo
         makeAvgOutStream(aggexp.Stream, aggexp.Session, visitor.streamname, visitor.momvisitor)
     case "gradient":
         makeGradientOutStream(aggexp.Stream, aggexp.Session, visitor.streamname, visitor.momvisitor)
+    case "sum":
+        makeSumOutStream(aggexp.Stream, aggexp.Session, visitor.streamname, visitor.momvisitor)
     default:
         panic("Operation "+aggexp.Operation+" not implemented")
     }
@@ -42,8 +45,17 @@ func (visitor StreamExprToStriverVisitor) VisitPredExpr(predExp parsercommon.Pre
         return striverdt.Some(theEvalVisitor.Result)
     })
 }
-func (visitor StreamExprToStriverVisitor) VisitStringPathExpr(parsercommon.StringPathExpr) {
-    panic("not implemented")
+func (visitor StreamExprToStriverVisitor) VisitStringPathExpr(exp parsercommon.StringPathExpr) {
+    makeGeneralStream([]striverdt.StreamName{}, visitor.streamname, visitor.momvisitor, func(theEvent dt.Event, argsMap map[striverdt.StreamName]interface{}) striverdt.EvPayload {
+        valif, err := jsonrw.ExtractFromMap(theEvent.Payload, exp.Path)
+        if err == nil {
+            /* This may not happen: the stream might be guarded by an if statement upper in the AST.
+            Perhaps we should panic and fix if statements to not evaluate
+            the inner function if the result is false? */
+            return striverdt.Some(valif.(string))
+        }
+        return striverdt.NothingPayload
+    })
 }
 func (visitor StreamExprToStriverVisitor) VisitStreamNumExpr(numExp parsercommon.StreamNumExpr) {
     signalNamesVisitor := SignalNamesFromPredicateVisitor{visitor.momvisitor.Preds, []striverdt.StreamName{}, visitor.momvisitor}
@@ -202,3 +214,24 @@ func makeGradientOutStream(inSignalName, sessionSignalName, outSignalName strive
     visitor.OutStreams = append(visitor.OutStreams, gradStream)
 }
 
+func makeSumOutStream(inSignalName, sessionSignalName, outSignalName striverdt.StreamName, visitor *MoMToStriverVisitor) {
+    sumFun := func (args...striverdt.EvPayload) striverdt.EvPayload {
+        cond := args[0]
+        if !cond.IsSet || !cond.Val.(striverdt.EvPayload).Val.(bool) {
+            return striverdt.NothingPayload
+        }
+        prevval := float32(0.0)
+        if args[1].IsSet {
+            prevval = args[1].Val.(striverdt.EvPayload).Val.(float32)
+        }
+        nowval := args[2].Val.(striverdt.EvPayload).Val.(float32)
+        return striverdt.Some(nowval + prevval)
+    }
+    sumVal := striverdt.FuncNode{[]striverdt.ValNode{
+        &striverdt.PrevEqValNode{striverdt.TNode{}, sessionSignalName, []striverdt.Event{}},
+        &striverdt.PrevValNode{striverdt.TNode{}, outSignalName, []striverdt.Event{}},
+        &striverdt.PrevEqValNode{striverdt.TNode{}, inSignalName, []striverdt.Event{}},
+    }, sumFun}
+    sumStream := striverdt.OutStream{outSignalName, striverdt.SrcTickerNode{inSignalName}, sumVal}
+    visitor.OutStreams = append(visitor.OutStreams, sumStream)
+}

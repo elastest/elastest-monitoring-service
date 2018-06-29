@@ -28,7 +28,8 @@ func (visitor *SignalNamesFromPredicateVisitor) VisitOrPredicate(p common.OrPred
 }
 func (visitor *SignalNamesFromPredicateVisitor) VisitPathPredicate(p common.PathPredicate) {
 }
-func (visitor *SignalNamesFromPredicateVisitor) VisitStrPredicate(p common.StrPredicate) {
+func (visitor *SignalNamesFromPredicateVisitor) VisitStrCmpPredicate(p common.StrCmpPredicate) {
+    p.Expected.AcceptComparableStringVisitor(visitor)
 }
 func (visitor *SignalNamesFromPredicateVisitor) VisitStrMatchPredicate(p common.StrMatchPredicate) {
 }
@@ -52,6 +53,11 @@ func (visitor *SignalNamesFromPredicateVisitor) VisitIfThenElsePredicate(p commo
 func (visitor *SignalNamesFromPredicateVisitor) VisitPrevPredicate(prevExp common.PrevPredicate) {
     outStream := "prevOf::"+prevExp.Stream
     makePrevOutStream(prevExp.Stream, outStream, visitor.Momvisitor)
+    visitor.SNames = append(visitor.SNames,outStream)
+}
+func (visitor *SignalNamesFromPredicateVisitor) VisitIsInitPredicate(isinit common.IsInitPredicate) {
+    outStream := "isInit::"+isinit.Stream
+    makeIsInitStream(isinit.Stream, outStream, visitor.Momvisitor)
     visitor.SNames = append(visitor.SNames,outStream)
 }
 
@@ -133,6 +139,14 @@ func (visitor *SignalNamesFromPredicateVisitor) VisitStreamNameExpr(exp common.S
     visitor.SNames = append(visitor.SNames, striverdt.StreamName(exp.Stream))
 }
 
+// Even comparable strings
+
+func (visitor *SignalNamesFromPredicateVisitor) VisitQuotedString(qs common.QuotedString) {
+}
+
+func (visitor *SignalNamesFromPredicateVisitor) VisitIdentifier(id common.Identifier) {
+    visitor.SNames = append(visitor.SNames, striverdt.StreamName(id.Val))
+}
 
 // constructors of streams
 
@@ -152,3 +166,14 @@ func makePrevOutStream (inSignalName, outSignalName striverdt.StreamName, visito
     visitor.OutStreams = append(visitor.OutStreams, hasEverStream)
 }
 
+func makeIsInitStream (inSignalName, outSignalName striverdt.StreamName, visitor *MoMToStriverVisitor) {
+    isinitFun := func (args...striverdt.EvPayload) striverdt.EvPayload {
+        strprev := args[0]
+        return striverdt.Some(strprev.IsSet)
+    }
+    isinitVal := striverdt.FuncNode{[]striverdt.ValNode{
+        &striverdt.PrevValNode{striverdt.TNode{}, inSignalName, []striverdt.Event{}},
+    }, isinitFun}
+    isinitStream := striverdt.OutStream{outSignalName, striverdt.SrcTickerNode{visitor.InSignalName}, isinitVal}
+    visitor.OutStreams = append(visitor.OutStreams, isinitStream)
+}

@@ -13,15 +13,26 @@ func ExtractFromMap(themap map[string]interface{}, strpath dt.JSONPath) (interfa
         panic("empty path")
     }
 	var ok bool
-	for _,key := range path[:len(path)-1] {
-		themap, ok = themap[key].(map[string]interface{})
+    var extracted interface{} = themap
+	for _,key := range path {
+        themap = extracted.(map[string]interface{})
+        if len(key) == 0 {
+            return nil, errors.New("Incorrect path, empty key")
+        }
+        if key[len(key)-1:] == "*" {
+            key = key[:len(key)-1]
+            ok = false
+            for k,v := range themap {
+                if strings.HasPrefix(k, key) {
+                    extracted,ok = v, true
+                }
+            }
+        } else {
+            extracted, ok = themap[key]
+        }
 		if (!ok) {
             return nil, errors.New("Incorrect path")
 		}
 	}
-	ret, ok := themap[path[len(path)-1]]
-	if (!ok) {
-        return nil, errors.New("Incorrect path")
-	}
-	return ret,nil
+	return extracted,nil
 }
