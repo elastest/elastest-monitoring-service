@@ -186,7 +186,7 @@ public class FullTeachingTestE2EDualVideoSession extends FullTeachingTestE2E {
 				"div.participant");
 
 		log.info("STARTING SIMPLEX SESSION");
-		waitSeconds(30);
+		waitSeconds(15);
 		log.info("ENDING SIMPLEX SESSION");
 
 		// Student asks for intervention
@@ -227,7 +227,7 @@ public class FullTeachingTestE2EDualVideoSession extends FullTeachingTestE2E {
 				"div.participant");
 
 		log.info("STARTING DUPLEX SESSION");
-		waitSeconds(30);
+		waitSeconds(15);
 		log.info("ENDING DUPLEX SESSION");
 
 		// Teacher stops student intervention
@@ -243,7 +243,7 @@ public class FullTeachingTestE2EDualVideoSession extends FullTeachingTestE2E {
 		student.getWaiter().until(ExpectedConditions.not(
 				ExpectedConditions.presenceOfAllElementsLocatedBy(By.cssSelector(("div.participant-small video")))));
 
-		waitSeconds(10);
+		waitSeconds(6);
 
 		// Logout student
 		this.logout(student);
