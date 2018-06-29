@@ -17,6 +17,8 @@ func (visitor StreamExprToStriverVisitor) VisitAggregatorExpr(aggexp parsercommo
         makeAvgOutStream(aggexp.Stream, aggexp.Session, visitor.streamname, visitor.momvisitor)
     case "gradient":
         makeGradientOutStream(aggexp.Stream, aggexp.Session, visitor.streamname, visitor.momvisitor)
+    case "sum":
+        makeSumOutStream(aggexp.Stream, aggexp.Session, visitor.streamname, visitor.momvisitor)
     default:
         panic("Operation "+aggexp.Operation+" not implemented")
     }
@@ -202,3 +204,24 @@ func makeGradientOutStream(inSignalName, sessionSignalName, outSignalName strive
     visitor.OutStreams = append(visitor.OutStreams, gradStream)
 }
 
+func makeSumOutStream(inSignalName, sessionSignalName, outSignalName striverdt.StreamName, visitor *MoMToStriverVisitor) {
+    sumFun := func (args...striverdt.EvPayload) striverdt.EvPayload {
+        cond := args[0]
+        if !cond.IsSet || !cond.Val.(striverdt.EvPayload).Val.(bool) {
+            return striverdt.NothingPayload
+        }
+        prevval := float32(0.0)
+        if args[1].IsSet {
+            prevval = args[1].Val.(striverdt.EvPayload).Val.(float32)
+        }
+        nowval := args[2].Val.(striverdt.EvPayload).Val.(float32)
+        return striverdt.Some(nowval + prevval)
+    }
+    sumVal := striverdt.FuncNode{[]striverdt.ValNode{
+        &striverdt.PrevEqValNode{striverdt.TNode{}, sessionSignalName, []striverdt.Event{}},
+        &striverdt.PrevValNode{striverdt.TNode{}, outSignalName, []striverdt.Event{}},
+        &striverdt.PrevEqValNode{striverdt.TNode{}, inSignalName, []striverdt.Event{}},
+    }, sumFun}
+    sumStream := striverdt.OutStream{outSignalName, striverdt.SrcTickerNode{inSignalName}, sumVal}
+    visitor.OutStreams = append(visitor.OutStreams, sumStream)
+}
