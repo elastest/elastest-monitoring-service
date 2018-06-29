@@ -1,2 +1,0 @@
-{ "momType":"sampledSignal", "definition":"{ \"name\": \"cpuload\", \"paramsPaths\": {\"x\": \"beat.hostname\"}, \"inChannel\": \"in\", \"valuePath\": \"system.load.1\" }"}
-{ "momType":"writeSignal", "definition":"{ \"SourceSignal\":\"cpuload\", \"OutChannel\":\"out\", \"FieldsAndValues\":{ \"metric\" : {\"Valtype\":\"literal\", \"Valpayload\":\"cpuload\"}, \"load\" : {\"Valtype\":\"value\", \"Valpayload\":\"\"}, \"hostname\" : {\"Valtype\":\"param\", \"Valpayload\":\"x\"}}, \"Triggerer\":{ \"SignalName\":\"cpuload\", \"ReboundParameters\":{ \"x\" : \"x\"}}}"}

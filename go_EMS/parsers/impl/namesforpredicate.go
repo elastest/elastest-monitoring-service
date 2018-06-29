@@ -54,6 +54,11 @@ func (visitor *SignalNamesFromPredicateVisitor) VisitPrevPredicate(prevExp commo
     makePrevOutStream(prevExp.Stream, outStream, visitor.Momvisitor)
     visitor.SNames = append(visitor.SNames,outStream)
 }
+func (visitor *SignalNamesFromPredicateVisitor) VisitIsInitPredicate(isinit common.IsInitPredicate) {
+    outStream := "isInit::"+isinit.Stream
+    makeIsInitStream(isinit.Stream, outStream, visitor.Momvisitor)
+    visitor.SNames = append(visitor.SNames,outStream)
+}
 
 // It also visits numcomparisons!
 
@@ -152,3 +157,14 @@ func makePrevOutStream (inSignalName, outSignalName striverdt.StreamName, visito
     visitor.OutStreams = append(visitor.OutStreams, hasEverStream)
 }
 
+func makeIsInitStream (inSignalName, outSignalName striverdt.StreamName, visitor *MoMToStriverVisitor) {
+    isinitFun := func (args...striverdt.EvPayload) striverdt.EvPayload {
+        strprev := args[0]
+        return striverdt.Some(strprev.IsSet)
+    }
+    isinitVal := striverdt.FuncNode{[]striverdt.ValNode{
+        &striverdt.PrevValNode{striverdt.TNode{}, inSignalName, []striverdt.Event{}},
+    }, isinitFun}
+    isinitStream := striverdt.OutStream{outSignalName, striverdt.SrcTickerNode{visitor.InSignalName}, isinitVal}
+    visitor.OutStreams = append(visitor.OutStreams, isinitStream)
+}

@@ -21,7 +21,7 @@ type PredicateVisitor interface {
 	VisitNumComparisonPredicate(NumComparisonPredicate)
 	VisitIfThenElsePredicate(IfThenElsePredicate)
 	VisitPrevPredicate(PrevPredicate)
-
+    VisitIsInitPredicate(IsInitPredicate)
 }
 
 type Predicate interface {
@@ -172,6 +172,19 @@ func NewPrevPred(p interface{}) (PrevPredicate) {
 	return PrevPredicate{striverdt.StreamName(p.(Identifier).Val)}
 }
 
+type IsInitPredicate struct {
+	Stream striverdt.StreamName
+}
+func (this IsInitPredicate) AcceptPred(visitor PredicateVisitor) {
+    visitor.VisitIsInitPredicate(this)
+}
+func (this IsInitPredicate) Sprint () string {
+	return fmt.Sprintf("isinit(%s)",this.Stream)
+}
+func NewIsInitPredicate(s interface{}) (IsInitPredicate) {
+	name := s.(Identifier).Val
+	return IsInitPredicate{striverdt.StreamName(name)}
+}
 
 var (
 	True  TruePredicate

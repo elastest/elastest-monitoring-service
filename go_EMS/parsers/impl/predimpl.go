@@ -94,6 +94,10 @@ func (visitor *EvalVisitor) VisitPrevPredicate(p common.PrevPredicate) {
     visitor.Result = visitor.ArgsMap["prevOf::"+p.Stream].(bool)
 }
 
+func (visitor *EvalVisitor) VisitIsInitPredicate(p common.IsInitPredicate) {
+    visitor.Result = visitor.ArgsMap["isInit::"+p.Stream].(bool)
+}
+
 // It also visits numcomparisons!
 
 func (visitor *EvalVisitor) VisitNumLess(exp common.NumLess) {
