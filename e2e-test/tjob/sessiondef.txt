@@ -1,0 +1,21 @@
+pred isnet := e.tag(#NetData) /\ e.strmatch(containerName, "nginx")
+
+stream bool lowstarted := e.strmatch(message, "STARTING FIRST DOWNLOAD")
+stream bool lowended := e.strmatch(message, "STARTING SECOND DOWNLOAD")
+stream bool highstarted := e.strmatch(message, "STARTING SECOND DOWNLOAD")
+stream bool highended:= e.strmatch(message, "FINISHIN SECOND DOWNLOAD")
+stream bool tjobfinished := e.strmatch(message, "FINISHING TEST")
+
+stream num outBandwidth := if isnet then e.getnum(net.txBytes_ps)
+
+stream bool low_is_running := Prev lowstarted /\ ~Prev lowended
+stream bool high_is_running := Prev highstarted /\ ~Prev highended
+
+stream num avgbwlow := avg(outBandwidth within low_is_running)
+stream num avgbwhigh := avg(outBandwidth within high_is_running)
+
+stream bool testcorrect := Prev low_is_running /\ Prev high_is_running /\ avgbwhigh * 0.8 > avgbwlow
+
+trigger tjobfinished do emit avgbwlow on #lowavg
+trigger tjobfinished do emit avgbwhigh on #highavg
+trigger tjobfinished do emit testcorrect on #testresult

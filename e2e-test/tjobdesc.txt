@@ -1,0 +1,461 @@
+{
+  "id": 0,
+  "name": "e2e tjob",
+  "execDashboardConfig": "{\"showAllInOne\":true,\"allMetricsFields\":{\"fieldsList\":[{\"component\":\"\",\"stream\":\"et_dockbeat\",\"streamType\":\"composed_metrics\",\"name\":\"et_dockbeat_cpu_totalUsage\",\"activated\":false,\"etType\":\"cpu\",\"subtype\":\"totalUsage\",\"unit\":\"percent\"},{\"component\":\"\",\"stream\":\"et_dockbeat\",\"streamType\":\"composed_metrics\",\"name\":\"et_dockbeat_memory_usage\",\"activated\":false,\"etType\":\"memory\",\"subtype\":\"usage\",\"unit\":\"percent\"},{\"component\":\"\",\"stream\":\"et_dockbeat\",\"streamType\":\"composed_metrics\",\"name\":\"et_dockbeat_memory_maxUsage\",\"activated\":false,\"etType\":\"memory\",\"subtype\":\"maxUsage\",\"unit\":\"bytes\"},{\"component\":\"\",\"stream\":\"et_dockbeat\",\"streamType\":\"composed_metrics\",\"name\":\"et_dockbeat_blkio_read_ps\",\"activated\":false,\"etType\":\"blkio\",\"subtype\":\"read_ps\",\"unit\":\"bytes\"},{\"component\":\"\",\"stream\":\"et_dockbeat\",\"streamType\":\"composed_metrics\",\"name\":\"et_dockbeat_blkio_write_ps\",\"activated\":false,\"etType\":\"blkio\",\"subtype\":\"write_ps\",\"unit\":\"bytes\"},{\"component\":\"\",\"stream\":\"et_dockbeat\",\"streamType\":\"composed_metrics\",\"name\":\"et_dockbeat_blkio_total_ps\",\"activated\":false,\"etType\":\"blkio\",\"subtype\":\"total_ps\",\"unit\":\"bytes\"},{\"component\":\"\",\"stream\":\"et_dockbeat\",\"streamType\":\"composed_metrics\",\"name\":\"et_dockbeat_net_rxBytes_ps\",\"activated\":false,\"etType\":\"net\",\"subtype\":\"rxBytes_ps\",\"unit\":\"amount/sec\"},{\"component\":\"\",\"stream\":\"et_dockbeat\",\"streamType\":\"composed_metrics\",\"name\":\"et_dockbeat_net_rxErrors_ps\",\"activated\":false,\"etType\":\"net\",\"subtype\":\"rxErrors_ps\",\"unit\":\"amount/sec\"},{\"component\":\"\",\"stream\":\"et_dockbeat\",\"streamType\":\"composed_metrics\",\"name\":\"et_dockbeat_net_rxPackets_ps\",\"activated\":false,\"etType\":\"net\",\"subtype\":\"rxPackets_ps\",\"unit\":\"amount/sec\"},{\"component\":\"\",\"stream\":\"et_dockbeat\",\"streamType\":\"composed_metrics\",\"name\":\"et_dockbeat_net_txBytes_ps\",\"activated\":false,\"etType\":\"net\",\"subtype\":\"txBytes_ps\",\"unit\":\"amount/sec\"},{\"component\":\"\",\"stream\":\"et_dockbeat\",\"streamType\":\"composed_metrics\",\"name\":\"et_dockbeat_net_txErrors_ps\",\"activated\":false,\"etType\":\"net\",\"subtype\":\"txErrors_ps\",\"unit\":\"amount/sec\"},{\"component\":\"\",\"stream\":\"et_dockbeat\",\"streamType\":\"composed_metrics\",\"name\":\"et_dockbeat_net_txPackets_ps\",\"activated\":false,\"etType\":\"net\",\"subtype\":\"txPackets_ps\",\"unit\":\"amount/sec\"}]},\"allLogsTypes\":{\"logsList\":[{\"component\":\"test\",\"stream\":\"default_log\",\"streamType\":\"log\",\"name\":\"test_default_log_log\",\"activated\":true},{\"component\":\"sut\",\"stream\":\"default_log\",\"streamType\":\"log\",\"name\":\"sut_default_log_log\",\"activated\":true}]}}",
+  "execDashboardConfigModel": {
+    "showAllInOne": true,
+    "allMetricsFields": {
+      "fieldsList": [
+        {
+          "component": "",
+          "stream": "et_dockbeat",
+          "streamType": "composed_metrics",
+          "name": "et_dockbeat_cpu_totalUsage",
+          "activated": false,
+          "etType": "cpu",
+          "subtype": "totalUsage",
+          "unit": "percent"
+        },
+        {
+          "component": "",
+          "stream": "et_dockbeat",
+          "streamType": "composed_metrics",
+          "name": "et_dockbeat_memory_usage",
+          "activated": false,
+          "etType": "memory",
+          "subtype": "usage",
+          "unit": "percent"
+        },
+        {
+          "component": "",
+          "stream": "et_dockbeat",
+          "streamType": "composed_metrics",
+          "name": "et_dockbeat_memory_maxUsage",
+          "activated": false,
+          "etType": "memory",
+          "subtype": "maxUsage",
+          "unit": "bytes"
+        },
+        {
+          "component": "",
+          "stream": "et_dockbeat",
+          "streamType": "composed_metrics",
+          "name": "et_dockbeat_blkio_read_ps",
+          "activated": false,
+          "etType": "blkio",
+          "subtype": "read_ps",
+          "unit": "bytes"
+        },
+        {
+          "component": "",
+          "stream": "et_dockbeat",
+          "streamType": "composed_metrics",
+          "name": "et_dockbeat_blkio_write_ps",
+          "activated": false,
+          "etType": "blkio",
+          "subtype": "write_ps",
+          "unit": "bytes"
+        },
+        {
+          "component": "",
+          "stream": "et_dockbeat",
+          "streamType": "composed_metrics",
+          "name": "et_dockbeat_blkio_total_ps",
+          "activated": false,
+          "etType": "blkio",
+          "subtype": "total_ps",
+          "unit": "bytes"
+        },
+        {
+          "component": "",
+          "stream": "et_dockbeat",
+          "streamType": "composed_metrics",
+          "name": "et_dockbeat_net_rxBytes_ps",
+          "activated": false,
+          "etType": "net",
+          "subtype": "rxBytes_ps",
+          "unit": "amount/sec"
+        },
+        {
+          "component": "",
+          "stream": "et_dockbeat",
+          "streamType": "composed_metrics",
+          "name": "et_dockbeat_net_rxErrors_ps",
+          "activated": false,
+          "etType": "net",
+          "subtype": "rxErrors_ps",
+          "unit": "amount/sec"
+        },
+        {
+          "component": "",
+          "stream": "et_dockbeat",
+          "streamType": "composed_metrics",
+          "name": "et_dockbeat_net_rxPackets_ps",
+          "activated": false,
+          "etType": "net",
+          "subtype": "rxPackets_ps",
+          "unit": "amount/sec"
+        },
+        {
+          "component": "",
+          "stream": "et_dockbeat",
+          "streamType": "composed_metrics",
+          "name": "et_dockbeat_net_txBytes_ps",
+          "activated": false,
+          "etType": "net",
+          "subtype": "txBytes_ps",
+          "unit": "amount/sec"
+        },
+        {
+          "component": "",
+          "stream": "et_dockbeat",
+          "streamType": "composed_metrics",
+          "name": "et_dockbeat_net_txErrors_ps",
+          "activated": false,
+          "etType": "net",
+          "subtype": "txErrors_ps",
+          "unit": "amount/sec"
+        },
+        {
+          "component": "",
+          "stream": "et_dockbeat",
+          "streamType": "composed_metrics",
+          "name": "et_dockbeat_net_txPackets_ps",
+          "activated": false,
+          "etType": "net",
+          "subtype": "txPackets_ps",
+          "unit": "amount/sec"
+        }
+      ]
+    },
+    "allLogsTypes": {
+      "logsList": [
+        {
+          "component": "test",
+          "stream": "default_log",
+          "streamType": "log",
+          "name": "test_default_log_log",
+          "activated": true
+        },
+        {
+          "component": "sut",
+          "stream": "default_log",
+          "streamType": "log",
+          "name": "sut_default_log_log",
+          "activated": true
+        }
+      ]
+    }
+  },
+  "imageName": "imdeasoftware/e2etjob",
+  "sut": {
+    "id": 1,
+    "name": "FullTeaching",
+    "specification": "version: '3'\n\nservices:\n\n full-teaching-mysql:\n   image: mysql:5.7.21\n   environment:\n     - MYSQL_ROOT_PASSWORD=pass\n     - MYSQL_DATABASE=full_teaching\n     - MYSQL_USER=ft-root\n     - MYSQL_PASSWORD=pass\n\n full-teaching-openvidu-server-kms:\n   image: openvidu/openvidu-server-kms:1.7.0\n   expose:\n     - 8443\n   environment:\n     - KMS_STUN_IP=stun.l.google.com\n     - KMS_STUN_PORT=19302\n     - openvidu.secret=MY_SECRET\n     - openvidu.publicurl=docker\n\n full-teaching:\n   image: codeurjc/full-teaching:demo\n   depends_on:\n     - full-teaching-mysql\n     - full-teaching-openvidu-server-kms\n   expose:\n     - 5000\n   environment:\n     - WAIT_HOSTS=full-teaching-mysql:3306\n     - WAIT_HOSTS_TIMEOUT=120\n     - MYSQL_PORT_3306_TCP_ADDR=full-teaching-mysql\n     - MYSQL_PORT_3306_TCP_PORT=3306\n     - MYSQL_ENV_MYSQL_DATABASE=full_teaching\n     - MYSQL_ENV_MYSQL_USER=ft-root\n     - MYSQL_ENV_MYSQL_PASSWORD=pass\n     - server.port=5000\n     - openvidu.url=https://full-teaching-openvidu-server-kms:8443\n     - openvidu.secret=MY_SECRET\n",
+    "sutType": "MANAGED",
+    "description": "FullTeaching Software under Test",
+    "eimConfig": {
+      "id": 0,
+      "privateKey": "",
+      "ip": "",
+      "logstashIp": "",
+      "logstashTcpHost": "",
+      "logstashTcpPort": "",
+      "logstashBeatsHost": "",
+      "logstashBeatsPort": "",
+      "logstashBindedTcpHost": "",
+      "logstashBindedTcpPort": "",
+      "logstashBindedBeatsHost": "",
+      "logstashBindedBeatsPort": "",
+      "logstashHttpPort": "",
+      "logstashHttpApiUrl": ""
+    },
+    "eimMonitoringConfig": {
+      "id": 0,
+      "exec": "",
+      "component": "",
+      "dockerized": false,
+      "beats": {
+        "packetbeat": {
+          "id": 0,
+          "name": "packetbeat",
+          "stream": "et_packetbeat",
+          "paths": []
+        },
+        "filebeat": {
+          "id": 0,
+          "name": "filebeat",
+          "stream": "default_log",
+          "paths": [],
+          "dockerized": [
+            "/var/lib/docker/containers/"
+          ]
+        },
+        "metricbeat": {
+          "id": 0,
+          "name": "metricbeat",
+          "stream": "et_metricbeat",
+          "paths": [],
+          "dockerized": [
+            "/var/run/docker.sock"
+          ]
+        }
+      }
+    },
+    "instrumentalize": false,
+    "currentSutExec": null,
+    "instrumentedBy": "WITHOUT",
+    "port": "5000",
+    "managedDockerType": "COMPOSE",
+    "mainService": "full-teaching",
+    "parameters": [],
+    "commands": "",
+    "commandsOption": "DEFAULT"
+  },
+  "project": {
+    "id": 1,
+    "name": "Hello World",
+    "suts": [
+      {
+        "id": 1,
+        "name": "FullTeaching",
+        "specification": "version: '3'\n\nservices:\n\n full-teaching-mysql:\n   image: mysql:5.7.21\n   environment:\n     - MYSQL_ROOT_PASSWORD=pass\n     - MYSQL_DATABASE=full_teaching\n     - MYSQL_USER=ft-root\n     - MYSQL_PASSWORD=pass\n\n full-teaching-openvidu-server-kms:\n   image: openvidu/openvidu-server-kms:1.7.0\n   expose:\n     - 8443\n   environment:\n     - KMS_STUN_IP=stun.l.google.com\n     - KMS_STUN_PORT=19302\n     - openvidu.secret=MY_SECRET\n     - openvidu.publicurl=docker\n\n full-teaching:\n   image: codeurjc/full-teaching:demo\n   depends_on:\n     - full-teaching-mysql\n     - full-teaching-openvidu-server-kms\n   expose:\n     - 5000\n   environment:\n     - WAIT_HOSTS=full-teaching-mysql:3306\n     - WAIT_HOSTS_TIMEOUT=120\n     - MYSQL_PORT_3306_TCP_ADDR=full-teaching-mysql\n     - MYSQL_PORT_3306_TCP_PORT=3306\n     - MYSQL_ENV_MYSQL_DATABASE=full_teaching\n     - MYSQL_ENV_MYSQL_USER=ft-root\n     - MYSQL_ENV_MYSQL_PASSWORD=pass\n     - server.port=5000\n     - openvidu.url=https://full-teaching-openvidu-server-kms:8443\n     - openvidu.secret=MY_SECRET\n",
+        "sutType": "MANAGED",
+        "description": "FullTeaching Software under Test",
+        "eimConfig": {
+          "id": 0,
+          "privateKey": "",
+          "ip": "",
+          "logstashIp": "",
+          "logstashTcpHost": "",
+          "logstashTcpPort": "",
+          "logstashBeatsHost": "",
+          "logstashBeatsPort": "",
+          "logstashBindedTcpHost": "",
+          "logstashBindedTcpPort": "",
+          "logstashBindedBeatsHost": "",
+          "logstashBindedBeatsPort": "",
+          "logstashHttpPort": "",
+          "logstashHttpApiUrl": ""
+        },
+        "eimMonitoringConfig": {
+          "id": 0,
+          "exec": "",
+          "component": "",
+          "dockerized": false,
+          "beats": {
+            "packetbeat": {
+              "id": 0,
+              "name": "packetbeat",
+              "stream": "et_packetbeat",
+              "paths": []
+            },
+            "filebeat": {
+              "id": 0,
+              "name": "filebeat",
+              "stream": "default_log",
+              "paths": [],
+              "dockerized": [
+                "/var/lib/docker/containers/"
+              ]
+            },
+            "metricbeat": {
+              "id": 0,
+              "name": "metricbeat",
+              "stream": "et_metricbeat",
+              "paths": [],
+              "dockerized": [
+                "/var/run/docker.sock"
+              ]
+            }
+          }
+        },
+        "instrumentalize": false,
+        "currentSutExec": null,
+        "instrumentedBy": "WITHOUT",
+        "port": "5000",
+        "managedDockerType": "COMPOSE",
+        "mainService": "full-teaching",
+        "parameters": [],
+        "commands": "",
+        "commandsOption": "DEFAULT"
+      },
+      {
+        "id": 3,
+        "name": "e2esut",
+        "specification": "version: '3'\n\nservices:\n\n  nginx-service:\n   image: nginx\n   entrypoint:\n    - /bin/bash\n    - \"-c\"\n    - \"dd if=/dev/random of=/usr/share/nginx/html/sparse bs=1024 count=1 seek=5242880000;nginx;sleep infinity\"\n   expose:\n     - \"80\"",
+        "sutType": "MANAGED",
+        "description": "SuT for E2E test",
+        "eimConfig": {
+          "id": 0,
+          "privateKey": "",
+          "ip": "",
+          "logstashIp": "",
+          "logstashTcpHost": "",
+          "logstashTcpPort": "",
+          "logstashBeatsHost": "",
+          "logstashBeatsPort": "",
+          "logstashBindedTcpHost": "",
+          "logstashBindedTcpPort": "",
+          "logstashBindedBeatsHost": "",
+          "logstashBindedBeatsPort": "",
+          "logstashHttpPort": "",
+          "logstashHttpApiUrl": ""
+        },
+        "eimMonitoringConfig": {
+          "id": 0,
+          "exec": "",
+          "component": "",
+          "dockerized": false,
+          "beats": {
+            "packetbeat": {
+              "id": 0,
+              "name": "packetbeat",
+              "stream": "et_packetbeat",
+              "paths": []
+            },
+            "filebeat": {
+              "id": 0,
+              "name": "filebeat",
+              "stream": "default_log",
+              "paths": [],
+              "dockerized": [
+                "/var/lib/docker/containers/"
+              ]
+            },
+            "metricbeat": {
+              "id": 0,
+              "name": "metricbeat",
+              "stream": "et_metricbeat",
+              "paths": [],
+              "dockerized": [
+                "/var/run/docker.sock"
+              ]
+            }
+          }
+        },
+        "instrumentalize": false,
+        "currentSutExec": null,
+        "instrumentedBy": "WITHOUT",
+        "port": "80",
+        "managedDockerType": "COMPOSE",
+        "mainService": "nginx-service",
+        "parameters": [],
+        "commands": "",
+        "commandsOption": "DEFAULT"
+      },
+      {
+        "id": 5,
+        "name": "e2esut",
+        "specification": "version: '3'\n\nservices:\n\n  nginx-service:\n   image: nginx\n   entrypoint:\n    - /bin/bash\n    - \"-c\"\n    - \"dd if=/dev/random of=/usr/share/nginx/html/sparse bs=1024 count=1 seek=5242880000;nginx;sleep infinity\"\n   expose:\n     - \"80\"",
+        "sutType": "MANAGED",
+        "description": "SuT for E2E test",
+        "eimConfig": {
+          "id": 0,
+          "privateKey": "",
+          "ip": "",
+          "logstashIp": "",
+          "logstashTcpHost": "",
+          "logstashTcpPort": "",
+          "logstashBeatsHost": "",
+          "logstashBeatsPort": "",
+          "logstashBindedTcpHost": "",
+          "logstashBindedTcpPort": "",
+          "logstashBindedBeatsHost": "",
+          "logstashBindedBeatsPort": "",
+          "logstashHttpPort": "",
+          "logstashHttpApiUrl": ""
+        },
+        "eimMonitoringConfig": {
+          "id": 0,
+          "exec": "",
+          "component": "",
+          "dockerized": false,
+          "beats": {
+            "packetbeat": {
+              "id": 0,
+              "name": "packetbeat",
+              "stream": "et_packetbeat",
+              "paths": []
+            },
+            "filebeat": {
+              "id": 0,
+              "name": "filebeat",
+              "stream": "default_log",
+              "paths": [],
+              "dockerized": [
+                "/var/lib/docker/containers/"
+              ]
+            },
+            "metricbeat": {
+              "id": 0,
+              "name": "metricbeat",
+              "stream": "et_metricbeat",
+              "paths": [],
+              "dockerized": [
+                "/var/run/docker.sock"
+              ]
+            }
+          }
+        },
+        "instrumentalize": false,
+        "currentSutExec": null,
+        "instrumentedBy": "WITHOUT",
+        "port": "80",
+        "managedDockerType": "COMPOSE",
+        "mainService": "nginx-service",
+        "parameters": [],
+        "commands": "",
+        "commandsOption": "DEFAULT"
+      }
+    ],
+    "tjobs": []
+  },
+  "tjobExecs": [],
+  "parameters": [],
+  "commands": "cd /go\n./tjob",
+  "resultsPath": "",
+  "esmServicesString": "[{\"id\":\"a1920b13-7d11-4ebc-a732-f86a108ea49c\",\"name\":\"EBS\",\"selected\":false,\"config\":{}},{\"id\":\"fe5e0531-b470-441f-9c69-721c2b4875f2\",\"name\":\"EDS\",\"selected\":false,\"config\":{}},{\"id\":\"bab3ae67-8c1d-46ec-a940-94183a443825\",\"name\":\"EMS\",\"selected\":true,\"config\":{}},{\"id\":\"29216b91-497c-43b7-a5c4-6613f13fa0e9\",\"name\":\"EUS\",\"selected\":false,\"config\":{\"webRtcStats\":{\"name\":\"webRtcStats\",\"type\":\"boolean\",\"label\":\"Gather WebRTC Statistics\",\"default\":false,\"value\":false}}},{\"id\":\"af7947d9-258b-4dd1-b1ca-17450db25ef7\",\"name\":\"ESS\",\"selected\":false,\"config\":{}}]",
+  "esmServices": [
+    {
+      "id": "a1920b13-7d11-4ebc-a732-f86a108ea49c",
+      "name": "EBS",
+      "selected": false,
+      "config": {}
+    },
+    {
+      "id": "fe5e0531-b470-441f-9c69-721c2b4875f2",
+      "name": "EDS",
+      "selected": false,
+      "config": {}
+    },
+    {
+      "id": "bab3ae67-8c1d-46ec-a940-94183a443825",
+      "name": "EMS",
+      "selected": true,
+      "config": {}
+    },
+    {
+      "id": "29216b91-497c-43b7-a5c4-6613f13fa0e9",
+      "name": "EUS",
+      "selected": false,
+      "config": {
+        "webRtcStats": {
+          "name": "webRtcStats",
+          "type": "boolean",
+          "label": "Gather WebRTC Statistics",
+          "default": false,
+          "value": false
+        }
+      }
+    },
+    {
+      "id": "af7947d9-258b-4dd1-b1ca-17450db25ef7",
+      "name": "ESS",
+      "selected": false,
+      "config": {}
+    }
+  ],
+  "esmServicesChecked": 0,
+  "external": false
+}
