@@ -1,0 +1,6 @@
+when e.strcmp(type,"net") do #NetData
+when e.path(message) do #TJobMsg
+
+when e.tag(#testresult) do #websocket 
+when e.tag(#lowavg) do #websocket 
+when e.tag(#highavg) do #websocket 
