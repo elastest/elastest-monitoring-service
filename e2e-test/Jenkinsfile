@@ -12,7 +12,7 @@ node(){
                     
                 stage ("Run tests")
                     try {
-                        sh "cd e2e-test; bash ./start-instance.sh "+elastestURL
+                        sh "cd e2e-test; bash ./start-instance.sh "+elastest_url
                     } catch(e) {
                         echo 'Err: ' + e.toString()
                     } finally {
