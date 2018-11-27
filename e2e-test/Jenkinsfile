@@ -7,7 +7,7 @@ node(){
             mycontainer.inside()  {
                 sh 'env'
                 stage ('prepare test')
-                    git 'https://github.com/elastest/elastest-torm.git'
+                    git 'https://github.com/elastest/elastest-monitoring-service.git'
                     elastest_url = env.ET_SUT_PROTOCOL + '://elastest:3xp3r1m3nt47@' + env.ET_SUT_HOST + ':' + env.ET_SUT_PORT
                     
                 stage ("Run tests")
