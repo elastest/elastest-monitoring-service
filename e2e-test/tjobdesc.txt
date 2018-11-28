@@ -149,68 +149,8 @@
   },
   "imageName": "imdeasoftware/e2etjob",
   "sut": {
-    "id": 1,
-    "name": "FullTeaching",
-    "specification": "version: '3'\n\nservices:\n\n full-teaching-mysql:\n   image: mysql:5.7.21\n   environment:\n     - MYSQL_ROOT_PASSWORD=pass\n     - MYSQL_DATABASE=full_teaching\n     - MYSQL_USER=ft-root\n     - MYSQL_PASSWORD=pass\n\n full-teaching-openvidu-server-kms:\n   image: openvidu/openvidu-server-kms:1.7.0\n   expose:\n     - 8443\n   environment:\n     - KMS_STUN_IP=stun.l.google.com\n     - KMS_STUN_PORT=19302\n     - openvidu.secret=MY_SECRET\n     - openvidu.publicurl=docker\n\n full-teaching:\n   image: codeurjc/full-teaching:demo\n   depends_on:\n     - full-teaching-mysql\n     - full-teaching-openvidu-server-kms\n   expose:\n     - 5000\n   environment:\n     - WAIT_HOSTS=full-teaching-mysql:3306\n     - WAIT_HOSTS_TIMEOUT=120\n     - MYSQL_PORT_3306_TCP_ADDR=full-teaching-mysql\n     - MYSQL_PORT_3306_TCP_PORT=3306\n     - MYSQL_ENV_MYSQL_DATABASE=full_teaching\n     - MYSQL_ENV_MYSQL_USER=ft-root\n     - MYSQL_ENV_MYSQL_PASSWORD=pass\n     - server.port=5000\n     - openvidu.url=https://full-teaching-openvidu-server-kms:8443\n     - openvidu.secret=MY_SECRET\n",
-    "sutType": "MANAGED",
-    "description": "FullTeaching Software under Test",
-    "eimConfig": {
-      "id": 0,
-      "privateKey": "",
-      "ip": "",
-      "logstashIp": "",
-      "logstashTcpHost": "",
-      "logstashTcpPort": "",
-      "logstashBeatsHost": "",
-      "logstashBeatsPort": "",
-      "logstashBindedTcpHost": "",
-      "logstashBindedTcpPort": "",
-      "logstashBindedBeatsHost": "",
-      "logstashBindedBeatsPort": "",
-      "logstashHttpPort": "",
-      "logstashHttpApiUrl": ""
-    },
-    "eimMonitoringConfig": {
-      "id": 0,
-      "exec": "",
-      "component": "",
-      "dockerized": false,
-      "beats": {
-        "packetbeat": {
-          "id": 0,
-          "name": "packetbeat",
-          "stream": "et_packetbeat",
-          "paths": []
-        },
-        "filebeat": {
-          "id": 0,
-          "name": "filebeat",
-          "stream": "default_log",
-          "paths": [],
-          "dockerized": [
-            "/var/lib/docker/containers/"
-          ]
-        },
-        "metricbeat": {
-          "id": 0,
-          "name": "metricbeat",
-          "stream": "et_metricbeat",
-          "paths": [],
-          "dockerized": [
-            "/var/run/docker.sock"
-          ]
-        }
-      }
-    },
-    "instrumentalize": false,
-    "currentSutExec": null,
-    "instrumentedBy": "WITHOUT",
-    "port": "5000",
-    "managedDockerType": "COMPOSE",
-    "mainService": "full-teaching",
-    "parameters": [],
-    "commands": "",
-    "commandsOption": "DEFAULT"
+    "id": SUTID,
+    "name": "EMSe2esut"
   },
   "project": {
     "id": PROJID,

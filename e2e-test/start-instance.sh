@@ -29,16 +29,19 @@ echo Creating SuT
 DESC=`sed "s/PROJID/$PROJID/" sutdesc.txt`
 SUT=$(curl -s -H "Content-Type: application/json" -d "$DESC" "$ELASTESTURL/api/sut")
 echo $SUT
+SUTID=`echo "$SUT" | tr '\n' ' ' | jq '.id'`
+echo SuT ID: $SUTID
+checknonempty "$SUTID"
 
 # T-Job creation
 echo Creating T-Job
-DESC=`sed "s/PROJID/$PROJID/" tjobdesc.txt`
+DESC=`sed "s/PROJID/$PROJID/;s/SUTID/$SUTID/" tjobdesc.txt`
 TJOB=$(curl -s -H "Content-Type: application/json" -d "$DESC" "$ELASTESTURL/api/tjob")
 echo $TJOB
 
 TJOBID=`echo "$TJOB" | tr '\n' ' ' | jq '.id'`
 echo TJob ID: $TJOBID
-checknonempty "$SUT"
+checknonempty "$TJOBID"
 
 # T-Job execution
 echo Executing T-Job
