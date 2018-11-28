@@ -6,13 +6,13 @@ function cleanexit() {
     # Project destruction
     echo Destroying project
     curl -X "DELETE" "$ELASTESTURL/api/project/$PROJID"
-    exit -1
+    exit $1
 }
 
 function checknonempty() {
     if [[ $1X = "X" ]]; then
         echo Empty string
-        cleanexit
+        cleanexit -5
     fi
 }
 
@@ -59,17 +59,17 @@ do
 	#echo $TJOBEXEC
     if [[ $TJOBEXEC = *"SUCCESS"* ]]; then
         echo Test successful
-        cleanexit
+        cleanexit 0
     fi
     if [[ $TJOBEXEC = *"FAIL"* ]]; then
         echo Test failed
-        cleanexit
+        cleanexit -2
     fi
     if [[ $TJOBEXEC = *"ERROR"* ]]; then
         echo Test erroneous
-        cleanexit
+        cleanexit -3
     fi
 done
 
 echo Test took too long
-cleanexit
+cleanexit -4
