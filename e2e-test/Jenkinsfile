@@ -2,7 +2,7 @@ def elastest_url = ''
 node(){
     elastest(tss: [], surefireReportsPattern: '**/target/surefire-reports/TEST-*.xml', project: 'ETinET', sut: 11) {
         stage ('docker container')
-            def mycontainer = docker.image('elastest/ci-docker-e2e:latest')
+            def mycontainer = docker.image('imdeasoftware/ubuntujq:latest')
             mycontainer.pull()
             mycontainer.inside()  {
                 sh 'env'
