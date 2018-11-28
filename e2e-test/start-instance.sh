@@ -13,7 +13,7 @@ function cleanexit() {
 echo Creating Project
 PROJ=$(curl -s -H "Content-Type: application/json" -d '{ "id": 0, "name": "EMSe2e" }' "$ELASTESTURL/api/project")
 echo $PROJ
-PROJID=`echo "$PROJ" | tr '\n' ' ' | docker run -i stedolan/jq '.id'`
+PROJID=`echo "$PROJ" | tr '\n' ' ' | jq '.id'`
 echo Proj ID: $PROJID
 
 # SuT creation
@@ -28,14 +28,14 @@ DESC=`sed "s/PROJID/$PROJID/" tjobdesc.txt`
 TJOB=$(curl -s -H "Content-Type: application/json" -d "$DESC" "$ELASTESTURL/api/tjob")
 echo $TJOB
 
-TJOBID=`echo "$TJOB" | tr '\n' ' ' | docker run -i stedolan/jq '.id'`
+TJOBID=`echo "$TJOB" | tr '\n' ' ' | jq '.id'`
 echo TJob ID: $TJOBID
 
 # T-Job execution
 echo Executing T-Job
 TJOBEXEC=$(curl -s -H "Content-Type: application/json" -d '{"tJobParams": []}' "$ELASTESTURL/api/tjob/$TJOBID/exec")
 echo $TJOBEXEC
-TJOBEXECID=`echo "$TJOBEXEC" | tr '\n' ' ' | docker run -i stedolan/jq '.monitoringIndex'`
+TJOBEXECID=`echo "$TJOBEXEC" | tr '\n' ' ' | jq '.monitoringIndex' | sed 's/"//g'`
 echo TJobEXEC ID: $TJOBEXECID
 
 # Getting result
@@ -45,6 +45,8 @@ do
 	n=$(( n+1 ))	 # increments $n
 	sleep 1
 	TJOBEXEC=$(curl -s "$ELASTESTURL/api/tjob/$TJOBID/exec/$TJOBEXECID/result")
+	echo curl -s "$ELASTESTURL/api/tjob/$TJOBID/exec/$TJOBEXECID/result"
+	echo $TJOBEXEC
     if [[ $TJOBEXEC = *"SUCCESS"* ]]; then
         echo Test successful
         cleanexit
