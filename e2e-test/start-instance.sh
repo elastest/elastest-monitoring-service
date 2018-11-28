@@ -9,12 +9,20 @@ function cleanexit() {
     exit -1
 }
 
+function checknonempty() {
+    if [[ $1X = "X" ]]; then
+        echo Empty string
+        cleanexit
+    fi
+}
+
 # Project creation
 echo Creating Project
 PROJ=$(curl -s -H "Content-Type: application/json" -d '{ "id": 0, "name": "EMSe2e" }' "$ELASTESTURL/api/project")
 echo $PROJ
 PROJID=`echo "$PROJ" | tr '\n' ' ' | jq '.id'`
 echo Proj ID: $PROJID
+checknonempty "$POJID"
 
 # SuT creation
 echo Creating SuT
@@ -30,6 +38,7 @@ echo $TJOB
 
 TJOBID=`echo "$TJOB" | tr '\n' ' ' | jq '.id'`
 echo TJob ID: $TJOBID
+checknonempty "$SUT"
 
 # T-Job execution
 echo Executing T-Job
@@ -37,6 +46,7 @@ TJOBEXEC=$(curl -s -H "Content-Type: application/json" -d '{"tJobParams": []}' "
 echo $TJOBEXEC
 TJOBEXECID=`echo "$TJOBEXEC" | tr '\n' ' ' | jq '.monitoringIndex' | sed 's/"//g'`
 echo TJobEXEC ID: $TJOBEXECID
+checknonempty "$TJOBEXECID"
 
 # Getting result
 n=0
@@ -45,8 +55,8 @@ do
 	n=$(( n+1 ))	 # increments $n
 	sleep 1
 	TJOBEXEC=$(curl -s "$ELASTESTURL/api/tjob/$TJOBID/exec/$TJOBEXECID/result")
-	echo curl -s "$ELASTESTURL/api/tjob/$TJOBID/exec/$TJOBEXECID/result"
-	echo $TJOBEXEC
+	#echo curl -s "$ELASTESTURL/api/tjob/$TJOBID/exec/$TJOBEXECID/result"
+	#echo $TJOBEXEC
     if [[ $TJOBEXEC = *"SUCCESS"* ]]; then
         echo Test successful
         cleanexit
