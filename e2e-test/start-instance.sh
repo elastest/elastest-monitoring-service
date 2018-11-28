@@ -22,7 +22,7 @@ PROJ=$(curl -s -H "Content-Type: application/json" -d '{ "id": 0, "name": "EMSe2
 echo $PROJ
 PROJID=`echo "$PROJ" | tr '\n' ' ' | jq '.id'`
 echo Proj ID: $PROJID
-checknonempty "$POJID"
+checknonempty "$PROJID"
 
 # SuT creation
 echo Creating SuT
