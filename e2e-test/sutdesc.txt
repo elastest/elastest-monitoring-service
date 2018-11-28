@@ -1,6 +1,6 @@
 {
   "id": 0,
-  "name": "e2esut",
+  "name": "EMSe2esut",
   "specification": "version: '3'\n\nservices:\n\n  nginx-service:\n   image: nginx\n   entrypoint:\n    - /bin/bash\n    - \"-c\"\n    - \"dd if=/dev/random of=/usr/share/nginx/html/sparse bs=1024 count=1 seek=5242880000;nginx;sleep infinity\"\n   expose:\n     - \"80\"",
   "sutType": "MANAGED",
   "description": "SuT for E2E test",
