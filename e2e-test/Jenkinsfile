@@ -1,5 +1,5 @@
 def elastest_url = ''
-node(){
+node('et_in_et'){
     elastest(tss: [], surefireReportsPattern: '**/target/surefire-reports/TEST-*.xml', project: 'ETinET', sut: 11) {
         stage ('docker container')
             def mycontainer = docker.image('imdeasoftware/ubuntujq:latest')
