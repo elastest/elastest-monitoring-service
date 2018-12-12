@@ -26,7 +26,7 @@ elastest_lib.pipeline({
                 
             stage ("E2E tests")
                 try {
-                     sh "cd e2e-test; bash ./start-instance.sh "+elastestURL
+                     sh "cd e2e-test/olde2e; bash ./start-instance.sh "+elastestURL
                 } catch(e) {
                     sh '''\
                        docker ps --all
