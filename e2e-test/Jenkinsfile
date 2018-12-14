@@ -15,8 +15,6 @@ node('et_in_et'){
                         sh "cd e2e-test; bash ./start-instance.sh "+elastest_url
                     } catch(e) {
                         echo 'Err: ' + e.toString()
-                    } finally {
-                        step([$class: 'JUnitResultArchiver', testDataPublishers: [[$class: 'AttachmentPublisher']], testResults: '**/target/surefire-reports/TEST-*.xml'])
                     }
             }
     }
