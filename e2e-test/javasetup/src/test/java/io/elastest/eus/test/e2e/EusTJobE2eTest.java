@@ -76,7 +76,7 @@ public class EusTJobE2eTest extends EusBaseTest {
             // Create SuT
             String sutDesc = "SuT for E2E test";
             String sutMainService = "nginx-service";
-            String sutSpec = "version: '3'\n\nservices:\n\n  nginx-service:\n   image: nginx\n   entrypoint:\n    - /bin/bash\n    - \"-c\"\n    - \"dd if=/dev/random of=/usr/share/nginx/html/sparse bs=1024 count=1 seek=5242880000;nginx;sleep infinity\"\n   expose:\n     - \"80\""
+            String sutSpec = "version: '3'\n\nservices:\n\n  nginx-service:\n   image: nginx\n   entrypoint:\n    - /bin/bash\n    - \"-c\"\n    - \"dd if=/dev/random of=/usr/share/nginx/html/sparse bs=1024 count=1 seek=5242880000;nginx;sleep infinity\"\n   expose:\n     - \"80\"";
             String sutPort = "80";
             createNewSutDeployedByElastestWithCompose(driver, sutName, sutDesc, sutSpec, sutMainService, sutPort, null, false);
         }
