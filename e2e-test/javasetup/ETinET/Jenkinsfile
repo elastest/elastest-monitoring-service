@@ -1,0 +1,29 @@
+def elastest_url = ''
+node('et_in_et') {
+    elastest(tss: [], surefireReportsPattern: '**/target/surefire-reports/TEST-*.xml', project: 'ETinET', sut: 11) {
+        stage ('docker container')
+           echo '...STARTING...'
+		   sh 'env'
+    	   def mycontainer = docker.image('elastest/ci-docker-e2e:latest')
+    	   mycontainer.pull()
+    	   mycontainer.inside("-u root -v /var/run/docker.sock:/var/run/docker.sock:rw -v /dev/shm:/dev/shm")  {
+    	        sh '/usr/bin/supervisord -c /etc/supervisor/conf.d/supervisord.conf &'
+                stage ('Prepare') 
+                    git 'https://github.com/elastest/elastest-monitoring-service.git'
+					//elastest_url = env.ET_SUT_PROTOCOL + '://' + env.ET_SUT_HOST + ':' + env.ET_SUT_PORT
+					elastest_url = "http" + '://' + "nightly.elastest.io" + ':' + "37000"
+     		    stage ("E2E tests")				 
+    	            try {
+    	                sh "cd e2e-test/javasetup; mvn -B clean test -DeusUrl=${env.ET_EUS_API} -DetEtmApi="+elastest_url+" -DeUser="+'elastest'+" -DePass="+'3xp3r1m3nt47'+" -Dsel.jup.recording=true -Dsel.jup.screenshot.at.the.end.of.tests=true -Dsel.jup.screenshot.format=png -Dsel.jup.output.folder=surefire-reports"
+    	            } 
+    			    catch(e) {
+        				sh '''\
+        				   docker ps --all
+        				'''
+        				throw e
+        			} finally {
+        				step([$class: 'JUnitResultArchiver', testResults: '**/target/surefire-reports/TEST-*.xml'])
+        			}
+    		}
+	    }		
+}
