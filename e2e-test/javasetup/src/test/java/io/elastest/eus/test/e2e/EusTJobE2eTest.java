@@ -55,7 +55,7 @@ public class EusTJobE2eTest extends EusBaseTest {
     private static final Map<String, List<String>> tssMap;
     static {
         tssMap = new HashMap<String, List<String>>();
-        //tssMap.put("EUS", Arrays.asList("webRtcStats"));
+        tssMap.put("EMS", null);
     }
 
     void createProject(WebDriver driver) throws Exception {
