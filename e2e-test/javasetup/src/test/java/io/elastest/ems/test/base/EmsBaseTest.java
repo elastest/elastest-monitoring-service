@@ -14,7 +14,7 @@
  * limitations under the License.
  *
  */
-package io.elastest.eus.test.base;
+package io.elastest.ems.test.base;
 
 import static java.lang.System.getProperty;
 import static java.lang.invoke.MethodHandles.lookup;
@@ -65,7 +65,7 @@ import io.github.bonigarcia.wdm.ChromeDriverManager;
 import io.github.bonigarcia.wdm.FirefoxDriverManager;
 
 // Copy-pasted from ETM e2e at 17/12/2018
-public class EusBaseTest {
+public class EmsBaseTest {
     protected final Logger log = getLogger(lookup().lookupClass());
 
     protected String tormUrl = "http://172.17.0.1:37000/"; // local by default
