@@ -1,4 +1,4 @@
-package io.elastest.eus.test.base;
+package io.elastest.ems.test.base;
 
 import java.nio.charset.StandardCharsets;
 

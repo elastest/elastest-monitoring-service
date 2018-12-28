@@ -14,7 +14,7 @@
  * limitations under the License.
  *
  */
-package io.elastest.eus.test.e2e;
+package io.elastest.ems.test.e2e;
 
 import static io.github.bonigarcia.BrowserType.CHROME;
 import static java.lang.invoke.MethodHandles.lookup;
@@ -37,7 +37,7 @@ import org.openqa.selenium.remote.RemoteWebDriver;
 import org.openqa.selenium.support.ui.WebDriverWait;
 import org.slf4j.Logger;
 
-import io.elastest.eus.test.base.EusBaseTest;
+import io.elastest.ems.test.base.EmsBaseTest;
 import io.github.bonigarcia.BrowserType;
 import io.github.bonigarcia.DockerBrowser;
 import io.github.bonigarcia.SeleniumExtension;
@@ -48,7 +48,7 @@ import io.github.bonigarcia.SeleniumExtension;
 @Tag("e2e")
 @DisplayName("E2E tests of EMS through TORM")
 @ExtendWith(SeleniumExtension.class)
-public class EusTJobE2eTest extends EusBaseTest {
+public class EmsTJobE2eTest extends EmsBaseTest {
     final Logger log = getLogger(lookup().lookupClass());
     String projectName = "EMSe2e";
 
