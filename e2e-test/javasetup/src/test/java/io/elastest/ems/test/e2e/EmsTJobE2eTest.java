@@ -109,6 +109,6 @@ public class EmsTJobE2eTest extends EmsBaseTest {
         waitEus.until(visibilityOfElementLocated(eusCard));*/
 
         // and check its result
-        this.checkFinishTJobExec(driver, 220, "SUCCESS", false);
+        this.checkFinishTJobExec(driver, 400, "SUCCESS", false);
     }
 }
