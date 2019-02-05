@@ -181,9 +181,8 @@ public class EmsBaseTest {
 
     protected void navigateToRoot(WebDriver driver) {
         log.info("Navigating to Root Path (/)");
-        driver.findElement(By.xpath(
-                "//*[@id='main_nav']/div/md-toolbar/div/md-toolbar-row/span"))
-                .click();
+        driver.findElement(
+                By.xpath("//*[@id=\"main_nav\"]/div/mat-toolbar/span")).click();
     }
 
     protected void navigateToProjects(WebDriver driver) {
@@ -403,7 +402,7 @@ public class EmsBaseTest {
 
     protected String getProjectXpathFromProjectPage(String projectName) {
         String xpath = getProjectsTableXpathFromProjectPage();
-        xpath += "//*/td/div[text()='" + projectName + "']";
+        xpath += "//*/td/div/div[text()='" + projectName + "']";
 
         return xpath;
     }
@@ -632,13 +631,12 @@ public class EmsBaseTest {
 
     protected void selectItem(WebDriver driver, String item,
             String selectDesc) {
-        String sutSelectXpath = "//md-select/div/span[contains(string(), '"
-                + selectDesc + "')]";
+        String sutSelectXpath = "//*[@placeholder='" + selectDesc + "']";
         this.getElementByXpath(driver, sutSelectXpath).click();
 
         if (item != null) {
             this.getElementByXpath(driver,
-                    "//md-option[contains(string(), '" + item + "')]").click();
+                    "//*/span[contains(string(), '" + item + "')]").click();
         }
     }
 
@@ -715,7 +713,7 @@ public class EmsBaseTest {
 
     protected String getTJobXpathFromProjectPage(String tJobName) {
         String xpath = getTJobsTableXpathFromProjectPage();
-        xpath += "//*/td/span[text()='" + tJobName + "']";
+        xpath += "//*/td/div/span[text()='" + tJobName + "']";
 
         return xpath;
     }
@@ -765,16 +763,16 @@ public class EmsBaseTest {
         }
 
         // Select SuT
-        String sutSelectXpath = "//md-select/div/span[contains(string(), 'Select a SuT')]";
+        String sutSelectXpath = "//mat-select/div/div/span[contains(string(), 'Select a SuT')]";
         this.getElementByXpath(driver, sutSelectXpath).click();
 
         if (sutName != null) {
             this.getElementByXpath(driver,
-                    "//md-option[contains(string(), '" + sutName + "')]")
+                    "//mat-option/span[contains(string(), '" + sutName + "')]")
                     .click();
         } else {
             this.getElementByXpath(driver,
-                    "//md-option[contains(string(), 'None')]").click();
+                    "//mat-option/span[contains(string(), 'None')]").click();
         }
 
         // Image and commands
@@ -847,7 +845,7 @@ public class EmsBaseTest {
             // (only EUS at moment has a subconfig: webRtcStats)
 
             for (Entry<String, List<String>> tss : tssMap.entrySet()) {
-                this.getElementById(driver, "input-service" + tss.getKey(),
+                this.getElementById(driver, "service" + tss.getKey() + "-input",
                         true).sendKeys(Keys.SPACE);
 
                 if (tss.getValue() != null && tss.getValue().size() > 0) {
@@ -857,7 +855,7 @@ public class EmsBaseTest {
 
                     for (String subConfig : tss.getValue()) {
                         this.getElementById(driver,
-                                "input-config" + subConfig + "Checkbox", true)
+                                "config" + subConfig + "Checkbox-input", true)
                                 .sendKeys(Keys.SPACE);
                     }
                 }
@@ -916,7 +914,7 @@ public class EmsBaseTest {
 
         log.info("Create and wait for instance");
         getElementById(driver, "create_instance").click();
-        
+
         log.info("Navigate for instance view");
         getElementByXpath(driver, "//button[@title='View Service Detail']", 240)
                 .click();
@@ -938,7 +936,7 @@ public class EmsBaseTest {
         log.info("Wait for Execution ends");
         waitEnd.until(invisibilityOfElementLocated(By.id("runningSpinner")));
 
-        WebDriverWait waitResult = new WebDriverWait(driver, 25);
+        WebDriverWait waitResult = new WebDriverWait(driver, timeout);
 
         log.info("Check finish Execution status. Expected result {}",
                 expectedResult);
@@ -1036,8 +1034,8 @@ public class EmsBaseTest {
         int numRetries = 1;
         do {
             driver.findElement(By.className("mat-select-trigger")).click();
-            select = By
-                    .xpath("//md-option[contains(string(), '" + option + "')]");
+            select = By.xpath(
+                    "//mat-option/span[contains(string(), '" + option + "')]");
             try {
                 waitElement.until(visibilityOfElementLocated(select));
                 log.info("Element {} already available", select);
@@ -1061,5 +1059,17 @@ public class EmsBaseTest {
             Thread.sleep(millis);
         } catch (InterruptedException e) {
         }
+    }
+
+    protected void deleteTSSInstance(WebDriver driver) {
+        // Delete TSS
+        WebElement tssId = getElementByXpath(driver,
+                "//*[@id=\"tss-instances\"]/div/table/tbody/tr[1]/td[1]/span");
+        log.info("TSS session id: {}", tssId.getText());
+        By deleteServices = By.id("deleteService-" + tssId.getText().trim());
+        driver.findElement(deleteServices).click();
+        log.debug("Wait for Test Support Service to be stopped");
+        WebDriverWait waitEnd = new WebDriverWait(driver, 120);
+        waitEnd.until(invisibilityOfElementLocated(deleteServices));
     }
 }
