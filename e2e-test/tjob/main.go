@@ -138,8 +138,8 @@ func stress() {
 // write as it downloads and not load the whole file into memory.
 func DownloadFile(url string) {
 
-  fmt.Println(`Executing: "sh", "-c", "curl -sS "+url+">/dev/null"`)
-  cmd := exec.Command("sh", "-c", "curl -sS "+url+">/dev/null")
+  //fmt.Println(`Executing: "sh", "-c", "curl -sS "`+url+`">/dev/null"`)
+  cmd := exec.Command("sh", "-c", "curl -sS --limit-rate 10M "+url+">/dev/null")
   err := cmd.Run()
   return
 
