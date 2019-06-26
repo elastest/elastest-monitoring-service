@@ -17,7 +17,9 @@ Input  <- _? d:(Declaration*)  EOF {
        return d,nil
        }
 
-Version <- VERSION ver:VersionNum _?  { return ver,nil //TODO, check for version number}
+Version <- VERSION ver:VersionNum _?  {
+  return ver,nil //TODO, check for version number
+}
 
 VersionNum <- ([0-9'.']+) {
   	   return common.Version{string(c.text)},nil
