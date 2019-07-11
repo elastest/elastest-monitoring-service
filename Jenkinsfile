@@ -17,7 +17,9 @@ node('docker') {
             stage "Build images - Package"
                 echo ("Building full version")
                 sh 'docker build --build-arg GIT_COMMIT=$(git rev-parse HEAD) --build-arg COMMIT_DATE=$(git log -1 --format=%cd --date=format:%Y-%m-%dT%H:%M:%S) . -t elastest/ems:latest'
+                sh 'docker tag elastest/ems:latest elastest/ems:1.5.0'
                 def myfullimage = docker.image('elastest/ems:latest');
+                def myfullimage2 = docker.image('elastest/ems:1.5.0');
 
             stage "Run images"
                 myfullimage.run()
@@ -28,6 +30,7 @@ node('docker') {
                     usernameVariable: 'USERNAME', passwordVariable: 'PASSWORD']]) {
                     sh 'docker login -u "$USERNAME" -p "$PASSWORD"'
                     myfullimage.push()
+                    myfullimage2.push()
                 }
         }   
 }
