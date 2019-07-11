@@ -67,14 +67,16 @@ func (o SubscribeManyOk) WriteResponse(rw http.ResponseWriter, producer runtime.
 func (endpoint LocalESEndpoint) getInjectableString(subId string) string {
 	template := `
 # SUBID %s
-  elasticsearch {
-    hosts => ["%s:%v"]
-    user => %s
-    password => %s
+  if "%s" in [channels] {
+    elasticsearch {
+      hosts => ["%s:%v"]
+      user => %s
+      password => %s
+    }
   }
 # ENDOF %s
 }`
-  return fmt.Sprintf(template, subId, endpoint.IP, endpoint.Port, endpoint.User, endpoint.Password, subId)
+  return fmt.Sprintf(template, subId, endpoint.Channel, endpoint.IP, endpoint.Port, endpoint.User, endpoint.Password, subId)
 }
 
 func (endpoint LocalRMQEndpoint) getInjectableString(subId string) string {
