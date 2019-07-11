@@ -1,0 +1,29 @@
+# img: pstauffer/curl:latest
+# commands:
+# env 
+event_i=0
+function sendEv() {
+  ans=$(curl -s -H "Content-Type: application/json" -XPOST "${ET_EMS_HTTPINEVENTS_API}" -d "{\"i${event_i}\":0, \"channels\":[\"eschan\"]}")
+  echo Answer of event: $ans
+  event_i=$((event_i+1))
+}
+echo Sending event with no subscriber. Nothing should happen
+sendEv
+sleep 5
+# Adding elasticsearch endpoint
+ESID=$(curl -H "Content-Type: application/json" -XPOST "${ET_EMS_API}subscriber/elasticsearch" -d "{\"ip\":\"${ET_SUT_HOST}\", \"port\":${ET_SUT_PORT}, \"user\":\"esuser\", \"password\":\"espass\", \"channel\":\"eschan\"}")
+ESID=$(echo $ESID | sed 's/\"//g')
+echo $ESID
+echo Sending event with subscriber. Something should happen
+sendEv
+sleep 5
+# Removing elasticsearch endpoint
+curl -XDELETE "http://beastest.software.imdea.org:8888/subscriber/$ESID"
+echo Sending event with no subscriber. Nothing should happen
+sendEv
+sleep 50
+# while :
+# do
+#   echo aqui $i
+#   sleep 1
+# done

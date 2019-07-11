@@ -1,0 +1,10 @@
+# img: elasticsearch:7.2.0
+# commands:
+cd /usr/share/elasticsearch
+cat <<EOT > config/elasticsearch.yml
+cluster.name: "docker-cluster"
+network.host: 0.0.0.0
+discovery.type: single-node
+EOT
+/usr/local/bin/docker-entrypoint.sh
+# wait for http port 9200
