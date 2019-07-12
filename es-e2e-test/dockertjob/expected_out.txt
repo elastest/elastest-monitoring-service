@@ -1,0 +1,11 @@
+Sending event with no subscriber. Nothing should happen
+Adding elasticsearch endpoint
+Sending event with subscriber. Something should happen
+Received event
+Received event
+Received event
+Received event
+Received event
+Removing elasticsearch endpoint
+Sending event with no subscriber. Nothing should happen
+Done
