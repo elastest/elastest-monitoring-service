@@ -78,7 +78,7 @@ public class EmsTJobE2eTest extends EmsBaseTest {
             String image = "elasticsearch:7.2.0";
             String commands = "cd /usr/share/elasticsearch\n cat <<EOT > config/elasticsearch.yml\n cluster.name: \"docker-cluster\"\n network.host: 0.0.0.0\n discovery.type: single-node\n EOT\n /usr/local/bin/docker-entrypoint.sh";
             String sutPort = "9200";
-            createNewSutDeployedByElastestWithCommands(driver, commands, DEFAULT, sutName, sutDesc, image, sutPort, null, false);
+            createNewSutDeployedByElastestWithCommands(driver, commands, EmsBaseTest.DEFAULT, sutName, sutDesc, image, sutPort, null, false);
         }
 
     }
