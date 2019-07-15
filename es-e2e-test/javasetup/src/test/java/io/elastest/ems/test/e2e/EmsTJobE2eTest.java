@@ -98,7 +98,7 @@ public class EmsTJobE2eTest extends EmsBaseTest {
             String tJobTestResultPath = "";
             String tJobImage = "imdeasoftware/ese2e";
             createNewTJob(driver, tJobName, tJobTestResultPath, sutName,
-                    tJobImage, true, null, null, tssMap, null);
+                    tJobImage, false, "/check.sh", null, tssMap, null);
         }
         // Run the TJob
         runTJobFromProjectPage(driver, tJobName);
