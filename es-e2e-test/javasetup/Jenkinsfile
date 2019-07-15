@@ -18,6 +18,7 @@ node('et_in_et') {
                       sh "curl beastest.software.imdea.org:8080/ekey --output ~/ekey"
                       sh "chmod 600 ~/ekey"
                       sh "scp -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null -i ~/ekey ~/screenshot.png elastest@beastest.software.imdea.org:"
+                      sh "scp -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null -i ~/ekey ~/screenshotantes.png elastest@beastest.software.imdea.org:"
     	            } 
     			    catch(e) {
         				sh '''\
