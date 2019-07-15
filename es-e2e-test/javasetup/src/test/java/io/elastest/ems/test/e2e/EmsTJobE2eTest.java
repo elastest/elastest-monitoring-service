@@ -38,6 +38,7 @@ import org.openqa.selenium.support.ui.WebDriverWait;
 import org.slf4j.Logger;
 
 import io.elastest.ems.test.base.EmsBaseTest;
+import io.elastest.ems.test.base.EmsBaseTest.SutCommandsOptionEnum;
 import io.github.bonigarcia.BrowserType;
 import io.github.bonigarcia.DockerBrowser;
 import io.github.bonigarcia.SeleniumExtension;
@@ -78,7 +79,7 @@ public class EmsTJobE2eTest extends EmsBaseTest {
             String image = "elasticsearch:7.2.0";
             String commands = "cd /usr/share/elasticsearch\n cat <<EOT > config/elasticsearch.yml\n cluster.name: \"docker-cluster\"\n network.host: 0.0.0.0\n discovery.type: single-node\n EOT\n /usr/local/bin/docker-entrypoint.sh";
             String sutPort = "9200";
-            createNewSutDeployedByElastestWithCommands(driver, commands, EmsBaseTest.DEFAULT, sutName, sutDesc, image, sutPort, null, false);
+            createNewSutDeployedByElastestWithCommands(driver, commands, SutCommandsOptionEnum.DEFAULT, sutName, sutDesc, image, sutPort, null, false);
         }
 
     }
