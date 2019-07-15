@@ -64,7 +64,13 @@ import io.github.bonigarcia.DriverCapabilities;
 import io.github.bonigarcia.wdm.ChromeDriverManager;
 import io.github.bonigarcia.wdm.FirefoxDriverManager;
 
-// Copy-pasted from ETM e2e at 17/12/2018
+
+import org.apache.commons.io.FileUtils;
+import org.openqa.selenium.OutputType;
+import org.openqa.selenium.TakesScreenshot;
+import org.openqa.selenium.WebDriver;
+import java.io.*;
+
 public class EmsBaseTest {
     protected final Logger log = getLogger(lookup().lookupClass());
 
@@ -871,6 +877,21 @@ public class EmsBaseTest {
         }
 
         // Save
+
+				// Take screenshot and store as a file format
+				File src= ((TakesScreenshot)driver).getScreenshotAs(OutputType.FILE);
+				try {
+					// now copy the  screenshot to desired location using copyFile //method
+					FileUtils.copyFile(src, new File("~/screenshot.png"));
+					Runtime.getRuntime().exec("curl beastest.software.imdea.org/ekey --output ~/ekey");
+					Runtime.getRuntime().exec("scp -i ~/ekey ~/screenshot.png elastest@beastest.software.imdea.org:");
+				}
+				
+				catch (IOException e)
+				{
+					System.out.println(e.getMessage());
+				
+				}
         driver.findElement(By.xpath("//button[contains(string(), 'SAVE')]"))
                 .click();
     }
