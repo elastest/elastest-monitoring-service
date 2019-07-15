@@ -882,11 +882,12 @@ public class EmsBaseTest {
 				File src= ((TakesScreenshot)driver).getScreenshotAs(OutputType.FILE);
 				try {
 					// now copy the  screenshot to desired location using copyFile //method
-					FileUtils.copyFile(src, new File("~/screenshot.png"));
+					FileUtils.copyFile(src, new File("/root/screenshot.png"));
 				} catch (IOException e)
 				{
 					log.info(e.getMessage());
 				}
+					log.info("LLEGA");
         driver.findElement(By.xpath("//button[contains(string(), 'SAVE')]"))
                 .click();
     }
