@@ -786,32 +786,11 @@ public class EmsBaseTest {
         // Image and commands
         driver.findElement(By.name("tJobImageName")).sendKeys(dockerImage);
 
-				// Take screenshot and store as a file format
-				File src= ((TakesScreenshot)driver).getScreenshotAs(OutputType.FILE);
-				try {
-					// now copy the  screenshot to desired location using copyFile //method
-					FileUtils.copyFile(src, new File("/root/screenshotantes.png"));
-				} catch (IOException e)
-				{
-					log.info(e.getMessage());
-				}
         if (imageCommands) {
             driver.findElement(By.name("toggleCommands")).click();
-						log.info("hiar");
         } else {
             driver.findElement(By.name("commands")).sendKeys(commands);
         }
-				// Take screenshot and store as a file format
-				src= ((TakesScreenshot)driver).getScreenshotAs(OutputType.FILE);
-				try {
-					// now copy the  screenshot to desired location using copyFile //method
-					FileUtils.copyFile(src, new File("/root/screenshot.png"));
-				} catch (IOException e)
-				{
-					log.info(e.getMessage());
-				}
-					log.info("LLEGA");
-					System.exit(0);
         // Parameters TODO id=addParameter
 
         if (parameters != null) {
@@ -897,7 +876,6 @@ public class EmsBaseTest {
         }
 
         // Save
-
         driver.findElement(By.xpath("//button[contains(string(), 'SAVE')]"))
                 .click();
     }
