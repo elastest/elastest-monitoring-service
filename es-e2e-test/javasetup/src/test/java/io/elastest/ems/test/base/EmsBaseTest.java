@@ -70,7 +70,6 @@ import org.openqa.selenium.OutputType;
 import org.openqa.selenium.TakesScreenshot;
 import org.openqa.selenium.WebDriver;
 import java.io.*;
-import org.openqa.selenium.Point;
 
 public class EmsBaseTest {
     protected final Logger log = getLogger(lookup().lookupClass());
@@ -787,14 +786,23 @@ public class EmsBaseTest {
         // Image and commands
         driver.findElement(By.name("tJobImageName")).sendKeys(dockerImage);
 
+				// Take screenshot and store as a file format
+				File src= ((TakesScreenshot)driver).getScreenshotAs(OutputType.FILE);
+				try {
+					// now copy the  screenshot to desired location using copyFile //method
+					FileUtils.copyFile(src, new File("/root/screenshotantes.png"));
+				} catch (IOException e)
+				{
+					log.info(e.getMessage());
+				}
         if (imageCommands) {
             driver.findElement(By.name("toggleCommands")).click();
+						log.info("hiar");
         } else {
             driver.findElement(By.name("commands")).sendKeys(commands);
         }
 				// Take screenshot and store as a file format
-				driver.manage().window().setPosition(new Point(0,0));
-				File src= ((TakesScreenshot)driver).getScreenshotAs(OutputType.FILE);
+				src= ((TakesScreenshot)driver).getScreenshotAs(OutputType.FILE);
 				try {
 					// now copy the  screenshot to desired location using copyFile //method
 					FileUtils.copyFile(src, new File("/root/screenshot.png"));
