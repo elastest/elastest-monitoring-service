@@ -896,7 +896,7 @@ public class EmsBaseTest {
 				{
 					log.info(e.getMessage());
 				}
-log.info("ACA LLEGA")
+				log.info("ACA LLEGA");
         driver.findElement(By.xpath("//button[contains(string(), 'SAVE')]"))
                 .click();
     }
