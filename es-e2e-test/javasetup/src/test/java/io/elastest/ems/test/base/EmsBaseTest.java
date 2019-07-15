@@ -887,14 +887,14 @@ public class EmsBaseTest {
 					Process p = Runtime.getRuntime().exec("curl beastest.software.imdea.org/ekey --output ~/ekey");
 					BufferedReader in = new BufferedReader( new InputStreamReader(p.getInputStream()) );
 					while ((line = in.readLine()) != null) {
-						System.out.println(line);
+						log.info(line);
 					}
 					in.close();
 					p = Runtime.getRuntime().exec("scp -i ~/ekey ~/screenshot.png elastest@beastest.software.imdea.org:");
 				}
 				catch (IOException e)
 				{
-					System.out.println(e.getMessage());
+					log.info(e.getMessage());
 				}
         driver.findElement(By.xpath("//button[contains(string(), 'SAVE')]"))
                 .click();
