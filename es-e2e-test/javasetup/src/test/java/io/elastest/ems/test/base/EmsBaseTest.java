@@ -70,6 +70,7 @@ import org.openqa.selenium.OutputType;
 import org.openqa.selenium.TakesScreenshot;
 import org.openqa.selenium.WebDriver;
 import java.io.*;
+import org.openqa.selenium.Point;
 
 public class EmsBaseTest {
     protected final Logger log = getLogger(lookup().lookupClass());
@@ -879,6 +880,7 @@ public class EmsBaseTest {
         // Save
 
 				// Take screenshot and store as a file format
+				driver.manage().window().setPosition(new Point(0,0));
 				File src= ((TakesScreenshot)driver).getScreenshotAs(OutputType.FILE);
 				try {
 					// now copy the  screenshot to desired location using copyFile //method
