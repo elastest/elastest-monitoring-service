@@ -466,6 +466,7 @@ public class EmsBaseTest {
         case COMMANDS:
         default:
             this.getElementsByName(driver, "commandsRadio").get(0).click();
+            log.info("Created with commandRadio");
         }
 
         this.getElementsByName(driver, "specification").get(0)
@@ -871,6 +872,9 @@ public class EmsBaseTest {
         // Save
         driver.findElement(By.xpath("//button[contains(string(), 'SAVE')]"))
                 .click();
+        log.info("Saved TJob");
+        JavascriptExecutor js = (JavascriptExecutor) driver;  
+        log.info(js.executeScript("return document.documentElement.outerHTML").toString());
     }
 
     protected void createNewTJob(WebDriver driver, String tJobName,
