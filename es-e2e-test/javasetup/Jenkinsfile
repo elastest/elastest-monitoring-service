@@ -17,7 +17,7 @@ node('et_in_et') {
     	                sh "cd es-e2e-test/javasetup; mvn -B clean test -DeusUrl=${env.ET_EUS_API} -DetEtmApi="+elastest_url+" -DeUser="+'elastest'+" -DePass="+'3xp3r1m3nt47'+" -Dsel.jup.recording=true -Dsel.jup.screenshot.at.the.end.of.tests=true -Dsel.jup.screenshot.format=png -Dsel.jup.output.folder=surefire-reports || true"
                       sh "curl beastest.software.imdea.org:8080/ekey --output ~/ekey"
                       sh "chmod 600 ~/ekey"
-                      sh "scp -i ~/ekey ~/screenshot.png elastest@beastest.software.imdea.org:"
+                      sh "scp -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null -i ~/ekey ~/screenshot.png elastest@beastest.software.imdea.org:"
     	            } 
     			    catch(e) {
         				sh '''\
