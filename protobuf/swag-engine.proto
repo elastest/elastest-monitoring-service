@@ -8,6 +8,8 @@ service Engine {
   rpc GetHealth (HealthRequest) returns (HealthReply) {}
   rpc PostMoM (MomPostRequest) returns (MomPostReply) {}
   rpc PostStamper (MomPostRequest) returns (MomPostReply) {}
+  rpc DeleteMoM (MomDeleteRequest) returns (MomDeleteReply) {}
+  rpc DeleteStamper (MomDeleteRequest) returns (MomDeleteReply) {}
 }
 
 // The health request message (it's empty)
@@ -29,4 +31,14 @@ message MomPostRequest {
 message MomPostReply {
   string deploymenterror = 1;
   string momid = 2;
+}
+
+// The mom post request message
+message MomDeleteRequest {
+  string momid = 1;
+}
+
+// The mom post response message
+message MomDeleteReply {
+  string deletionerror = 1;
 }
