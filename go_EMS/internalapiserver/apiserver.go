@@ -43,6 +43,16 @@ func (s *server) PostStamper(ctx context.Context, in *pb.MomPostRequest) (*pb.Mo
     return &pb.MomPostReply{Deploymenterror:"Unrecognized tag "+in.Momtype, Momid:""}, nil
 }
 
+// DeleteMom implements protobuf.DeleteMoM
+func (s *server) DeleteMoM(ctx context.Context, in *pb.MomDeleteRequest) (*pb.MomDeleteReply, error) {
+  return ep.DeleteSignal(in.Momid),nil
+}
+
+// DeleteStamper implements protobuf.DeleteStamper 
+func (s *server) DeleteStamper(ctx context.Context, in *pb.MomDeleteRequest) (*pb.MomDeleteReply, error) {
+  return et.DeleteStamper(in.Momid),nil
+}
+
 func Serve() {
     lis, err := net.Listen("tcp", port)
     if err != nil {

@@ -1,0 +1,4 @@
+At this directory, run
+docker run -it --entrypoint /bin/bash -v $PWD:/ems grpc/go
+Then, inside the container, run:
+cd /ems; protoc --go_out=plugins=grpc:. swag-engine.proto

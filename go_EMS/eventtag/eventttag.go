@@ -33,6 +33,18 @@ func deployRealStamperv01(monitor stamp.Filters, momid int) {
     tagMonitors[momid] = monitor
 }
 
+func DeleteStamper(momidstr string) *pb.MomDeleteReply {
+  momid, err := strconv.Atoi(momidstr);
+  if err != nil {
+    return &pb.MomDeleteReply{Deletionerror:err.Error()}
+  }
+  if _,ok := tagMonitors[momid]; ok {
+    delete(tagMonitors, momid)
+    return &pb.MomDeleteReply{Deletionerror:""}
+  }
+  return &pb.MomDeleteReply{Deletionerror:"No such id"}
+}
+
 func TagEvent(ev *dt.Event) {
     checkDefs := []stamp.Filter{}
     tagAsWS := true

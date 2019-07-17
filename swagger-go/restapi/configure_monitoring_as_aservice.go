@@ -46,10 +46,10 @@ func configureAPI(api *operations.MonitoringAsAServiceAPI) http.Handler {
 	api.XMLProducer = runtime.XMLProducer()
 
 	api.MonitoringMachineDeleteMoMHandler = monitoring_machine.DeleteMoMHandlerFunc(func(params monitoring_machine.DeleteMoMParams) middleware.Responder {
-		return middleware.NotImplemented("operation monitoring_machine.DeleteMoM has not yet been implemented")
+		return implementation.DeleteMoM(params)
 	})
 	api.StamperDeleteStamperHandler = stamper.DeleteStamperHandlerFunc(func(params stamper.DeleteStamperParams) middleware.Responder {
-		return middleware.NotImplemented("operation stamper.DeleteStamper has not yet been implemented")
+		return implementation.DeleteStamper(params)
 	})
 	api.FlushFlushHandler = flush.FlushHandlerFunc(func(params flush.FlushParams) middleware.Responder {
 		return middleware.NotImplemented("operation flush.Flush has not yet been implemented")
@@ -73,7 +73,7 @@ func configureAPI(api *operations.MonitoringAsAServiceAPI) http.Handler {
 		return middleware.NotImplemented("operation stamper.GetStamperByID has not yet been implemented")
 	})
 	api.MonitoringMachinePostMoMHandler = monitoring_machine.PostMoMHandlerFunc(func(params monitoring_machine.PostMoMParams) middleware.Responder {
-		return implementation.PostMOM(params)
+		return implementation.PostMoM(params)
 	})
 	api.StamperPostStamperHandler = stamper.PostStamperHandlerFunc(func(params stamper.PostStamperParams) middleware.Responder {
 		return implementation.PostStamper(params)
