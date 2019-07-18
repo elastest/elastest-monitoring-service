@@ -82,20 +82,22 @@ return fmt.Sprintf(template, subId, endpoint.Channel, endpoint.IP, endpoint.Port
 func (endpoint LocalRMQEndpoint) getInjectableString(subId string) string {
   template := `
   # SUBID %s
-  rabbitmq {
-    key => "%s"
-    exchange => "%s"
-    exchange_type => "%s"
-    user => "%s"
-    password => "%s"
-    host => "%s"
-    port => %v
-    durable => true
-    persistent => true
+  if "%s" in [channels] {
+    rabbitmq {
+      key => "%s"
+      exchange => "%s"
+      exchange_type => "%s"
+      user => "%s"
+      password => "%s"
+      host => "%s"
+      port => %v
+      durable => true
+      persistent => true
+    }
   }
   # ENDOF %s
 }`
-return fmt.Sprintf(template, subId, endpoint.Key, endpoint.Exchange, endpoint.ExchangeType, endpoint.User, endpoint.Password, endpoint.IP, endpoint.Port, subId)
+return fmt.Sprintf(template, subId, endpoint.Channel, endpoint.Key, endpoint.Exchange, endpoint.ExchangeType, endpoint.User, endpoint.Password, endpoint.IP, endpoint.Port, subId)
 }
 
 func injectNewOutput(injStr string) {
