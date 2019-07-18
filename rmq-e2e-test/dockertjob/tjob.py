@@ -15,13 +15,13 @@ def sendEv(evdata):
 event_i=0
 def eventsBurst():
   global event_i
-  simpleoutdata = {"index": event_i, "channels": ["outchan"]}
+  simpleoutdata = {"index": event_i, "channels": ["#outchan"]}
   event_i+=1
-  simpleindata = {"index": event_i, "channels": ["inchan"]}
+  simpleindata = {"index": event_i, "channels": ["#inchan"]}
   event_i+=1
-  filterinilldata = {"index": event_i, "payload": 1, "channels": ["filterinchan"]}
+  filterinilldata = {"index": event_i, "payload": 1, "channels": ["#filterinchan"]}
   event_i+=1
-  filterindata = {"index": event_i, "payload": 10, "channels": ["filterinchan"]}
+  filterindata = {"index": event_i, "payload": 10, "channels": ["#filterinchan"]}
   event_i+=1
   sendEv(simpleoutdata)
   sendEv(simpleindata)
@@ -37,7 +37,7 @@ evdata = {
         "port": 5672,
         "user": "user",
         "password": "password",
-        "channel": "chan",
+        "channel": "#outchan",
         "key": "thekey",
         "exchange_type": "fanout"
         }
