@@ -1,0 +1,15 @@
+Connected to RabbitMQ
+Adding rabbitmq endpoint
+Deploying MoM and Stamper
+Sending event with stamper and mom
+ [x] Received input event 0
+ [x] Received input event 1
+ [x] Received generated event with value 10
+Removing MoM
+Sending event with no mom
+ [x] Received input event 4
+ [x] Received input event 5
+Removing stamper
+Sending event with no mom or stamper
+ [x] Received input event 8
+Done

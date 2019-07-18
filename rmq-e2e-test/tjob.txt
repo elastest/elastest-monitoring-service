@@ -1,0 +1,2 @@
+# img: imdeasoftware/rmqe2e (built from directory)
+# execute docker image command

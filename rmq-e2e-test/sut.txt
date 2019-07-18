@@ -1,0 +1,6 @@
+# img: rabbitmq:3
+# no commands
+# Parameters:
+# RABBITMQ_DEFAULT_USER=user
+# RABBITMQ_DEFAULT_PASS=password
+# wait for http port 5672
