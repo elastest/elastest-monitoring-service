@@ -1,0 +1,6 @@
+pred isfilter := e.tag(#filterinchan)
+
+stream num payload := if isfilter then e.getnum(payload)
+stream bool highpayload := payload > 5
+
+trigger highpayload do emit payload on #outchan
