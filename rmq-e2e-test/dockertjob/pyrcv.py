@@ -1,9 +1,11 @@
 #!/usr/bin/env python
 import sys
 import pika
+import json
+import os
 
 credentials = pika.PlainCredentials('user', 'password')
-parameters = pika.ConnectionParameters('localhost',
+parameters = pika.ConnectionParameters(os.environ["ET_SUT_HOST"],
                                        5672,
                                        '/',
                                        credentials)
@@ -13,7 +15,11 @@ channel = connection.channel()
 channel.queue_declare(queue='thekey')
 
 def callback(ch, method, properties, body):
-    print(" [x] Received %r" % body)
+    res = json.loads(body)
+    if "index" in res:
+        print(" [x] Received input event %r" % res["index"])
+    else:
+        print(" [x] Received generated event with value %r" % res["value"])
     sys.stdout.flush()
 
 channel.basic_consume(

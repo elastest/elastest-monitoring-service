@@ -47,14 +47,12 @@ url = os.environ["ET_EMS_API"] + "MonitoringMachine/signals0.1"
 with open('momdef.txt','rb') as payload:
     momid = requests.post(url, headers=plainheaders, data=payload).text
 momid=momid.replace('"', '')
-print(momid)
 url = os.environ["ET_EMS_API"] + "stamper/tag0.1"
 with open('stamperdef.txt','rb') as payload:
     stamperid = requests.post(url, headers=plainheaders, data=payload).text
 stamperid=stamperid.replace('"', '')
-print(stamperid)
 time.sleep(5)
-print("Sending event with stamper and mom. Three should happen")
+print("Sending event with stamper and mom")
 sys.stdout.flush()
 eventsBurst()
 time.sleep(5)
@@ -65,18 +63,18 @@ url = os.environ["ET_EMS_API"] + "MonitoringMachine/"+momid
 # requests.delete(url)
 os.system('curl -o /dev/null -s -XDELETE '+url)
 time.sleep(5)
-print("Sending event with no mom. Two should happen")
+print("Sending event with no mom")
 sys.stdout.flush()
 eventsBurst()
 time.sleep(5)
 # Removing stamper
-print("Removing MoM")
+print("Removing stamper")
 sys.stdout.flush()
 url = os.environ["ET_EMS_API"] + "stamper/"+stamperid
 # requests.delete(url)
 os.system('curl -o /dev/null -s -XDELETE '+url)
 time.sleep(5)
-print("Sending event with no mom or stamper. One should happen")
+print("Sending event with no mom or stamper")
 sys.stdout.flush()
 eventsBurst()
 time.sleep(5)
