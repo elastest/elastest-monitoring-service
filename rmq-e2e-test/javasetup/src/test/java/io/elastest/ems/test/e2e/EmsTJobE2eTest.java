@@ -78,10 +78,7 @@ public class EmsTJobE2eTest extends EmsBaseTest {
             String sutDesc = "RabbitMQ";
             String image = "rabbitmq:3";
             String sutPort = "5672";
-            Map<String, String> params = new HashMap<String, String>();
-            params.put("RABBITMQ_DEFAULT_USER","user");
-            params.put("RABBITMQ_DEFAULT_PASS","password");
-            createNewSutDeployedByElastestWithImage(driver, sutName, sutDesc, image, sutPort, params, false);
+            createNewSutDeployedByElastestWithImage(driver, sutName, sutDesc, image, sutPort, null, false);
         }
 
     }
@@ -98,7 +95,7 @@ public class EmsTJobE2eTest extends EmsBaseTest {
         String tJobName = "EMS e2e RMQ tjob";
         if (!etTJobExistsIntoProject(driver, projectName, tJobName)) {
             String tJobTestResultPath = "";
-            String tJobImage = "imdeasoftware/rmqe2e";
+            String tJobImage = "imdeasoftware/rmqe2e:1.0";
             createNewTJob(driver, tJobName, tJobTestResultPath, sutName,
                     tJobImage, false, "/check.sh", null, tssMap, null);
         }

@@ -35,8 +35,8 @@ url = os.environ["ET_EMS_API"] + "subscriber/rabbitmq"
 evdata = {
         "ip" : os.environ["ET_SUT_HOST"],
         "port": 5672,
-        "user": "user",
-        "password": "password",
+        "user": "guest",
+        "password": "guest",
         "channel": "#outchan",
         "key": "thekey",
         "exchange_type": "fanout"

@@ -4,7 +4,7 @@ import pika
 import json
 import os
 
-credentials = pika.PlainCredentials('user', 'password')
+credentials = pika.PlainCredentials('guest', 'guest')
 parameters = pika.ConnectionParameters(os.environ["ET_SUT_HOST"],
                                        5672,
                                        '/',
