@@ -47,11 +47,11 @@ import io.github.bonigarcia.SeleniumExtension;
  * Check that the EMS works properly together with a TJob.
  */
 @Tag("e2e")
-@DisplayName("ES E2E tests of EMS through TORM")
+@DisplayName("RMQ E2E tests of EMS through TORM")
 @ExtendWith(SeleniumExtension.class)
 public class EmsTJobE2eTest extends EmsBaseTest {
     final Logger log = getLogger(lookup().lookupClass());
-    String projectName = "EMSe2eES";
+    String projectName = "EMSe2eRMQ";
 
     private static final Map<String, List<String>> tssMap;
     static {
@@ -66,7 +66,7 @@ public class EmsTJobE2eTest extends EmsBaseTest {
         }
     }
 
-    private String sutName = "EMSe2eESsut";
+    private String sutName = "EMSe2eRMQsut";
 
     void createProjectAndSut(WebDriver driver) throws Exception {
         navigateToTorm(driver);
@@ -75,11 +75,13 @@ public class EmsTJobE2eTest extends EmsBaseTest {
         }
         if (!etSutExistsIntoProject(driver, projectName, sutName)) {
             // Create SuT
-            String sutDesc = "Elasticsearch";
-            String image = "elasticsearch:7.2.0";
-            String commands = "cd /usr/share/elasticsearch\ncat <<EOT > config/elasticsearch.yml\ncluster.name: \"docker-cluster\"\nnetwork.host: 0.0.0.0\ndiscovery.type: single-node\nEOT\n/usr/local/bin/docker-entrypoint.sh";
-            String sutPort = "9200";
-            createNewSutDeployedByElastestWithCommands(driver, commands, SutCommandsOptionEnum.IN_DOCKER_COMPOSE, sutName, sutDesc, image, sutPort, null, false);
+            String sutDesc = "RabbitMQ";
+            String image = "rabbitmq:3";
+            String sutPort = "5672";
+            params = new HashMap<String, String>();
+            params,put("RABBITMQ_DEFAULT_USER","user");
+            params.put("RABBITMQ_DEFAULT_PASS","password");
+            createNewSutDeployedByElastestWithImage(driver, sutName, sutDesc, image, sutPort, params, false);
         }
 
     }
@@ -93,10 +95,10 @@ public class EmsTJobE2eTest extends EmsBaseTest {
         // Setting up the TJob used in the test
         this.createProjectAndSut(driver);
         navigateToETProject(driver, projectName);
-        String tJobName = "EMS e2e ES tjob";
+        String tJobName = "EMS e2e RMQ tjob";
         if (!etTJobExistsIntoProject(driver, projectName, tJobName)) {
             String tJobTestResultPath = "";
-            String tJobImage = "imdeasoftware/ese2e";
+            String tJobImage = "imdeasoftware/rmqe2e";
             createNewTJob(driver, tJobName, tJobTestResultPath, sutName,
                     tJobImage, false, "/check.sh", null, tssMap, null);
         }
