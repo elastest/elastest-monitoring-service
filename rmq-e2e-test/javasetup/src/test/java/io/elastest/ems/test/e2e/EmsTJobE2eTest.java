@@ -78,8 +78,8 @@ public class EmsTJobE2eTest extends EmsBaseTest {
             String sutDesc = "RabbitMQ";
             String image = "rabbitmq:3";
             String sutPort = "5672";
-            params = new HashMap<String, String>();
-            params,put("RABBITMQ_DEFAULT_USER","user");
+            Map<String, String> params = new HashMap<String, String>();
+            params.put("RABBITMQ_DEFAULT_USER","user");
             params.put("RABBITMQ_DEFAULT_PASS","password");
             createNewSutDeployedByElastestWithImage(driver, sutName, sutDesc, image, sutPort, params, false);
         }
