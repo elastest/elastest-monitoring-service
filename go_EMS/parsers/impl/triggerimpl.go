@@ -1,7 +1,6 @@
 package impl
 
 import(
-  "fmt"
   "encoding/json"
   striverdt "gitlab.software.imdea.org/felipe.gorostiaga/striver-go/datatypes"
   parsercommon "github.com/elastest/elastest-monitoring-service/go_EMS/parsers/common"
@@ -41,12 +40,8 @@ func makeTriggerStreams(visitor *MoMToStriverVisitor, predicate parsercommon.Pre
     thens := args[1:len(extractVals)+1]
     var ret map[string]interface{} = nil
     json.Unmarshal(templatebytes, &ret)
-    fmt.Println(string(templatebytes))
-    fmt.Println(ret)
     if theEvalVisitor.Result {
       for i, field := range extractFields {
-        fmt.Println(i)
-        fmt.Println(field)
         then := thens[i]
         if then.IsSet {
           ret[field]=then.Val.(striverdt.EvPayload).Val
