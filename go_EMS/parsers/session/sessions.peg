@@ -182,7 +182,7 @@ Trigger <-TRIGGER p:Predicate DO a:Action _? {
 	return newTrigger(p,a),nil
 }
 
-Action <- EMIT n:Name ON t:Tag _? {
+Action <- EMIT n:(Name/BackQuotedString) _? ON t:Tag _? {
        return newEmitAction(n,t),nil
 }
 
@@ -217,10 +217,15 @@ HasTagPredicate <- "e.tag(" _? t:Tag _? ")" _? {
 		return common.NewPredExpr(pred),nil
 }
 
-QuotedString <- ('"'(([^'"''\\']*('\\'.[^'"''\\']*)*))'"')  {
+QuotedString <- ('"'(([^'"''\\']*('\\'.[^'"''\\']*)*))'"') {
 	        str := string(c.text)
             return common.NewQuotedString(str),nil
         }
+
+BackQuotedString <- ('`'[^'`']*'`') {
+  str := string(c.text)
+  return common.NewBackQuotedString(str),nil
+}
 	
 JSONPath <- ([a-zA-Z0-9]+'*'?('.'[a-zA-Z0-9'_']+'*'?)*) {
 	 return common.NewPathName(string(c.text)),nil

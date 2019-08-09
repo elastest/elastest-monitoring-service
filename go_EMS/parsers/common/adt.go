@@ -14,6 +14,9 @@ type PathName struct {
 type QuotedString struct {
 	Val string
 }
+type BackQuotedString struct {
+	Val string
+}
 
 type Version struct {
 	Num string
@@ -44,6 +47,10 @@ func NewPathName(s string) (PathName) {
 func NewQuotedString(s string) (QuotedString) {
     s = s[1:len(s)-1]
 	return QuotedString{s}
+}
+func NewBackQuotedString(s string) (BackQuotedString) {
+    s = s[1:len(s)-1]
+	return BackQuotedString{s}
 }
 
 func (qs QuotedString) AcceptComparableStringVisitor(visitor ComparableStringVisitor) {
