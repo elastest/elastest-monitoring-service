@@ -48,7 +48,7 @@ type MoM interface {
 // Action
 //
 type EmitAction struct {
-	StreamName striverdt.StreamName
+  DaTemplate string
 	TagName    common.Tag
 }
 // func (a EmitAction) Sprint() string {
@@ -65,10 +65,16 @@ func (this Trigger) Accept(visitor MoMVisitor) {
 }
 
 func newEmitAction(n, t interface{}) (EmitAction) {
-	name := n.(common.Identifier).Val
 	tag  := t.(common.Tag)
+	name,ok := n.(common.Identifier)
+  var dajson string
+  if ok {
+    dajson = `{"value": "%`+name.Val+`"}`
+  } else {
+    dajson =n.(common.BackQuotedString).Val
+  }
+  return EmitAction{dajson,tag}
 
-	return EmitAction{striverdt.StreamName(name),tag}
 }
 
 func newTrigger(p, a interface{}) (Trigger) {
