@@ -1,6 +1,14 @@
 def elastest_url = ''
 node('et_in_et') {
-    elastest(tss: ['EUS'], surefireReportsPattern: '**/target/surefire-reports/TEST-*.xml', project: 'ETinET', sut: 7) {
+    
+    stage ('set up')
+    
+    def elastest_id_str  = "${ELASTEST_SUT_ID}"
+    echo elastest_id_str
+    def sut_id = elastest_id_str.toInteger() 
+    def elastest_project_name = "${ELASTEST_PROJECT_NAME}"
+    
+    elastest(tss: ['EUS'], surefireReportsPattern: '**/target/surefire-reports/TEST-*.xml', project: elastest_project_name, sut: sut_id) {
         stage ('docker container')
            echo '...STARTING...'
 		   sh 'env'
