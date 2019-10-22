@@ -4,6 +4,7 @@ import(
     dt "github.com/elastest/elastest-monitoring-service/go_EMS/datatypes"
     striverdt "gitlab.software.imdea.org/felipe.gorostiaga/striver-go/datatypes"
     "fmt"
+    "errors"
 //    "strconv"
 )
 
@@ -146,4 +147,16 @@ func NewStringPathExpr(p interface{}) StringPathExpr {
 
 func NewStreamNameExpr(p interface{}) StreamNameExpr {
 	return StreamNameExpr{p.(Identifier).Val}
+}
+
+func NewJSONExpr(suffixes interface{}) (JSONExpr, error) {
+  isuffixes := suffixes.([]interface{})
+  var paths []dt.JSONPath
+  if len(isuffixes)==1 {
+    paths = append(paths, dt.JSONPath(isuffixes[0].(PathName).Val))
+  }
+  if len(isuffixes)>1 {
+	    return JSONExpr{paths},errors.New("Only one level of JSON embedding is supported")
+  }
+  return JSONExpr{paths}, nil
 }

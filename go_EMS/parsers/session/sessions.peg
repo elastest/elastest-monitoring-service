@@ -171,11 +171,19 @@ Builtin <- AVG { return "avg",nil }
 	 / COUNT { return "count",nil }
 	 / SUM { return "sum",nil }
 
-NumPathExpr <- "e.getnum(" _? p:JSONPath _? ")" _? {
+NumPathExpr <- je:JSONExpr ".getnum(" _? p:JSONPath _? ")" _? {
       return common.NewStreamNumExpr(common.NewNumPathExpr(p)),nil		
 }
-StrPathExpr <- "e.getstr" _? '(' _? p:JSONPath _? ")" _? {
+StrPathExpr <- je:JSONExpr ".getstr" _? '(' _? p:JSONPath _? ")" _? {
       return common.NewStringPathExpr(p),nil		
+}
+
+JSONExpr <- "e" suffixes:(JESuffix*) _? {
+  return common.NewJSONExpr(suffixes)
+}
+
+JESuffix <- ".getJSON(" _? p:JSONPath _? ")" {
+    return p,nil
 }
 
 Trigger <-TRIGGER p:Predicate DO a:Action _? {
@@ -194,12 +202,12 @@ Filter <- WHEN p:Predicate DO t:Tag _? {
 
 // NamedPredicate <- n:Name _? { return common.NewNamedPredicate(n),nil  } 
 
-PathExpr <- "e.path" _? "(" _? p:JSONPath _? ")" _? {
+PathExpr <- je:JSONExpr ".path" _? "(" _? p:JSONPath _? ")" _? {
 	 pred := common.NewPathPredicate(p)
          return common.NewPredExpr(pred),nil		
 }
 
-StrcmpPredicate <- "e.strcmp(" _? p:JSONPath _? "," _? cs:ComparableString _?")" _? {
+StrcmpPredicate <- je:JSONExpr ".strcmp(" _? p:JSONPath _? "," _? cs:ComparableString _?")" _? {
 	     pred := common.NewStrCmpPredicate(p,cs)
 	     return common.NewPredExpr(pred),nil
 }
@@ -207,7 +215,7 @@ StrcmpPredicate <- "e.strcmp(" _? p:JSONPath _? "," _? cs:ComparableString _?")"
 ComparableString <- qs:QuotedString { return qs, nil }
                     / n:Name { return n, nil }
 
-StrMatchPredicate <- "e.strmatch(" _? p:JSONPath _? "," _? s:QuotedString _?")" _? {
+StrMatchPredicate <- je:JSONExpr ".strmatch(" _? p:JSONPath _? "," _? s:QuotedString _?")" _? {
 	     pred := common.NewStrMatchPredicate(p,s)
 	     return common.NewPredExpr(pred),nil
 }

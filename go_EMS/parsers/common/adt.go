@@ -38,6 +38,10 @@ type Keyword struct {
 	Val string
 }
 
+type JSONExpr struct {
+  paths []dt.JSONPath
+}
+
 func NewIdentifier(s string) (Identifier) {
 	return Identifier{s}
 }
