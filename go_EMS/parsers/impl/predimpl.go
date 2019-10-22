@@ -60,11 +60,11 @@ func (visitor *EvalVisitor) VisitOrPredicate(p common.OrPredicate) {
 	visitor.Result = rLeft || rRight
 }
 func (visitor *EvalVisitor) VisitPathPredicate(p common.PathPredicate) {
-    _,err := jsonrw.ExtractFromMap(visitor.Event.Payload, dt.JSONPath(p.Path))
+    _,err := jsonrw.ExtractFromMap2(visitor.Event.Payload, p.Path)
 	visitor.Result = err == nil
 }
 func (visitor *EvalVisitor) VisitStrCmpPredicate(p common.StrCmpPredicate) {
-    strif,err := jsonrw.ExtractFromMap(visitor.Event.Payload, dt.JSONPath(p.Path))
+    strif,err := jsonrw.ExtractFromMap2(visitor.Event.Payload, p.Path)
     if err != nil {
         visitor.Result = false
         //fmt.Println("No string found in event ", visitor.Event)
@@ -76,7 +76,7 @@ func (visitor *EvalVisitor) VisitStrCmpPredicate(p common.StrCmpPredicate) {
     //fmt.Println("Comparing",strif, "with", p.Expected, "and the result is", visitor.Result)
 }
 func (visitor *EvalVisitor) VisitStrMatchPredicate(p common.StrMatchPredicate) {
-    strif,err := jsonrw.ExtractFromMap(visitor.Event.Payload, dt.JSONPath(p.Path))
+    strif,err := jsonrw.ExtractFromMap2(visitor.Event.Payload, []dt.JSONPath(p.Path))
     if err != nil {
         visitor.Result = false
         //fmt.Println("No string found in event ", visitor.Event)
@@ -204,13 +204,16 @@ func (visitor *EvalNumVisitor) VisitNumMinusExpr(exp common.NumMinusExpr) {
 	visitor.Result = rLeft - rRight
 }
 func (visitor *EvalNumVisitor) VisitNumPathExpr(exp common.NumPathExpr) {
-    theEvent := visitor. Event
-    valif, err := jsonrw.ExtractFromMap(theEvent.Payload, exp.Path)
+    theEvent := visitor.Event
+    valif, err := jsonrw.ExtractFromMap2(theEvent.Payload, exp.ExtractPaths)
     visitor.Result = -9999999
     if err == nil {
         /* This may not happen: the stream might be guarded by an if statement upper in the AST.
         Perhaps we should panic and fix if statements to not evaluate
         the inner function if the result is false? */
-        visitor.Result = float32(valif.(float64))
+        castval, ok := valif.(float64)
+        if ok {
+          visitor.Result = float32(castval)
+        }
     }
 }
