@@ -47,7 +47,7 @@ func (visitor StreamExprToStriverVisitor) VisitPredExpr(predExp parsercommon.Pre
 }
 func (visitor StreamExprToStriverVisitor) VisitStringPathExpr(exp parsercommon.StringPathExpr) {
     makeGeneralStream([]striverdt.StreamName{}, visitor.streamname, visitor.momvisitor, func(theEvent dt.Event, argsMap map[striverdt.StreamName]interface{}) striverdt.EvPayload {
-        valif, err := jsonrw.ExtractFromMap(theEvent.Payload, exp.Path)
+        valif, err := jsonrw.ExtractFromMap2(theEvent.Payload, exp.Path)
         if err == nil {
             /* This may not happen: the stream might be guarded by an if statement upper in the AST.
             Perhaps we should panic and fix if statements to not evaluate

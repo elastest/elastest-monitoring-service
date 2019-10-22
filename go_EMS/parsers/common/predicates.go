@@ -83,7 +83,7 @@ func (this OrPredicate) Sprint () string {
 	return fmt.Sprintf("%s \\/ %s",this.Left.Sprint(),this.Right.Sprint())
 }
 type PathPredicate struct {
-	Path string
+	Path []dt.JSONPath
 }
 func (this PathPredicate) AcceptPred(visitor PredicateVisitor) {
     visitor.VisitPathPredicate(this)
@@ -92,7 +92,7 @@ func (this PathPredicate) Sprint () string {
 	return fmt.Sprintf("e.Path(%s)",this.Path)
 }
 type StrCmpPredicate struct {
-	Path string
+	Path []dt.JSONPath
 	Expected ComparableString
 }
 func (this StrCmpPredicate) AcceptPred(visitor PredicateVisitor) {
@@ -102,7 +102,7 @@ func (this StrCmpPredicate) Sprint () string {
 	return fmt.Sprintf("e.strcmp(%s,%s)",this.Path,this.Expected)
 }
 type StrMatchPredicate struct {
-	Path string
+	Path []dt.JSONPath
 	Expected string
 }
 func (this StrMatchPredicate) AcceptPred(visitor PredicateVisitor) {
@@ -239,21 +239,21 @@ func NewNotPredicate(p interface{}) (NotPredicate) {
 	return NotPredicate{p.(Predicate)}
 }
 
-func NewPathPredicate(p interface{}) (PathPredicate) {
+func NewPathPredicate(je, p interface{}) (PathPredicate) {
 	path := p.(PathName).Val
-	return PathPredicate{path}
+	return PathPredicate{append(je.(JSONExpr).Paths, dt.JSONPath(path))}
 }
 
-func NewStrCmpPredicate(p,v interface{}) (StrCmpPredicate) {
+func NewStrCmpPredicate(je,p,v interface{}) (StrCmpPredicate) {
 	path     :=p.(PathName).Val
 	expected :=v.(ComparableString)
-	return StrCmpPredicate{path,expected}
+	return StrCmpPredicate{append(je.(JSONExpr).Paths, dt.JSONPath(path)), expected}
 }
 
-func NewStrMatchPredicate(p,v interface{}) (StrMatchPredicate) {
+func NewStrMatchPredicate(je,p,v interface{}) (StrMatchPredicate) {
 	path     :=p.(PathName).Val
 	expected :=v.(QuotedString).Val
-	return StrMatchPredicate{path,expected}
+	return StrMatchPredicate{append(je.(JSONExpr).Paths, dt.JSONPath(path)), expected}
 }
 
 func NewTagPredicate(t interface{}) (TagPredicate) {

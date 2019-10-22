@@ -8,7 +8,7 @@ import (
     //"fmt"
 )
 
-func ExtractFromMap(themap map[string]interface{}, strpath dt.JSONPath) (interface{}, error) {
+func extractFromMap(themap map[string]interface{}, strpath dt.JSONPath) (interface{}, error) {
   path := strings.Split(string(strpath), ".")
   if (len(path) == 0) {
     panic("empty path")
@@ -49,7 +49,7 @@ func ExtractFromMap2(themap map[string]interface{}, strpaths []dt.JSONPath) (int
     if err != nil {
       return nil, err
     }
-    extractedif, err = ExtractFromMap(amap, strpath)
+    extractedif, err = extractFromMap(amap, strpath)
     if err != nil {
       return nil, err
     }

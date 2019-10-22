@@ -175,7 +175,7 @@ NumPathExpr <- je:JSONExpr ".getnum(" _? p:JSONPath _? ")" _? {
       return common.NewStreamNumExpr(common.NewNumPathExpr(je, p)),nil		
 }
 StrPathExpr <- je:JSONExpr ".getstr" _? '(' _? p:JSONPath _? ")" _? {
-      return common.NewStringPathExpr(p),nil		
+      return common.NewStringPathExpr(je, p),nil		
 }
 
 JSONExpr <- "e" suffixes:(JESuffix*) _? {
@@ -203,12 +203,12 @@ Filter <- WHEN p:Predicate DO t:Tag _? {
 // NamedPredicate <- n:Name _? { return common.NewNamedPredicate(n),nil  } 
 
 PathExpr <- je:JSONExpr ".path" _? "(" _? p:JSONPath _? ")" _? {
-	 pred := common.NewPathPredicate(p)
+	 pred := common.NewPathPredicate(je, p)
          return common.NewPredExpr(pred),nil		
 }
 
 StrcmpPredicate <- je:JSONExpr ".strcmp(" _? p:JSONPath _? "," _? cs:ComparableString _?")" _? {
-	     pred := common.NewStrCmpPredicate(p,cs)
+	     pred := common.NewStrCmpPredicate(je, p,cs)
 	     return common.NewPredExpr(pred),nil
 }
 
@@ -216,7 +216,7 @@ ComparableString <- qs:QuotedString { return qs, nil }
                     / n:Name { return n, nil }
 
 StrMatchPredicate <- je:JSONExpr ".strmatch(" _? p:JSONPath _? "," _? s:QuotedString _?")" _? {
-	     pred := common.NewStrMatchPredicate(p,s)
+	     pred := common.NewStrMatchPredicate(je, p,s)
 	     return common.NewPredExpr(pred),nil
 }
 

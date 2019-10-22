@@ -100,7 +100,7 @@ func (this StreamNameExpr) Sprint() string {
 }
 
 type StringPathExpr struct {
-	Path dt.JSONPath
+	Path []dt.JSONPath
 }
 
 func (this StringPathExpr) Accept(visitor StreamExprVisitor) {
@@ -140,9 +140,9 @@ func NewPredExpr(p interface{}) PredExpr {
 	return PredExpr{p.(Predicate)}
 }
 
-func NewStringPathExpr(p interface{}) StringPathExpr {
+func NewStringPathExpr(je, p interface{}) StringPathExpr {
 	path := p.(PathName).Val
-	return StringPathExpr{dt.JSONPath(path)}
+	return StringPathExpr{append(je.(JSONExpr).Paths, dt.JSONPath(path))}
 }
 
 func NewStreamNameExpr(p interface{}) StreamNameExpr {

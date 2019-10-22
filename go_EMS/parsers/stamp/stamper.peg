@@ -122,12 +122,12 @@ AtomicPredicate <- p:PathPredicate _? { return p,nil }
 	  / p:"true" _? { return common.True,nil }
 	  / p:"false" _? { return common.False,nil }
 
-PathPredicate <- "e.path(" _? p:JSONPath _? ")" _? {
-	      return common.NewPathPredicate(p),nil		
+PathPredicate <- je:JSONExpr ".path(" _? p:JSONPath _? ")" _? {
+	      return common.NewPathPredicate(je, p),nil		
 }
 
-StrCmpPredicate <- "e.strcmp(" _? p:JSONPath _? "," _? s:QuotedString _?")" _? {
-	     return common.NewStrCmpPredicate(p,s),nil
+StrCmpPredicate <- je:JSONExpr ".strcmp(" _? p:JSONPath _? "," _? s:QuotedString _?")" _? {
+	     return common.NewStrCmpPredicate(je,p,s),nil
 }
 HasTagPredicate <- "e.tag(" _? t:Tag _? ")" _? {
 		return common.NewTagPredicate(t),nil
