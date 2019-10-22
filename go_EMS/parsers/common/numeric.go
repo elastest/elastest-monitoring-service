@@ -220,7 +220,7 @@ func Flatten(a,b interface{}) StreamNumExpr {
 }
 
 type NumPathExpr struct {
-	Path dt.JSONPath
+  ExtractPaths []dt.JSONPath
 }
 func (this NumPathExpr) AcceptNum(visitor NumExprVisitor) {
     visitor.VisitNumPathExpr(this)
@@ -279,9 +279,9 @@ func (this NumMinusExpr) AcceptNum(visitor NumExprVisitor) {
     visitor.VisitNumMinusExpr(this)
 }
 
-func NewNumPathExpr(p interface{}) (NumPathExpr) {
+func NewNumPathExpr(je, p interface{}) (NumPathExpr) {
 	path := p.(PathName).Val
-	return NumPathExpr{dt.JSONPath(path)}
+	return NumPathExpr{append(je.(JSONExpr).Paths, dt.JSONPath(path))}
 }
 func NewMulExpr(a,b interface{}) NumMulExpr {
 	left,_  := getNumExpr(a)
@@ -315,7 +315,7 @@ func NewFloatLiteralExpr(val float64) FloatLiteralExpr {
 }
 
 func (i NumPathExpr) Sprint() string {
-	return fmt.Sprintf("e.getint(%s)",i.Path)
+	return fmt.Sprintf("e.getint(%s)",i.ExtractPaths)
 }
 
 func (e NumMulExpr) Sprint() string {

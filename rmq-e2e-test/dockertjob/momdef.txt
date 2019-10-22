@@ -1,6 +1,6 @@
 pred isfilter := e.tag(#filterinchan)
 
-stream num payload := if isfilter then e.getnum(payload)
+stream num payload := if isfilter then e.getJSON(innerjson).getnum(payload)
 stream bool highpayload := payload > 5
 stream bool emittable := highpayload /\ isfilter
 

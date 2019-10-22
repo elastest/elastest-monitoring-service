@@ -39,7 +39,7 @@ type Keyword struct {
 }
 
 type JSONExpr struct {
-  paths []dt.JSONPath
+  Paths []dt.JSONPath
 }
 
 func NewIdentifier(s string) (Identifier) {

@@ -172,7 +172,7 @@ Builtin <- AVG { return "avg",nil }
 	 / SUM { return "sum",nil }
 
 NumPathExpr <- je:JSONExpr ".getnum(" _? p:JSONPath _? ")" _? {
-      return common.NewStreamNumExpr(common.NewNumPathExpr(p)),nil		
+      return common.NewStreamNumExpr(common.NewNumPathExpr(je, p)),nil		
 }
 StrPathExpr <- je:JSONExpr ".getstr" _? '(' _? p:JSONPath _? ")" _? {
       return common.NewStringPathExpr(p),nil		

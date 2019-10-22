@@ -104,10 +104,17 @@ NumLiteral <- p:([0-9]+('.'[0-9]+)?) {
 	      return common.NewFloatLiteralExpr(x), err
 	   }
 
+NumPathExpr <- je:JSONExpr ".getnum(" _? p:JSONPath _? ")" _? {
+      return common.NewStreamNumExpr(common.NewNumPathExpr(je, p)),nil		
+}
 
-NumPathExpr <- "e.getnum(" _? p:JSONPath _? ")" _? {
-             return common.NewStreamNumExpr(common.NewNumPathExpr(p)),nil
-	   }
+JSONExpr <- "e" suffixes:(JESuffix*) _? {
+  return common.NewJSONExpr(suffixes)
+}
+
+JESuffix <- ".getJSON(" _? p:JSONPath _? ")" {
+    return p,nil
+}
 
 AtomicPredicate <- p:PathPredicate _? { return p,nil }
 	  / p:StrCmpPredicate   _?  { return p,nil }
