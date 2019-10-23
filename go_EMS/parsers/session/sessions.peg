@@ -14,8 +14,19 @@ import(
 
 Input  <- _? d:(Declaration*)  EOF {
        // returns a []interface{} where all elements are Filter,Session,Stream or Trigger
-       return d,nil
-       }
+  var ret []interface{}
+  for _,v := range d.([]interface{}) {
+    switch val := v.(type) {
+		case Streams:
+      for _,stream := range val.DaStreams {
+        ret = append(ret,stream)
+      }
+    default:
+      ret = append(ret,v)
+    }
+  }
+  return ret,nil
+}
 
 Version <- VERSION ver:VersionNum _?  {
   return ver,nil //TODO, check for version number

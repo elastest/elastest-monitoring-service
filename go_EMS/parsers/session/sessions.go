@@ -130,6 +130,10 @@ func (e StreamType) Sprint() string {
 //
 // We need a dictionary of streams (so all streams used are defined)
 //
+type Streams struct { // a Stream is a Name:=Expr
+  DaStreams []Stream
+}
+
 type Stream struct { // a Stream is a Name:=Expr
 	SType StreamType
 	Name striverdt.StreamName
@@ -155,21 +159,27 @@ func (this Session) Accept(visitor MoMVisitor) {
 // Declaration Node constructors
 //
 
-func newStreamDeclaration(ipars,t,n,e interface{}) Stream {
+func newStreamDeclaration(ipars,t,n,e interface{}) Streams {
   the_type := t.(StreamType)
   name     := n.(common.Identifier).Val
   expr     := e.(common.StreamExpr)
+  var streams []Stream
   if ipars == nil {
-    return Stream{the_type,striverdt.StreamName(name),expr}
+    stream := Stream{the_type,striverdt.StreamName(name),expr}
+    return Streams{append(streams, stream)}
   }
   pars := ipars.(common.ParamDef)
   fmt.Println(pars)
-  newname, newexpr := processParameterizedStream(name, expr, pars.Name, pars.Fst)
-  return Stream{the_type,striverdt.StreamName(newname),newexpr}
+  for i := int(pars.Fst.Num); i<=int(pars.Lst.Num); i++ {
+    newname, newexpr := processParameterizedStream(name, expr, pars.Name, i)
+    stream := Stream{the_type,striverdt.StreamName(newname),newexpr}
+    streams = append(streams,stream)
+  }
+  return Streams{streams}
 }
 
-func processParameterizedStream(namestr string, expr common.StreamExpr, namepar string, fst common.FloatLiteralExpr) (string, common.StreamExpr) {
-  parstr := strconv.Itoa(int(fst.Num))
+func processParameterizedStream(namestr string, expr common.StreamExpr, namepar string, index int) (string, common.StreamExpr) {
+  parstr := strconv.Itoa(index)
   return (namestr+"["+parstr+"]"),expr
 }
 
