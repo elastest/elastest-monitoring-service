@@ -24,6 +24,12 @@ type StreamExpr interface {
 	Accept (StreamExprVisitor)
 }
 
+type ParamDef struct {
+  Name string
+  Fst FloatLiteralExpr
+  Lst FloatLiteralExpr
+}
+
 type StreamNumExpr struct {
     Expr NumExpr
 }
@@ -155,4 +161,11 @@ func NewJSONExpr(suffixes interface{}) (JSONExpr, error) {
     paths[i] =dt.JSONPath(is.(PathName).Val)
   }
   return JSONExpr{paths}, nil
+}
+
+func NewParamDef(iParName, iFst, iLst interface{}) ParamDef {
+	 parName := iParName.(Identifier).Val
+		fst := iFst.(FloatLiteralExpr)
+		lst := iLst.(FloatLiteralExpr)
+	 return ParamDef{parName, fst, lst}
 }

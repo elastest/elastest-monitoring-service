@@ -39,8 +39,12 @@ Session <- SESSION n:Name ":=" _? "[" _? beg:Predicate "," _? end:Predicate "]" 
 	return newSessionDeclaration(n,beg,end),nil
 }
 
-Stream <- STREAM t:Type n:Name ":=" _? e:StreamExpr {
-       return newStreamDeclaration(t,n,e),nil
+Stream <- STREAM t:Type n:Name _? pars:ParamDef? _? ":=" _? e:StreamExpr {
+  return newStreamDeclaration(pars,t,n,e),nil
+}
+
+ParamDef <- "[" _? parName:Name _? ":" _? fst:NumLiteral ".." lst:NumLiteral _? "]" {
+  return common.NewParamDef(parName, fst, lst),nil
 }
 
 Type <- NUM { return NumT,nil}

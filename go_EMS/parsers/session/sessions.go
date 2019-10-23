@@ -4,6 +4,7 @@ import(
 //	"errors"
 	"fmt"
 //	"log"
+  "strconv"
     "github.com/elastest/elastest-monitoring-service/go_EMS/parsers/common"
     dt "github.com/elastest/elastest-monitoring-service/go_EMS/datatypes"
     striverdt "gitlab.software.imdea.org/felipe.gorostiaga/striver-go/datatypes"
@@ -154,11 +155,22 @@ func (this Session) Accept(visitor MoMVisitor) {
 // Declaration Node constructors
 //
 
-func newStreamDeclaration(t,n,e interface{}) Stream {
-	the_type := t.(StreamType)
-	name     := n.(common.Identifier).Val
-	expr     := e.(common.StreamExpr)
-	return Stream{the_type,striverdt.StreamName(name),expr}
+func newStreamDeclaration(ipars,t,n,e interface{}) Stream {
+  the_type := t.(StreamType)
+  name     := n.(common.Identifier).Val
+  expr     := e.(common.StreamExpr)
+  if ipars == nil {
+    return Stream{the_type,striverdt.StreamName(name),expr}
+  }
+  pars := ipars.(common.ParamDef)
+  fmt.Println(pars)
+  newname, newexpr := processParameterizedStream(name, expr, pars.Name, pars.Fst)
+  return Stream{the_type,striverdt.StreamName(newname),newexpr}
+}
+
+func processParameterizedStream(namestr string, expr common.StreamExpr, namepar string, fst common.FloatLiteralExpr) (string, common.StreamExpr) {
+  parstr := strconv.Itoa(int(fst.Num))
+  return (namestr+"["+parstr+"]"),expr
 }
 
 func newSessionDeclaration(n,b,e interface{}) Session {
