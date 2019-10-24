@@ -21,6 +21,14 @@ Input  <- _? d:(Declaration*)  EOF {
       for _,stream := range val.DaStreams {
         ret = append(ret,stream)
       }
+		case Sessions:
+      for _,session := range val.DaSessions {
+        ret = append(ret,session)
+      }
+		case PredicateDecls:
+      for _,predDec := range val.DaPredicateDecls {
+        ret = append(ret,predDec)
+      }
     default:
       ret = append(ret,v)
     }
@@ -42,12 +50,12 @@ Declaration <- f:Filter { return f,nil }
 	    / t:Trigger { return t,nil }
 	    / p:PredDef { return p,nil }
 
-PredDef <- PRED n:Name ":=" _? p:Predicate _? {
-	return newPredicateDeclaration(n,p),nil
+PredDef <- PRED n:Name _? pars:ParamDef? _? ":=" _? p:Predicate _? {
+	return newPredicateDeclaration(pars,n,p),nil
 }
 
-Session <- SESSION n:Name ":=" _? "[" _? beg:Predicate "," _? end:Predicate "]" _? {
-	return newSessionDeclaration(n,beg,end),nil
+Session <- SESSION n:Name _? pars:ParamDef? _? ":=" _? "[" _? beg:Predicate "," _? end:Predicate "]" _? {
+	return newSessionDeclaration(pars,n,beg,end),nil
 }
 
 Stream <- STREAM t:Type n:Name _? pars:ParamDef? _? ":=" _? e:StreamExpr {
