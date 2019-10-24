@@ -169,7 +169,6 @@ func newStreamDeclaration(ipars,t,n,e interface{}) Streams {
     return Streams{append(streams, stream)}
   }
   pars := ipars.(common.ParamDef)
-  fmt.Println(pars)
   for i := int(pars.Fst.Num); i<=int(pars.Lst.Num); i++ {
     newname, newexpr := processParameterizedStream(name, expr, pars.Name, i)
     stream := Stream{the_type,striverdt.StreamName(newname),newexpr}
@@ -179,8 +178,11 @@ func newStreamDeclaration(ipars,t,n,e interface{}) Streams {
 }
 
 func processParameterizedStream(namestr string, expr common.StreamExpr, namepar string, index int) (string, common.StreamExpr) {
+  replaceExpr := common.FloatLiteralExpr{float32(index)}
+  replacerVisitor := common.NameToExprStreamVisitor{namepar, replaceExpr, expr, nil, nil}
+  expr.Accept(&replacerVisitor)
   parstr := strconv.Itoa(index)
-  return (namestr+"["+parstr+"]"),expr
+  return (namestr+"_"+parstr+""),replacerVisitor.ReturnExpr
 }
 
 func newSessionDeclaration(n,b,e interface{}) Session {

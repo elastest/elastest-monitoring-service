@@ -68,7 +68,11 @@ func (visitor StreamExprToStriverVisitor) VisitStreamNumExpr(numExp parsercommon
     })
 }
 func (visitor StreamExprToStriverVisitor) VisitStreamNameExpr(nes parsercommon.StreamNameExpr) {
-    panic("not implemented")
+  sname := striverdt.StreamName(nes.Stream)
+  signalNames := []striverdt.StreamName{sname}
+    makeGeneralStream(signalNames, visitor.streamname, visitor.momvisitor, func(theEvent dt.Event, argsMap map[striverdt.StreamName]interface{}) striverdt.EvPayload {
+      return striverdt.Some(argsMap[sname])
+    })
 }
 
 func makeAvgOutStream(inSignalName, sessionSignalName, outSignalName striverdt.StreamName, visitor *MoMToStriverVisitor) {

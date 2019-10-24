@@ -18,9 +18,9 @@ type PredicateVisitor interface {
     VisitStrMatchPredicate(StrMatchPredicate)
     VisitTagPredicate(TagPredicate)
     VisitNamedPredicate(StreamNameExpr)
-	VisitNumComparisonPredicate(NumComparisonPredicate)
-	VisitIfThenElsePredicate(IfThenElsePredicate)
-	VisitPrevPredicate(PrevPredicate)
+    VisitNumComparisonPredicate(NumComparisonPredicate)
+    VisitIfThenElsePredicate(IfThenElsePredicate)
+    VisitPrevPredicate(PrevPredicate)
     VisitIsInitPredicate(IsInitPredicate)
 }
 
