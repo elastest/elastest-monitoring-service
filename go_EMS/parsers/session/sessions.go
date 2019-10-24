@@ -179,7 +179,7 @@ func newStreamDeclaration(ipars,t,n,e interface{}) Streams {
 
 func processParameterizedStream(namestr string, expr common.StreamExpr, namepar string, index int) (string, common.StreamExpr) {
   replaceExpr := common.FloatLiteralExpr{float32(index)}
-  replacerVisitor := common.NameToExprStreamVisitor{namepar, replaceExpr, expr, nil, nil}
+  replacerVisitor := common.NameToExprStreamVisitor{namepar, replaceExpr, expr, nil, nil, nil}
   expr.Accept(&replacerVisitor)
   parstr := strconv.Itoa(index)
   return (namestr+"_"+parstr+""),replacerVisitor.ReturnExpr
