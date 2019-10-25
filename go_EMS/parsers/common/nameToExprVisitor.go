@@ -1,5 +1,9 @@
 package common
-import "fmt"
+import (
+  // "fmt"
+  "regexp"
+  "strconv"
+)
 
 type NameToExprStreamVisitor struct {
   Namepar string
@@ -38,11 +42,18 @@ func (visitor *NameToExprStreamVisitor) VisitStreamNumExpr(numExp StreamNumExpr)
   visitor.ReturnExpr = numExp
 }
 func (visitor *NameToExprStreamVisitor) VisitStreamNameExpr(nes StreamNameExpr) {
+  daregex := regexp.MustCompile("_"+visitor.Namepar+"$")
 	if nes.Stream == visitor.Namepar {
     newexpr := StreamNumExpr{visitor.Expr}
     visitor.ReturnExpr = newexpr
     visitor.ReturnNumExpr = visitor.Expr
     visitor.ReturnPred = nil
+  } else if daregex.MatchString(nes.Stream)  {
+    indexstr := strconv.Itoa(int(visitor.Expr.Num))
+    newNes := StreamNameExpr{daregex.ReplaceAllString(nes.Stream, "_"+indexstr)}
+    visitor.ReturnExpr = newNes
+    visitor.ReturnNumExpr = newNes
+    visitor.ReturnPred = newNes
   } else {
     visitor.ReturnExpr = nes
     visitor.ReturnNumExpr = nes
@@ -134,7 +145,6 @@ func (visitor *NameToExprStreamVisitor) VisitNumGreater(exp NumGreater) {
     pLeft := visitor.ReturnNumExpr
     exp.Right.AcceptNum(visitor)
     pRight := visitor.ReturnNumExpr
-    fmt.Printf("LEFT: %f, RIGHT: %f\n", pLeft, pRight)
     visitor.ReturnNumComparison = NumGreater{pLeft, pRight}
 }
 func (visitor *NameToExprStreamVisitor) VisitNumGreaterEq(exp NumGreaterEq) {
