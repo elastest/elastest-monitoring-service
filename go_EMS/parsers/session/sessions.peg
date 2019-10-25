@@ -49,6 +49,7 @@ Declaration <- f:Filter { return f,nil }
 	    / s:Stream  { return s,nil }
 	    / t:Trigger { return t,nil }
 	    / p:PredDef { return p,nil }
+      / s:AggStream { return s,nil }
 
 PredDef <- PRED n:Name _? pars:ParamDef? _? ":=" _? p:Predicate _? {
 	return newPredicateDeclaration(pars,n,p),nil
@@ -61,6 +62,13 @@ Session <- SESSION n:Name _? pars:ParamDef? _? ":=" _? "[" _? beg:Predicate "," 
 Stream <- STREAM t:Type n:Name _? pars:ParamDef? _? ":=" _? e:StreamExpr {
   return newStreamDeclaration(pars,t,n,e),nil
 }
+
+AggStream <- AGGSTREAM t:Type n:Name ":=" _? op:VBuiltIn s:Name _? pars:ParamDef _? {
+  return newAggStreamDeclaration(t, n, op, s, pars),nil
+}
+
+VBuiltIn <- ANY { return "any",nil }
+      / ALL { return "all",nil }
 
 ParamDef <- "[" _? parName:Name _? ":" _? fst:NumLiteral ".." lst:NumLiteral _? "]" {
   return common.NewParamDef(parName, fst, lst),nil
@@ -291,6 +299,7 @@ PRED    <- "pred" _
 WITHIN  <- "within" _
 VERSION <- "version" _
 STREAM <- "stream" _
+AGGSTREAM <- "aggstream" _
 NUM    <- "num" _
 BOOL   <- "bool" _
 STRING <- "string" _
@@ -313,3 +322,5 @@ WASALWAYS <-"WasAlways" _
 FALSE <- "false" _?
 TRUE <- "true" _?
 ISINIT <- "is_init" _?
+ANY <- "any" _?
+ALL <- "all" _?

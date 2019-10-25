@@ -8,6 +8,7 @@ import(
     "github.com/elastest/elastest-monitoring-service/go_EMS/parsers/common"
     dt "github.com/elastest/elastest-monitoring-service/go_EMS/datatypes"
     striverdt "gitlab.software.imdea.org/felipe.gorostiaga/striver-go/datatypes"
+    "regexp"
 )
 
 type Filter struct {
@@ -162,6 +163,47 @@ func (this Session) Accept(visitor MoMVisitor) {
 //
 // Declaration Node constructors
 //
+
+func getFunFromOp(op string) (func (a, b interface{}) common.Predicate) {
+  switch op {
+  case "any":
+    return common.NewOrPredicate
+  case "all":
+    return common.NewAndPredicate
+  default:
+    return nil
+  }
+}
+
+func newAggStreamDeclaration(it,in,iop,is,ipars interface{}) Streams {
+  the_type := it.(StreamType)
+  name := in.(common.Identifier).Val
+  op := iop.(string)
+  innername := is.(common.Identifier).Val
+  pars := ipars.(common.ParamDef)
+  dafun := getFunFromOp(op)
+  fst := int(pars.Fst.Num)
+  daregex := regexp.MustCompile("_"+pars.Name+"$")
+  // assert daregex.MatchString(nes.Stream)
+  indexstr := strconv.Itoa(fst)
+  daexpr := common.StreamNameExpr{daregex.ReplaceAllString(innername, "_"+indexstr)}
+  var daexprs []interface{}
+  for i := fst+1; i<=int(pars.Lst.Num); i++ {
+    indexstr := strconv.Itoa(i)
+    exp := common.StreamNameExpr{daregex.ReplaceAllString(innername, "_"+indexstr)}
+    daexprs = append(daexprs, exp)
+  }
+  var pred common.Predicate
+  if len(daexprs) > 0 {
+    pred = dafun(daexpr, daexprs)
+  } else {
+    pred = daexpr
+  }
+  predexpr := common.NewPredExpr(pred)
+  stream := Stream{the_type,striverdt.StreamName(name),predexpr}
+  streams := []Stream{stream}
+  return Streams{streams}
+}
 
 func newStreamDeclaration(ipars,t,n,e interface{}) Streams {
   the_type := t.(StreamType)
