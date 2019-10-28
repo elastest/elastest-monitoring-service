@@ -62,8 +62,11 @@ func (visitor StreamExprToStriverVisitor) VisitStreamNumExpr(numExp parsercommon
     numExp.Expr.AcceptNum(&signalNamesVisitor)
     signalNames := signalNamesVisitor.SNames
     makeGeneralStream(signalNames, visitor.streamname, visitor.momvisitor, func(theEvent dt.Event, argsMap map[striverdt.StreamName]interface{}) striverdt.EvPayload {
-        theEvalVisitor := EvalNumVisitor{0, theEvent, argsMap}
+        theEvalVisitor := EvalNumVisitor{0, 0, false, theEvent, argsMap}
         numExp.Expr.AcceptNum(&theEvalVisitor)
+        if theEvalVisitor.IsInt {
+          return striverdt.Some(theEvalVisitor.ResultInt)
+        }
         return striverdt.Some(theEvalVisitor.Result)
     })
 }
