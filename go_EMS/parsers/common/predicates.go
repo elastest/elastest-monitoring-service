@@ -166,7 +166,7 @@ func (this PrevPredicate) AcceptPred(visitor PredicateVisitor) {
     visitor.VisitPrevPredicate(this)
 }
 func (this PrevPredicate) Sprint() string {
-	return fmt.Sprintf("Prev %s",this.Stream)
+	return fmt.Sprintf("Once %s",this.Stream)
 }
 func NewPrevPred(p interface{}) (PrevPredicate) {
 	return PrevPredicate{striverdt.StreamName(p.(Identifier).Val)}

@@ -64,8 +64,8 @@ session high := [ begin_high, end_high ]
 session low  := [ begin_low , end_low  ]
 
 // ALTERNATIVE
-// stream bool high := Prev begin_high /\ ~Prev end_high
-// stream bool low  := Prev begin_low  /\ ~Prev end_low
+// stream bool high := Once begin_high /\ ~Once end_high
+// stream bool low  := Once begin_low  /\ ~Once end_low
 
 stream int total_packets := if net_packet then e.get(network.packets)
 stream int avg_packets := grad(total_packets)
@@ -77,8 +77,8 @@ stream int avg_low  := avg(avg_packets within low)
 //stream int avg_low  := avg(avg_packets when low)
 
 
-stream bool high_after := Prev end_high
-stream bool low_after  := Prev end_low
+stream bool high_after := Once end_high
+stream bool low_after  := Once end_low
 
 stream bool outcome := high_after /\ low_after /\ avg_low < avg_high * 7 / 10
 

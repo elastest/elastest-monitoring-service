@@ -316,7 +316,6 @@ DO   <- "do" _
 IF   <- "if" _
 THEN <- "then" _
 ELSE <- "else" _
-PREV <- "Prev" _
 ONCE <- "Once" _
 WASALWAYS <-"WasAlways" _
 FALSE <- "false" _?
