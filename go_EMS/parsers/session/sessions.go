@@ -4,9 +4,11 @@ import(
 //	"errors"
 	"fmt"
 //	"log"
+  "strconv"
     "github.com/elastest/elastest-monitoring-service/go_EMS/parsers/common"
     dt "github.com/elastest/elastest-monitoring-service/go_EMS/datatypes"
     striverdt "gitlab.software.imdea.org/felipe.gorostiaga/striver-go/datatypes"
+    "regexp"
 )
 
 type Filter struct {
@@ -129,6 +131,10 @@ func (e StreamType) Sprint() string {
 //
 // We need a dictionary of streams (so all streams used are defined)
 //
+type Streams struct {
+  DaStreams []Stream
+}
+
 type Stream struct { // a Stream is a Name:=Expr
 	SType StreamType
 	Name striverdt.StreamName
@@ -137,6 +143,10 @@ type Stream struct { // a Stream is a Name:=Expr
 
 func (this Stream) Accept(visitor MoMVisitor) {
     visitor.VisitStream(this)
+}
+
+type Sessions struct {
+  DaSessions []Session
 }
 
 type Session struct {
@@ -154,29 +164,135 @@ func (this Session) Accept(visitor MoMVisitor) {
 // Declaration Node constructors
 //
 
-func newStreamDeclaration(t,n,e interface{}) Stream {
-	the_type := t.(StreamType)
-	name     := n.(common.Identifier).Val
-	expr     := e.(common.StreamExpr)
-	return Stream{the_type,striverdt.StreamName(name),expr}
+func getFunFromOp(op string) (func (a, b interface{}) common.Predicate) {
+  switch op {
+  case "any":
+    return common.NewOrPredicate
+  case "all":
+    return common.NewAndPredicate
+  default:
+    return nil
+  }
 }
 
-func newSessionDeclaration(n,b,e interface{}) Session {
+func newAggStreamDeclaration(it,in,iop,is,ipars interface{}) Streams {
+  the_type := it.(StreamType)
+  name := in.(common.Identifier).Val
+  op := iop.(string)
+  innername := is.(common.Identifier).Val
+  pars := ipars.(common.ParamDef)
+  dafun := getFunFromOp(op)
+  fst := int(pars.Fst.Num)
+  daregex := regexp.MustCompile("_"+pars.Name+"$")
+  // assert daregex.MatchString(nes.Stream)
+  indexstr := strconv.Itoa(fst)
+  daexpr := common.StreamNameExpr{daregex.ReplaceAllString(innername, "_"+indexstr)}
+  var daexprs []interface{}
+  for i := fst+1; i<=int(pars.Lst.Num); i++ {
+    indexstr := strconv.Itoa(i)
+    exp := common.StreamNameExpr{daregex.ReplaceAllString(innername, "_"+indexstr)}
+    daexprs = append(daexprs, exp)
+  }
+  var pred common.Predicate
+  if len(daexprs) > 0 {
+    pred = dafun(daexpr, daexprs)
+  } else {
+    pred = daexpr
+  }
+  predexpr := common.NewPredExpr(pred)
+  stream := Stream{the_type,striverdt.StreamName(name),predexpr}
+  streams := []Stream{stream}
+  return Streams{streams}
+}
+
+func newStreamDeclaration(ipars,t,n,e interface{}) Streams {
+  the_type := t.(StreamType)
+  name     := n.(common.Identifier).Val
+  expr     := e.(common.StreamExpr)
+  var streams []Stream
+  if ipars == nil {
+    stream := Stream{the_type,striverdt.StreamName(name),expr}
+    return Streams{append(streams, stream)}
+  }
+  pars := ipars.(common.ParamDef)
+  for i := int(pars.Fst.Num); i<=int(pars.Lst.Num); i++ {
+    newname, newexpr := processParameterizedStream(name, expr, pars.Name, i)
+    stream := Stream{the_type,striverdt.StreamName(newname),newexpr}
+    streams = append(streams,stream)
+  }
+  return Streams{streams}
+}
+
+func processParameterizedStream(namestr string, expr common.StreamExpr, namepar string, index int) (string, common.StreamExpr) {
+  replaceExpr := common.FloatLiteralExpr{float32(index)}
+  replacerVisitor := common.NameToExprStreamVisitor{namepar, replaceExpr, expr, nil, nil, nil}
+  expr.Accept(&replacerVisitor)
+  parstr := strconv.Itoa(index)
+  return (namestr+"_"+parstr+""),replacerVisitor.ReturnExpr
+}
+
+func processParameterizedSession(namestr string, begin common.Predicate, end common.Predicate, namepar string, index int) (string, common.Predicate, common.Predicate) {
+  replaceExpr := common.FloatLiteralExpr{float32(index)}
+  replacerVisitor := common.NameToExprStreamVisitor{namepar, replaceExpr, nil, nil, nil, nil}
+  begin.AcceptPred(&replacerVisitor)
+  newbegin := replacerVisitor.ReturnPred
+  end.AcceptPred(&replacerVisitor)
+  newend := replacerVisitor.ReturnPred
+  parstr := strconv.Itoa(index)
+  return (namestr+"_"+parstr+""),newbegin,newend
+}
+
+func processParameterizedPredicateDecl(namestr string, pred common.Predicate, namepar string, index int) (string, common.Predicate) {
+  replaceExpr := common.FloatLiteralExpr{float32(index)}
+  replacerVisitor := common.NameToExprStreamVisitor{namepar, replaceExpr, nil, nil, nil, nil}
+  pred.AcceptPred(&replacerVisitor)
+  newpred := replacerVisitor.ReturnPred
+  parstr := strconv.Itoa(index)
+  return (namestr+"_"+parstr+""),newpred
+}
+
+func newSessionDeclaration(ipars,n,b,e interface{}) Sessions {
 	name  := n.(common.Identifier).Val
 	begin := b.(common.Predicate)
 	end   := e.(common.Predicate)
-	return Session{striverdt.StreamName(name),begin,end}
+  var sessions []Session
+  if ipars == nil {
+    session := Session{striverdt.StreamName(name),begin,end}
+    return Sessions{append(sessions, session)}
+  }
+  pars := ipars.(common.ParamDef)
+  for i := int(pars.Fst.Num); i<=int(pars.Lst.Num); i++ {
+    newname, newbegin, newend := processParameterizedSession(name, begin, end, pars.Name, i)
+    session := Session{striverdt.StreamName(newname),newbegin,newend}
+    sessions = append(sessions,session)
+  }
+  return Sessions{sessions}
 }
 
-func newPredicateDeclaration(n,p interface{}) PredicateDecl {
+func newPredicateDeclaration(ipars, n,p interface{}) PredicateDecls {
 	name := n.(common.Identifier).Val
 	pred := p.(common.Predicate)
-	return PredicateDecl{name,pred}
+  var predDecs []PredicateDecl
+  if ipars == nil {
+    predDec := PredicateDecl{name,pred}
+    return PredicateDecls{append(predDecs, predDec)}
+  }
+  pars := ipars.(common.ParamDef)
+  for i := int(pars.Fst.Num); i<=int(pars.Lst.Num); i++ {
+    newname, newpred := processParameterizedPredicateDecl(name, pred, pars.Name, i)
+    predDec := PredicateDecl{newname,newpred}
+    predDecs = append(predDecs,predDec)
+  }
+  return PredicateDecls{predDecs}
 }
 
 type PredicateDecl struct {
 	Name string
 	Pred common.Predicate
+}
+
+type PredicateDecls struct {
+  DaPredicateDecls []PredicateDecl
 }
 
 func (this PredicateDecl) Accept(visitor MoMVisitor) {

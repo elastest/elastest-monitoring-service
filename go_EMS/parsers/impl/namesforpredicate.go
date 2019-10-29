@@ -42,6 +42,13 @@ func (visitor *SignalNamesFromPredicateVisitor) VisitNamedPredicate(p common.Str
         visitor.SNames = append(visitor.SNames, striverdt.StreamName(p.Stream))
     }
 }
+func (visitor *SignalNamesFromPredicateVisitor) VisitLastOfStreamNamedPredicate(p common.LastOfStreamNameExpr) {
+    if thepred, ok := visitor.Preds[p.Stream]; ok {
+        thepred.AcceptPred(visitor)
+    } else {
+        visitor.SNames = append(visitor.SNames, striverdt.StreamName("lastOf::"+p.Stream))
+    }
+}
 func (visitor *SignalNamesFromPredicateVisitor) VisitNumComparisonPredicate(p common.NumComparisonPredicate) {
     p.NumComparison.Accept(visitor)
 }
@@ -137,6 +144,9 @@ func (visitor *SignalNamesFromPredicateVisitor) VisitStreamNumExpr(numExp common
 }
 func (visitor *SignalNamesFromPredicateVisitor) VisitStreamNameExpr(exp common.StreamNameExpr) {
     visitor.SNames = append(visitor.SNames, striverdt.StreamName(exp.Stream))
+}
+func (visitor *SignalNamesFromPredicateVisitor) VisitLastOfStreamNameExpr(exp common.LastOfStreamNameExpr) {
+    visitor.SNames = append(visitor.SNames, striverdt.StreamName("lastOf::"+exp.Stream))
 }
 
 // Even comparable strings

@@ -62,13 +62,36 @@ func (visitor StreamExprToStriverVisitor) VisitStreamNumExpr(numExp parsercommon
     numExp.Expr.AcceptNum(&signalNamesVisitor)
     signalNames := signalNamesVisitor.SNames
     makeGeneralStream(signalNames, visitor.streamname, visitor.momvisitor, func(theEvent dt.Event, argsMap map[striverdt.StreamName]interface{}) striverdt.EvPayload {
-        theEvalVisitor := EvalNumVisitor{0, theEvent, argsMap}
+        theEvalVisitor := EvalNumVisitor{0, 0, false, theEvent, argsMap}
         numExp.Expr.AcceptNum(&theEvalVisitor)
+        if theEvalVisitor.IsInt {
+          return striverdt.Some(theEvalVisitor.ResultInt)
+        }
         return striverdt.Some(theEvalVisitor.Result)
     })
 }
 func (visitor StreamExprToStriverVisitor) VisitStreamNameExpr(nes parsercommon.StreamNameExpr) {
-    panic("not implemented")
+  sname := striverdt.StreamName(nes.Stream)
+  signalNames := []striverdt.StreamName{sname}
+    makeGeneralStream(signalNames, visitor.streamname, visitor.momvisitor, func(theEvent dt.Event, argsMap map[striverdt.StreamName]interface{}) striverdt.EvPayload {
+      return striverdt.Some(argsMap[sname])
+    })
+}
+
+func (visitor StreamExprToStriverVisitor) VisitLastOfStreamNameExpr(nes parsercommon.LastOfStreamNameExpr) {
+  sname := striverdt.StreamName(nes.Stream)
+  predFun := func (args...striverdt.EvPayload) striverdt.EvPayload {
+    if !args[0].IsSet {
+        return striverdt.NothingPayload
+    }
+    return striverdt.Some(args[0].Val.(striverdt.EvPayload).Val)
+  }
+  argSignals := []striverdt.ValNode{
+    &striverdt.PrevValNode{striverdt.TNode{}, sname, []striverdt.Event{}},
+  }
+  predVal := striverdt.FuncNode{argSignals, predFun}
+  predStream := striverdt.OutStream{visitor.streamname, striverdt.SrcTickerNode{visitor.momvisitor.InSignalName}, predVal}
+  visitor.momvisitor.OutStreams = append(visitor.momvisitor.OutStreams, predStream)
 }
 
 func makeAvgOutStream(inSignalName, sessionSignalName, outSignalName striverdt.StreamName, visitor *MoMToStriverVisitor) {

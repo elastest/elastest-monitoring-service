@@ -18,9 +18,9 @@ type PredicateVisitor interface {
     VisitStrMatchPredicate(StrMatchPredicate)
     VisitTagPredicate(TagPredicate)
     VisitNamedPredicate(StreamNameExpr)
-	VisitNumComparisonPredicate(NumComparisonPredicate)
-	VisitIfThenElsePredicate(IfThenElsePredicate)
-	VisitPrevPredicate(PrevPredicate)
+    VisitNumComparisonPredicate(NumComparisonPredicate)
+    VisitIfThenElsePredicate(IfThenElsePredicate)
+    VisitPrevPredicate(PrevPredicate)
     VisitIsInitPredicate(IsInitPredicate)
 }
 
@@ -166,7 +166,7 @@ func (this PrevPredicate) AcceptPred(visitor PredicateVisitor) {
     visitor.VisitPrevPredicate(this)
 }
 func (this PrevPredicate) Sprint() string {
-	return fmt.Sprintf("Prev %s",this.Stream)
+	return fmt.Sprintf("Once %s",this.Stream)
 }
 func NewPrevPred(p interface{}) (PrevPredicate) {
 	return PrevPredicate{striverdt.StreamName(p.(Identifier).Val)}

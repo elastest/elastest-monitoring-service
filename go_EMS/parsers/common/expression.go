@@ -16,12 +16,19 @@ type StreamExprVisitor interface {
 	VisitPredExpr(PredExpr)
 	VisitStringPathExpr(StringPathExpr)
 	VisitStreamNameExpr(StreamNameExpr)
+	VisitLastOfStreamNameExpr(LastOfStreamNameExpr)
 }
 
 type StreamExpr interface {
 	// add functions here
 	Sprint() string
 	Accept (StreamExprVisitor)
+}
+
+type ParamDef struct {
+  Name string
+  Fst FloatLiteralExpr
+  Lst FloatLiteralExpr
 }
 
 type StreamNumExpr struct {
@@ -98,6 +105,16 @@ func (this StreamNameExpr) Sprint() string {
 	return string(this.Stream)
 }
 
+type LastOfStreamNameExpr struct {
+	Stream string
+}
+func (this LastOfStreamNameExpr) Accept(visitor StreamExprVisitor) {
+	visitor.VisitLastOfStreamNameExpr(this)
+}
+func (this LastOfStreamNameExpr) Sprint() string {
+	return string(this.Stream)
+}
+
 type StringPathExpr struct {
 	Path []dt.JSONPath
 }
@@ -148,6 +165,10 @@ func NewStreamNameExpr(p interface{}) StreamNameExpr {
 	return StreamNameExpr{p.(Identifier).Val}
 }
 
+func NewLastOfStreamNameExpr(p interface{}) LastOfStreamNameExpr {
+	return LastOfStreamNameExpr{p.(Identifier).Val}
+}
+
 func NewJSONExpr(suffixes interface{}) (JSONExpr, error) {
   isuffixes := suffixes.([]interface{})
   paths := make([]dt.JSONPath, len(isuffixes))
@@ -155,4 +176,11 @@ func NewJSONExpr(suffixes interface{}) (JSONExpr, error) {
     paths[i] =dt.JSONPath(is.(PathName).Val)
   }
   return JSONExpr{paths}, nil
+}
+
+func NewParamDef(iParName, iFst, iLst interface{}) ParamDef {
+	 parName := iParName.(Identifier).Val
+		fst := iFst.(FloatLiteralExpr)
+		lst := iLst.(FloatLiteralExpr)
+	 return ParamDef{parName, fst, lst}
 }

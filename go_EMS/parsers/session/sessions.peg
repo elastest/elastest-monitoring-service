@@ -14,8 +14,27 @@ import(
 
 Input  <- _? d:(Declaration*)  EOF {
        // returns a []interface{} where all elements are Filter,Session,Stream or Trigger
-       return d,nil
-       }
+  var ret []interface{}
+  for _,v := range d.([]interface{}) {
+    switch val := v.(type) {
+		case Streams:
+      for _,stream := range val.DaStreams {
+        ret = append(ret,stream)
+      }
+		case Sessions:
+      for _,session := range val.DaSessions {
+        ret = append(ret,session)
+      }
+		case PredicateDecls:
+      for _,predDec := range val.DaPredicateDecls {
+        ret = append(ret,predDec)
+      }
+    default:
+      ret = append(ret,v)
+    }
+  }
+  return ret,nil
+}
 
 Version <- VERSION ver:VersionNum _?  {
   return ver,nil //TODO, check for version number
@@ -30,17 +49,29 @@ Declaration <- f:Filter { return f,nil }
 	    / s:Stream  { return s,nil }
 	    / t:Trigger { return t,nil }
 	    / p:PredDef { return p,nil }
+      / s:AggStream { return s,nil }
 
-PredDef <- PRED n:Name ":=" _? p:Predicate _? {
-	return newPredicateDeclaration(n,p),nil
+PredDef <- PRED n:Name _? pars:ParamDef? _? ":=" _? p:Predicate _? {
+	return newPredicateDeclaration(pars,n,p),nil
 }
 
-Session <- SESSION n:Name ":=" _? "[" _? beg:Predicate "," _? end:Predicate "]" _? {
-	return newSessionDeclaration(n,beg,end),nil
+Session <- SESSION n:Name _? pars:ParamDef? _? ":=" _? "[" _? beg:Predicate "," _? end:Predicate "]" _? {
+	return newSessionDeclaration(pars,n,beg,end),nil
 }
 
-Stream <- STREAM t:Type n:Name ":=" _? e:StreamExpr {
-       return newStreamDeclaration(t,n,e),nil
+Stream <- STREAM t:Type n:Name _? pars:ParamDef? _? ":=" _? e:StreamExpr {
+  return newStreamDeclaration(pars,t,n,e),nil
+}
+
+AggStream <- AGGSTREAM t:Type n:Name ":=" _? op:VBuiltIn s:Name _? pars:ParamDef _? {
+  return newAggStreamDeclaration(t, n, op, s, pars),nil
+}
+
+VBuiltIn <- ANY { return "any",nil }
+      / ALL { return "all",nil }
+
+ParamDef <- "[" _? parName:Name _? ":" _? fst:NumLiteral ".." lst:NumLiteral _? "]" {
+  return common.NewParamDef(parName, fst, lst),nil
 }
 
 Type <- NUM { return NumT,nil}
@@ -54,14 +85,18 @@ StreamExpr <- '(' _? s:StreamExpr ')' _? { return s,nil }
        	 return common.NewIfThenElseExpr(p,a,b),nil
        }
        / IF p:Predicate THEN s:StreamExpr { return common.NewIfThenExpr(p,s),nil }
+      / LAST s:StreamName {
+            return common.NewLastOfStreamNameExpr(s),nil
+       }
        / e:SubExpr { return e,nil }
+
 
 Predicate <- s:SubExpr {
 	  if v,ok := s.(common.PredExpr) ; ok {
 	    return v.Pred,nil
           } else if v,ok:=s.(common.StreamNameExpr) ; ok {
 	    return v,nil
-	  } 
+	  }
 	    str := fmt.Sprintf("expected a predicate but \"%s\" is not",string(c.text))
 	    return nil,errors.New(str)
 	  }
@@ -131,7 +166,6 @@ Atom <- TRUE _?    { return common.TrueExpr,nil }
      / FALSE        { return common.FalseExpr,nil }
      / b:Builtins   { return b,nil }
      / s:StreamName {
-//       	   fmt.Printf("recognized stream name \"%s\"\n",s.(common.Identifier).Val)
            return common.NewStreamNameExpr(s),nil
 	} // this is polimorphic
      / n:NumLiteral _? {
@@ -156,7 +190,7 @@ Builtins <- b:Builtin "(" _? s:Name WITHIN w:Name _? ")" _? { return common.NewA
      / p:StrcmpPredicate { return p,nil }
      / p:StrMatchPredicate { return p,nil }
      
-PrevExpr <- PREV n:Name _? {
+PrevExpr <- ONCE n:Name _? {
 	   p := common.NewPrevPred(n)
 	   return common.NewPredExpr(p),nil
 	 }
@@ -268,6 +302,7 @@ PRED    <- "pred" _
 WITHIN  <- "within" _
 VERSION <- "version" _
 STREAM <- "stream" _
+AGGSTREAM <- "aggstream" _
 NUM    <- "num" _
 BOOL   <- "bool" _
 STRING <- "string" _
@@ -284,9 +319,11 @@ DO   <- "do" _
 IF   <- "if" _
 THEN <- "then" _
 ELSE <- "else" _
-PREV <- "Prev" _
 ONCE <- "Once" _
 WASALWAYS <-"WasAlways" _
 FALSE <- "false" _?
 TRUE <- "true" _?
 ISINIT <- "is_init" _?
+ANY <- "any" _?
+ALL <- "all" _?
+LAST <- "last" _?
