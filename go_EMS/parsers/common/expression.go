@@ -16,6 +16,7 @@ type StreamExprVisitor interface {
 	VisitPredExpr(PredExpr)
 	VisitStringPathExpr(StringPathExpr)
 	VisitStreamNameExpr(StreamNameExpr)
+	VisitLastOfStreamNameExpr(LastOfStreamNameExpr)
 }
 
 type StreamExpr interface {
@@ -104,6 +105,16 @@ func (this StreamNameExpr) Sprint() string {
 	return string(this.Stream)
 }
 
+type LastOfStreamNameExpr struct {
+	Stream string
+}
+func (this LastOfStreamNameExpr) Accept(visitor StreamExprVisitor) {
+	visitor.VisitLastOfStreamNameExpr(this)
+}
+func (this LastOfStreamNameExpr) Sprint() string {
+	return string(this.Stream)
+}
+
 type StringPathExpr struct {
 	Path []dt.JSONPath
 }
@@ -152,6 +163,10 @@ func NewStringPathExpr(je, p interface{}) StringPathExpr {
 
 func NewStreamNameExpr(p interface{}) StreamNameExpr {
 	return StreamNameExpr{p.(Identifier).Val}
+}
+
+func NewLastOfStreamNameExpr(p interface{}) LastOfStreamNameExpr {
+	return LastOfStreamNameExpr{p.(Identifier).Val}
 }
 
 func NewJSONExpr(suffixes interface{}) (JSONExpr, error) {

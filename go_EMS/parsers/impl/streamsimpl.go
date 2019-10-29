@@ -78,6 +78,22 @@ func (visitor StreamExprToStriverVisitor) VisitStreamNameExpr(nes parsercommon.S
     })
 }
 
+func (visitor StreamExprToStriverVisitor) VisitLastOfStreamNameExpr(nes parsercommon.LastOfStreamNameExpr) {
+  sname := striverdt.StreamName(nes.Stream)
+  predFun := func (args...striverdt.EvPayload) striverdt.EvPayload {
+    if !args[0].IsSet {
+        return striverdt.NothingPayload
+    }
+    return striverdt.Some(args[0].Val.(striverdt.EvPayload).Val)
+  }
+  argSignals := []striverdt.ValNode{
+    &striverdt.PrevValNode{striverdt.TNode{}, sname, []striverdt.Event{}},
+  }
+  predVal := striverdt.FuncNode{argSignals, predFun}
+  predStream := striverdt.OutStream{visitor.streamname, striverdt.SrcTickerNode{visitor.momvisitor.InSignalName}, predVal}
+  visitor.momvisitor.OutStreams = append(visitor.momvisitor.OutStreams, predStream)
+}
+
 func makeAvgOutStream(inSignalName, sessionSignalName, outSignalName striverdt.StreamName, visitor *MoMToStriverVisitor) {
     condCounterName := "condcounter::"+outSignalName
     condCounterFun := func (args...striverdt.EvPayload) striverdt.EvPayload {

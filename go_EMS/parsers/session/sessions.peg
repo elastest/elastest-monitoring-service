@@ -85,14 +85,18 @@ StreamExpr <- '(' _? s:StreamExpr ')' _? { return s,nil }
        	 return common.NewIfThenElseExpr(p,a,b),nil
        }
        / IF p:Predicate THEN s:StreamExpr { return common.NewIfThenExpr(p,s),nil }
+      / LAST s:StreamName {
+            return common.NewLastOfStreamNameExpr(s),nil
+       }
        / e:SubExpr { return e,nil }
+
 
 Predicate <- s:SubExpr {
 	  if v,ok := s.(common.PredExpr) ; ok {
 	    return v.Pred,nil
           } else if v,ok:=s.(common.StreamNameExpr) ; ok {
 	    return v,nil
-	  } 
+	  }
 	    str := fmt.Sprintf("expected a predicate but \"%s\" is not",string(c.text))
 	    return nil,errors.New(str)
 	  }
@@ -162,7 +166,6 @@ Atom <- TRUE _?    { return common.TrueExpr,nil }
      / FALSE        { return common.FalseExpr,nil }
      / b:Builtins   { return b,nil }
      / s:StreamName {
-//       	   fmt.Printf("recognized stream name \"%s\"\n",s.(common.Identifier).Val)
            return common.NewStreamNameExpr(s),nil
 	} // this is polimorphic
      / n:NumLiteral _? {
@@ -187,7 +190,7 @@ Builtins <- b:Builtin "(" _? s:Name WITHIN w:Name _? ")" _? { return common.NewA
      / p:StrcmpPredicate { return p,nil }
      / p:StrMatchPredicate { return p,nil }
      
-PrevExpr <- PREV n:Name _? {
+PrevExpr <- ONCE n:Name _? {
 	   p := common.NewPrevPred(n)
 	   return common.NewPredExpr(p),nil
 	 }
@@ -323,3 +326,4 @@ TRUE <- "true" _?
 ISINIT <- "is_init" _?
 ANY <- "any" _?
 ALL <- "all" _?
+LAST <- "last" _?

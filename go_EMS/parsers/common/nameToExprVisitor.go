@@ -61,6 +61,26 @@ func (visitor *NameToExprStreamVisitor) VisitStreamNameExpr(nes StreamNameExpr) 
   }
 }
 
+func (visitor *NameToExprStreamVisitor) VisitLastOfStreamNameExpr(nes LastOfStreamNameExpr) {
+  daregex := regexp.MustCompile("_"+visitor.Namepar+"$")
+	if nes.Stream == visitor.Namepar {
+    newexpr := StreamNumExpr{visitor.Expr}
+    visitor.ReturnExpr = newexpr
+    visitor.ReturnNumExpr = visitor.Expr
+    visitor.ReturnPred = nil
+  } else if daregex.MatchString(nes.Stream) {
+    indexstr := strconv.Itoa(int(visitor.Expr.Num))
+    newNes := LastOfStreamNameExpr{daregex.ReplaceAllString(nes.Stream, "_"+indexstr)}
+    visitor.ReturnExpr = newNes
+    visitor.ReturnNumExpr = nil
+    visitor.ReturnPred = nil
+  } else {
+    visitor.ReturnExpr = nes
+    visitor.ReturnNumExpr = nil
+    visitor.ReturnPred = nil
+  }
+}
+
 func (visitor *NameToExprStreamVisitor) VisitAndPredicate(p AndPredicate) {
     p.Left.AcceptPred(visitor)
     pLeft := visitor.ReturnPred
@@ -98,6 +118,9 @@ func (visitor *NameToExprStreamVisitor) VisitTagPredicate(p TagPredicate) {
     visitor.ReturnPred = p
 }
 func (visitor *NameToExprStreamVisitor) VisitNamedPredicate(p StreamNameExpr) {
+  p.Accept(visitor)
+}
+func (visitor *NameToExprStreamVisitor) VisitLastOfStreamNamedPredicate(p LastOfStreamNameExpr) {
   p.Accept(visitor)
 }
 func (visitor *NameToExprStreamVisitor) VisitNumComparisonPredicate(p NumComparisonPredicate) {
