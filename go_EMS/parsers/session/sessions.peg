@@ -269,7 +269,7 @@ BackQuotedString <- ('`'[^'`']*'`') {
   return common.NewBackQuotedString(str),nil
 }
 	
-JSONPath <- ([a-zA-Z0-9]+'*'?('.'[a-zA-Z0-9'_']+'*'?)*) {
+JSONPath <- ([@a-zA-Z0-9]+'*'?('.'[@a-zA-Z0-9'_']+'*'?)*) {
 	 return common.NewPathName(string(c.text)),nil
     }
 

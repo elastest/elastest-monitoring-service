@@ -137,7 +137,7 @@ QuotedString <- '"' String '"' {
 	     return common.NewQuotedString(string(c.text)),nil
 }
 	
-JSONPath <- ([a-zA-Z0-9]+('.'[a-zA-Z0-9]+)*) {
+JSONPath <- ([@a-zA-Z0-9]+('.'[@a-zA-Z0-9]+)*) {
 	 return common.NewPathName(string(c.text)),nil
 	 }	 
 
