@@ -295,35 +295,35 @@ EOF     <- !.
 
 // Keywords
 
-SESSION <- "session" _
-BEGIN   <- "begin" _
-END     <- "end" _
-PRED    <- "pred" _
-WITHIN  <- "within" _
-VERSION <- "version" _
-STREAM <- "stream" _
-AGGSTREAM <- "aggstream" _
-NUM    <- "num" _
-BOOL   <- "bool" _
-STRING <- "string" _
-AVG <- "avg" _?
-COUNT   <- "count" _?
-GRAD    <- "gradient" _?
-SUM <- "sum" _?
-TRIGGER <- "trigger" _
-DO      <- "do" _
-EMIT    <- "emit" _
-ON      <- "on" _
-WHEN <- "when" _ 
-DO   <- "do" _ 
-IF   <- "if" _
-THEN <- "then" _
-ELSE <- "else" _
-ONCE <- "Once" _
-WASALWAYS <-"WasAlways" _
-FALSE <- "false" _?
-TRUE <- "true" _?
-ISINIT <- "is_init" _?
-ANY <- "any" _?
-ALL <- "all" _?
-LAST <- "last" _?
+SESSION <- "session" _+
+BEGIN   <- "begin" _+
+END     <- "end" _+
+PRED    <- "pred" _+
+WITHIN  <- "within" _+
+VERSION <- "version" _+
+STREAM <- "stream" _+
+AGGSTREAM <- "aggstream" _+
+NUM    <- "num" _+
+BOOL   <- "bool" _+
+STRING <- "string" _+
+AVG <- "avg" _+
+COUNT   <- "count" _+
+GRAD    <- "gradient" _+
+SUM <- "sum" _+
+TRIGGER <- "trigger" _+
+DO      <- "do" _+
+EMIT    <- "emit" _+
+ON      <- "on" _+
+WHEN <- "when" _ +
+DO   <- "do" _ +
+IF   <- "if" _+
+THEN <- "then" _+
+ELSE <- "else" _+
+ONCE <- "Once" _+
+WASALWAYS <-"WasAlways" _+
+FALSE <- "false" _+
+TRUE <- "true" _+
+ISINIT <- "is_init" _+
+ANY <- "any" _+
+ALL <- "all" _+
+LAST <- "last" _+
