@@ -1,5 +1,6 @@
 package common
 import (
+    striverdt "gitlab.software.imdea.org/felipe.gorostiaga/striver-go/datatypes"
   // "fmt"
   "regexp"
   "strconv"
@@ -115,6 +116,7 @@ func (visitor *NameToExprStreamVisitor) VisitPathPredicate(p PathPredicate) {
     visitor.ReturnPred = p
 }
 func (visitor *NameToExprStreamVisitor) VisitStrCmpPredicate(p StrCmpPredicate) {
+  // TODO fix. May refer to a streamname
     visitor.ReturnPred = p
 }
 func (visitor *NameToExprStreamVisitor) VisitStrMatchPredicate(p StrMatchPredicate) {
@@ -135,11 +137,39 @@ func (visitor *NameToExprStreamVisitor) VisitNumComparisonPredicate(p NumCompari
 }
 
 func (visitor *NameToExprStreamVisitor) VisitPrevPredicate(p PrevPredicate) {
+  daregex := regexp.MustCompile("_"+visitor.Namepar+"$")
+  pStream := string(p.Stream)
+	if pStream == visitor.Namepar {
+    panic("Prev of numeric argument?")
+  } else if daregex.MatchString(pStream)  {
+    indexstr := strconv.Itoa(int(visitor.Expr.Num))
+    newPrevPred := PrevPredicate{striverdt.StreamName(daregex.ReplaceAllString(pStream, "_"+indexstr))}
+    visitor.ReturnExpr = nil
+    visitor.ReturnNumExpr = nil
+    visitor.ReturnPred = newPrevPred
+  } else {
+    visitor.ReturnExpr = nil
+    visitor.ReturnNumExpr = nil
     visitor.ReturnPred = p
+  }
 }
 
 func (visitor *NameToExprStreamVisitor) VisitIsInitPredicate(p IsInitPredicate) {
+  daregex := regexp.MustCompile("_"+visitor.Namepar+"$")
+  pStream := string(p.Stream)
+	if pStream == visitor.Namepar {
+    panic("Prev of numeric argument?")
+  } else if daregex.MatchString(pStream)  {
+    indexstr := strconv.Itoa(int(visitor.Expr.Num))
+    newIsInitPred := IsInitPredicate{striverdt.StreamName(daregex.ReplaceAllString(pStream, "_"+indexstr))}
+    visitor.ReturnExpr = nil
+    visitor.ReturnNumExpr = nil
+    visitor.ReturnPred = newIsInitPred
+  } else {
+    visitor.ReturnExpr = nil
+    visitor.ReturnNumExpr = nil
     visitor.ReturnPred = p
+  }
 }
 
 // It also visits numcomparisons!
