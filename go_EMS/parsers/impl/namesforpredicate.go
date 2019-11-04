@@ -128,7 +128,6 @@ func (visitor *SignalNamesFromPredicateVisitor) VisitIfThenExpr(ifthen common.If
 func (visitor *SignalNamesFromPredicateVisitor) VisitIfThenElseExpr(ifthenelse common.IfThenElseExpr) {
     ifthenelse.If.AcceptPred(visitor)
     ifthenelse.Then.Accept(visitor)
-    ifthenelse.Then.Accept(visitor)
     ifthenelse.Else.Accept(visitor)
 }
 func (visitor *SignalNamesFromPredicateVisitor) VisitPredExpr(predExp common.PredExpr) {
