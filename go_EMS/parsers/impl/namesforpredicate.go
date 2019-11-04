@@ -52,11 +52,6 @@ func (visitor *SignalNamesFromPredicateVisitor) VisitLastOfStreamNamedPredicate(
 func (visitor *SignalNamesFromPredicateVisitor) VisitNumComparisonPredicate(p common.NumComparisonPredicate) {
     p.NumComparison.Accept(visitor)
 }
-func (visitor *SignalNamesFromPredicateVisitor) VisitIfThenElsePredicate(p common.IfThenElsePredicate) {
-    p.If.AcceptPred(visitor)
-    p.Then.Accept(visitor)
-    p.Else.Accept(visitor)
-}
 func (visitor *SignalNamesFromPredicateVisitor) VisitPrevPredicate(prevExp common.PrevPredicate) {
     outStream := "prevOf::"+prevExp.Stream
     makePrevOutStream(prevExp.Stream, outStream, visitor.Momvisitor)
@@ -130,8 +125,11 @@ func (visitor *SignalNamesFromPredicateVisitor) VisitIfThenExpr(ifthen common.If
     ifthen.If.AcceptPred(visitor)
     ifthen.Then.Accept(visitor)
 }
-func (visitor *SignalNamesFromPredicateVisitor) VisitIfThenElseExpr(common.IfThenElseExpr) {
-    panic("not implemented")
+func (visitor *SignalNamesFromPredicateVisitor) VisitIfThenElseExpr(ifthenelse common.IfThenElseExpr) {
+    ifthenelse.If.AcceptPred(visitor)
+    ifthenelse.Then.Accept(visitor)
+    ifthenelse.Then.Accept(visitor)
+    ifthenelse.Else.Accept(visitor)
 }
 func (visitor *SignalNamesFromPredicateVisitor) VisitPredExpr(predExp common.PredExpr) {
     predExp.Pred.AcceptPred(visitor)

@@ -19,7 +19,6 @@ type PredicateVisitor interface {
     VisitTagPredicate(TagPredicate)
     VisitNamedPredicate(StreamNameExpr)
     VisitNumComparisonPredicate(NumComparisonPredicate)
-    VisitIfThenElsePredicate(IfThenElsePredicate)
     VisitPrevPredicate(PrevPredicate)
     VisitIsInitPredicate(IsInitPredicate)
 }
@@ -140,22 +139,6 @@ func (this NumComparisonPredicate) AcceptPred(visitor PredicateVisitor) {
 }
 func (this NumComparisonPredicate) Sprint() string {
 	return this.NumComparison.Sprint()
-}
-
-type IfThenElsePredicate struct {
-	If Predicate
-	Then StreamExpr
-	Else StreamExpr
-}
-func (this IfThenElsePredicate) AcceptPred(visitor PredicateVisitor) {
-    visitor.VisitIfThenElsePredicate(this)
-}
-func (this IfThenElsePredicate) Sprint() string {
-	expr := IfThenElseExpr{this.If,this.Then,this.Else}
-	return expr.Sprint()
-}
-func IfThenElseExpr2Pred(e IfThenElseExpr) IfThenElsePredicate {
-	return IfThenElsePredicate{e.If,e.Then,e.Else}
 }
 
 type PrevPredicate struct {

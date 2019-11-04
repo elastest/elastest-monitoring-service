@@ -50,11 +50,6 @@ type OrPredicate struct {
 	Left  BooleanExpr
 	Right BooleanExpr
 }
-type IfThenElsePredicate struct {
-	If    BooleanExpr
-	Then  BooleanExpr
-	Else  BooleanExpr
-}
 type NumComparisonPredicate struct {
 	Comp NumComparison
 }
