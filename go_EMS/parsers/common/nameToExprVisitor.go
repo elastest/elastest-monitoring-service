@@ -25,8 +25,14 @@ func (visitor *NameToExprStreamVisitor) VisitIfThenExpr(ifthen IfThenExpr) {
   ifthen.Then = visitor.ReturnExpr
   visitor.ReturnExpr = ifthen
 }
-func (visitor *NameToExprStreamVisitor) VisitIfThenElseExpr(IfThenElseExpr) {
-    panic("not implemented")
+func (visitor *NameToExprStreamVisitor) VisitIfThenElseExpr(ifthenelse IfThenElseExpr) {
+  ifthenelse.If.AcceptPred(visitor)
+  ifthenelse.If = visitor.ReturnPred
+  ifthenelse.Then.Accept(visitor)
+  ifthenelse.Then = visitor.ReturnExpr
+  ifthenelse.Else.Accept(visitor)
+  ifthenelse.Else = visitor.ReturnExpr
+  visitor.ReturnExpr = ifthenelse
 }
 func (visitor *NameToExprStreamVisitor) VisitPredExpr(predExp PredExpr) {
   predExp.Pred.AcceptPred(visitor)
@@ -126,10 +132,6 @@ func (visitor *NameToExprStreamVisitor) VisitLastOfStreamNamedPredicate(p LastOf
 func (visitor *NameToExprStreamVisitor) VisitNumComparisonPredicate(p NumComparisonPredicate) {
     p.NumComparison.Accept(visitor)
     visitor.ReturnPred = NumComparisonPredicate{visitor.ReturnNumComparison}
-}
-
-func (visitor *NameToExprStreamVisitor) VisitIfThenElsePredicate(p IfThenElsePredicate) {
-    panic("not implemented")
 }
 
 func (visitor *NameToExprStreamVisitor) VisitPrevPredicate(p PrevPredicate) {

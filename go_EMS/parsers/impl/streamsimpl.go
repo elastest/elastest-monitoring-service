@@ -32,8 +32,15 @@ func (visitor StreamExprToStriverVisitor) VisitIfThenExpr(ifthen parsercommon.If
     ifthen.Then.Accept(visitor)
     makeIfThenStream(ifthen.If, thensignalname, mysignalname, visitor.momvisitor)
 }
-func (visitor StreamExprToStriverVisitor) VisitIfThenElseExpr(parsercommon.IfThenElseExpr) {
-    panic("not implemented")
+func (visitor StreamExprToStriverVisitor) VisitIfThenElseExpr(ifthenelse parsercommon.IfThenElseExpr) {
+    mysignalname := visitor.streamname
+    thensignalname := "ifthenelse_thenstream::"+mysignalname
+    visitor.streamname = thensignalname
+    ifthenelse.Then.Accept(visitor)
+    elsesignalname := "ifthenelse_elsestream::"+mysignalname
+    visitor.streamname = elsesignalname
+    ifthenelse.Else.Accept(visitor)
+    makeIfThenElseStream(ifthenelse.If, thensignalname, elsesignalname, mysignalname, visitor.momvisitor)
 }
 func (visitor StreamExprToStriverVisitor) VisitPredExpr(predExp parsercommon.PredExpr) {
     signalNamesVisitor := SignalNamesFromPredicateVisitor{visitor.momvisitor.Preds, []striverdt.StreamName{}, visitor.momvisitor}
@@ -169,6 +176,52 @@ func makeIfThenStream(ifpred parsercommon.Predicate, thensignalname, mysignalnam
     argSignals := []striverdt.ValNode{
         &striverdt.PrevEqValNode{striverdt.TNode{}, visitor.InSignalName, []striverdt.Event{}},
         &striverdt.PrevEqValNode{striverdt.TNode{}, thensignalname, []striverdt.Event{}},
+    }
+    for _,sname := range signalNames {
+        argSignals = append(argSignals,
+        &striverdt.PrevEqValNode{striverdt.TNode{}, sname, []striverdt.Event{}})
+    }
+    condVal := striverdt.FuncNode{argSignals, condFun}
+    condStream := striverdt.OutStream{mysignalname, striverdt.SrcTickerNode{visitor.InSignalName}, condVal} // TODO Check the source tick
+    visitor.OutStreams = append(visitor.OutStreams, condStream)
+}
+
+func makeIfThenElseStream(ifpred parsercommon.Predicate, thensignalname, elsesignalname, mysignalname striverdt.StreamName, visitor *MoMToStriverVisitor) {
+    signalNamesVisitor := SignalNamesFromPredicateVisitor{visitor.Preds, []striverdt.StreamName{}, visitor}
+    ifpred.AcceptPred(&signalNamesVisitor)
+    signalNames := signalNamesVisitor.SNames
+    condFun := func (args...striverdt.EvPayload) striverdt.EvPayload {
+        rawevent := args[0]
+        if !rawevent.IsSet {
+            panic("No raw event!")
+        }
+        theEvent := rawevent.Val.(striverdt.EvPayload).Val.(dt.Event)
+        then := args[1]
+        els := args[2]
+        argsMap := map[striverdt.StreamName]interface{}{}
+        for i,sname := range signalNames {
+            if !args[i+3].IsSet {
+                return striverdt.NothingPayload
+            }
+            argsMap[sname] = args[i+3].Val.(striverdt.EvPayload).Val
+        }
+        theEvalVisitor := EvalVisitor{false, theEvent, visitor.Preds, argsMap}
+        ifpred.AcceptPred(&theEvalVisitor)
+        if theEvalVisitor.Result {
+          if then.IsSet {
+            return then.Val.(striverdt.EvPayload)
+          }
+          return striverdt.NothingPayload
+        }
+        if els.IsSet {
+          return els.Val.(striverdt.EvPayload)
+        }
+        return striverdt.NothingPayload
+    }
+    argSignals := []striverdt.ValNode{
+        &striverdt.PrevEqValNode{striverdt.TNode{}, visitor.InSignalName, []striverdt.Event{}},
+        &striverdt.PrevEqValNode{striverdt.TNode{}, thensignalname, []striverdt.Event{}},
+        &striverdt.PrevEqValNode{striverdt.TNode{}, elsesignalname, []striverdt.Event{}},
     }
     for _,sname := range signalNames {
         argSignals = append(argSignals,
