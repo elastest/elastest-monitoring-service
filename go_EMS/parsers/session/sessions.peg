@@ -306,10 +306,10 @@ AGGSTREAM <- "aggstream" _+
 NUM    <- "num" _+
 BOOL   <- "bool" _+
 STRING <- "string" _+
-AVG <- "avg" _+
-COUNT   <- "count" _+
-GRAD    <- "gradient" _+
-SUM <- "sum" _+
+AVG <- "avg" _*
+COUNT   <- "count" _*
+GRAD    <- "gradient" _*
+SUM <- "sum" _*
 TRIGGER <- "trigger" _+
 DO      <- "do" _+
 EMIT    <- "emit" _+
