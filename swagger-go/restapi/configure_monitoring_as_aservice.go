@@ -18,6 +18,7 @@ import (
 	"../restapi/operations/publishers"
 	"../restapi/operations/stamper"
 	"../restapi/operations/subscribers"
+	"../restapi/operations/offline"
 	"../implementation"
 )
 
@@ -71,6 +72,9 @@ func configureAPI(api *operations.MonitoringAsAServiceAPI) http.Handler {
 	})
 	api.StamperGetStamperByIDHandler = stamper.GetStamperByIDHandlerFunc(func(params stamper.GetStamperByIDParams) middleware.Responder {
 		return middleware.NotImplemented("operation stamper.GetStamperByID has not yet been implemented")
+	})
+	api.OfflineOfflineHandler = offline.OfflineHandlerFunc(func(params offline.OfflineParams) middleware.Responder {
+		return middleware.NotImplemented("operation offline.Offline has not yet been implemented, but it will ;) ")
 	})
 	api.MonitoringMachinePostMoMHandler = monitoring_machine.PostMoMHandlerFunc(func(params monitoring_machine.PostMoMParams) middleware.Responder {
 		return implementation.PostMoM(params)
