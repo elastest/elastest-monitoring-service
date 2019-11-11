@@ -48,16 +48,23 @@ func DeleteStamper(momidstr string) *pb.MomDeleteReply {
 func TagEvent(ev *dt.Event) {
     checkDefs := []stamp.Filter{}
     tagAsWS := true
+    tagAsOffline := true
     for _,monitor := range tagMonitors {
         for _,def := range monitor.Defs {
             checkDefs = append(checkDefs, def)
             if "#websocket" == string(def.Tag.Tag) {
                 tagAsWS = false
             }
+            if "#offline" == string(def.Tag.Tag) {
+                tagAsOffline = false
+            }
         }
     }
     if tagAsWS {
         (*ev).Channels = sets.SetAdd(ev.Channels, dt.Channel("#websocket"))
+    }
+    if tagAsOffline {
+        (*ev).Channels = sets.SetAdd(ev.Channels, dt.Channel("#offline"))
     }
 
     dirty:=true

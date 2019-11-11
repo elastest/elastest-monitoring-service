@@ -5,6 +5,7 @@ package restapi
 import (
 	"crypto/tls"
 	"net/http"
+  "io"
 
 	errors "github.com/go-openapi/errors"
 	runtime "github.com/go-openapi/runtime"
@@ -18,6 +19,7 @@ import (
 	"../restapi/operations/publishers"
 	"../restapi/operations/stamper"
 	"../restapi/operations/subscribers"
+	"../restapi/operations/offline"
 	"../implementation"
 )
 
@@ -27,6 +29,13 @@ import (
 
 func configureFlags(api *operations.MonitoringAsAServiceAPI) {
 	// api.CommandLineOptionsGroups = []swag.CommandLineOptionsGroup{ ... }
+}
+
+type MyJSONProducer struct {}
+
+func (MyJSONProducer) Produce (writer io.Writer, interf interface{}) error {
+  str := interf.(string)
+	return runtime.ByteStreamProducer().Produce(writer, []byte(str))
 }
 
 func configureAPI(api *operations.MonitoringAsAServiceAPI) http.Handler {
@@ -41,7 +50,8 @@ func configureAPI(api *operations.MonitoringAsAServiceAPI) http.Handler {
 
 	api.JSONConsumer = runtime.JSONConsumer()
 
-	api.JSONProducer = runtime.JSONProducer()
+	// api.JSONProducer = runtime.JSONProducer()
+  api.JSONProducer = MyJSONProducer{}
 
 	api.XMLProducer = runtime.XMLProducer()
 
@@ -71,6 +81,9 @@ func configureAPI(api *operations.MonitoringAsAServiceAPI) http.Handler {
 	})
 	api.StamperGetStamperByIDHandler = stamper.GetStamperByIDHandlerFunc(func(params stamper.GetStamperByIDParams) middleware.Responder {
 		return middleware.NotImplemented("operation stamper.GetStamperByID has not yet been implemented")
+	})
+	api.OfflineOfflineHandler = offline.OfflineHandlerFunc(func(params offline.OfflineParams) middleware.Responder {
+		return implementation.Offline(params)
 	})
 	api.MonitoringMachinePostMoMHandler = monitoring_machine.PostMoMHandlerFunc(func(params monitoring_machine.PostMoMParams) middleware.Responder {
 		return implementation.PostMoM(params)

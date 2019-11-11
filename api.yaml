@@ -456,6 +456,28 @@ paths:
           schema:
             type: "string"
             description: "Environment information."
+  /offline/{ExecId}:
+    post:
+      tags:
+      - "Offline"
+      summary: "Execute the EMS offline"
+      description: "This method is used to run the EMS with the stored events of a previous execution"
+      operationId: "offline"
+      parameters:
+      - name: "ExecId"
+        in: "path"
+        description: "Id of execution to analyse"
+        required: true
+        type: "string"
+      responses:
+        200:
+          description: "EMS executed successfully."
+          schema:
+            type: "array"
+            items:
+              type: "string"
+            description: "Generated events"
+
 definitions:
   Event:
     type: "object"

@@ -4,8 +4,10 @@ import (
   "net/http"
   runtime "github.com/go-openapi/runtime"
   middleware "github.com/go-openapi/runtime/middleware"
+  "io/ioutil"
 
   "../restapi/operations/subscribers"
+	"../restapi/operations/offline"
   "../models"
   "fmt"
   "math/rand"
@@ -37,6 +39,17 @@ type SubscribeManyOk struct {
 
   // In: body
   subscriptionIds []string
+}
+
+type OfflineResponder struct { events string }
+
+// WriteResponse to the client
+func (or OfflineResponder) WriteResponse(rw http.ResponseWriter, producer runtime.Producer) {
+  rw.WriteHeader(200)
+  lines := strings.ReplaceAll(strings.TrimSpace(or.events), "\n", ",\n")
+	if err := producer.Produce(rw, "[" + lines + "]"); err != nil {
+		panic(err) // let the recovery middleware deal with this
+  }
 }
 
 // WriteResponse to the client
@@ -189,4 +202,54 @@ func UnsubscribeHandler(params subscribers.UnsubscribeParams) middleware.Respond
     os.Exit(1)
   }
   return UnSubscribeOk{}
+}
+
+func offline_pipe_reader(c chan string) {
+  dat, err := ioutil.ReadFile("/usr/share/logstash/pipes/offlinepipe")
+  if err != nil {
+    fmt.Fprintln(os.Stderr, err)
+    os.Exit(1)
+  }
+  c <- string(dat)
+  close(c)
+}
+
+func Offline(params offline.OfflineParams) middleware.Responder {
+  c := make(chan string)
+  go offline_pipe_reader(c)
+  outputStr := `
+  if "#offline" in [channels] {
+    file {
+      path => "/usr/share/logstash/pipes/offlinepipe"
+      codec => json_lines
+    }
+  }
+}`
+  injectNewOutput(outputStr)
+  template := `
+input {
+  jdbc {
+    jdbc_driver_class => "com.mysql.jdbc.Driver"
+    jdbc_connection_string => "jdbc:mysql://172.25.0.4:3306/ETM"
+    jdbc_user => "elastest"
+    jdbc_password => "elastest"
+    parameters => {"execid" => "%s"}
+    statement => "select * from Trace where exec = :execid"
+  }
+}
+
+output {
+  file {
+    path => "/usr/share/logstash/pipes/leftpipe"
+    codec => json_lines
+  }
+}`
+  execid := params.ExecID
+  inlscontent := fmt.Sprintf(template, execid)
+  if err := ioutil.WriteFile("/usr/share/logstash/pipeline/inlogstash.conf", []byte(inlscontent), 0644); err != nil {
+    fmt.Fprintln(os.Stderr, err)
+    os.Exit(1)
+  }
+  evs := <-c
+  return OfflineResponder{evs}
 }
