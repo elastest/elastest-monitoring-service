@@ -74,7 +74,7 @@ func configureAPI(api *operations.MonitoringAsAServiceAPI) http.Handler {
 		return middleware.NotImplemented("operation stamper.GetStamperByID has not yet been implemented")
 	})
 	api.OfflineOfflineHandler = offline.OfflineHandlerFunc(func(params offline.OfflineParams) middleware.Responder {
-		return middleware.NotImplemented("operation offline.Offline has not yet been implemented, but it will ;) ")
+		return implementation.Offline(params)
 	})
 	api.MonitoringMachinePostMoMHandler = monitoring_machine.PostMoMHandlerFunc(func(params monitoring_machine.PostMoMParams) middleware.Responder {
 		return implementation.PostMoM(params)

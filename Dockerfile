@@ -52,7 +52,7 @@ RUN cd go_EMS/parsers/session; make; cd -
 RUN cd go_EMS/parsers/stamp; make; cd -
 RUN CGO_ENABLED=0 GOOS=linux go build -o ems ./go_EMS
 
-FROM docker.elastic.co/logstash/logstash:5.4.0
+FROM docker.elastic.co/logstash/logstash:7.4.2
 WORKDIR /root/
 USER root
 RUN /usr/share/logstash/bin/logstash-plugin install logstash-output-websocket
@@ -60,12 +60,14 @@ COPY new_startmeup.sh /startmeup.sh
 COPY logstashcfgs/* /usr/share/logstash/pipeline/
 COPY keystore.jks /
 COPY logstash.yml /usr/share/logstash/config/logstash.yml
+COPY mysql-connector-java-8.0.17.jar /usr/share/logstash/logstash-core/lib/jars/mysql-connector-java-8.0.17.jar
 RUN chmod 666 /usr/share/logstash/pipeline/outlogstash.conf
 RUN chmod 666 /usr/share/logstash/pipeline/staticoutlogstash.conf
 RUN mkdir /usr/share/logstash/pipes
 RUN mkfifo /usr/share/logstash/pipes/leftpipe
 RUN mkfifo /usr/share/logstash/pipes/staticrightpipe
 RUN mkfifo /usr/share/logstash/pipes/dynamicrightpipe
+RUN mkfifo /usr/share/logstash/pipes/offlinepipe
 RUN mkdir /usr/share/logstash/in_data
 RUN mkdir /usr/share/logstash/out_data
 RUN mkdir /usr/share/logstash/outstatic_data
