@@ -5,6 +5,7 @@ package restapi
 import (
 	"crypto/tls"
 	"net/http"
+  "io"
 
 	errors "github.com/go-openapi/errors"
 	runtime "github.com/go-openapi/runtime"
@@ -30,6 +31,13 @@ func configureFlags(api *operations.MonitoringAsAServiceAPI) {
 	// api.CommandLineOptionsGroups = []swag.CommandLineOptionsGroup{ ... }
 }
 
+type MyJSONProducer struct {}
+
+func (MyJSONProducer) Produce (writer io.Writer, interf interface{}) error {
+  str := interf.(string)
+	return runtime.ByteStreamProducer().Produce(writer, []byte(str))
+}
+
 func configureAPI(api *operations.MonitoringAsAServiceAPI) http.Handler {
 	// configure the api here
 	api.ServeError = errors.ServeError
@@ -42,7 +50,8 @@ func configureAPI(api *operations.MonitoringAsAServiceAPI) http.Handler {
 
 	api.JSONConsumer = runtime.JSONConsumer()
 
-	api.JSONProducer = runtime.JSONProducer()
+	// api.JSONProducer = runtime.JSONProducer()
+  api.JSONProducer = MyJSONProducer{}
 
 	api.XMLProducer = runtime.XMLProducer()
 

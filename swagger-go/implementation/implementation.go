@@ -46,7 +46,8 @@ type OfflineResponder struct { events string }
 // WriteResponse to the client
 func (or OfflineResponder) WriteResponse(rw http.ResponseWriter, producer runtime.Producer) {
   rw.WriteHeader(200)
-	if err := producer.Produce(rw, or.events); err != nil {
+  lines := strings.ReplaceAll(strings.TrimSpace(or.events), "\n", ",\n")
+	if err := producer.Produce(rw, "[" + lines + "]"); err != nil {
 		panic(err) // let the recovery middleware deal with this
   }
 }
@@ -216,6 +217,15 @@ func offline_pipe_reader(c chan string) {
 func Offline(params offline.OfflineParams) middleware.Responder {
   c := make(chan string)
   go offline_pipe_reader(c)
+  outputStr := `
+  if "#offline" in [channels] {
+    file {
+      path => "/usr/share/logstash/pipes/offlinepipe"
+      codec => json_lines
+    }
+  }
+}`
+  injectNewOutput(outputStr)
   template := `
 input {
   jdbc {
@@ -230,7 +240,7 @@ input {
 
 output {
   file {
-    path => "/usr/share/logstash/pipes/offlinepipe"
+    path => "/usr/share/logstash/pipes/leftpipe"
     codec => json_lines
   }
 }`
@@ -241,5 +251,5 @@ output {
     os.Exit(1)
   }
   evs := <-c
-  return OfflineResponder{"holis " + evs}
+  return OfflineResponder{evs}
 }

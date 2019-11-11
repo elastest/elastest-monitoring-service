@@ -31,11 +31,12 @@ func main() {
     panic(err)
   }
   defer file.Close()
-  for {
+  for i := 0; i < 20; i++ {
     scanStdIn(file)
     fmt.Println("RELOADING " + pipename)
   }
-  panic("leaving!")
+  fmt.Println("Just sleeping")
+  select{}
 }
 
 func scanStdIn(file io.Reader) {
