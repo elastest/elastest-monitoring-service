@@ -4,6 +4,12 @@ stream string usr := if e.path(cookie) then e.getstr(usr)
 stream bool getVerdict := if e.path(getVerdict) then e.strcmp(getVerdict, "true")
 
 stream string op := if e.path(op) then e.getstr(op)
-strean string arg := if e.path(arg) then e.getstr(arg)
+stream string arg := if e.path(arg) then e.getstr(arg)
 
-stream bool goodLogin := e.strcmp(op, "login") /\ e.strcmp(arg, usr)
+stream string lcookie := last cookie
+stream bool goodLogin := e.strcmp(op,"login") /\ e.strcmp(arg, usr)
+stream bool goodTest := e.strcmp(op,"test") /\ e.strcmp(arg, cookie) 
+stream bool goodLogout := e.strcmp(op, "logout") /\ e.strcmp(arg, lcookie)
+stream bool goodTransition := goodLogin \/ goodTest \/ goodLogout
+stream string verdict := if goodTransition then 1 else 0
+trigger getVerdict do emit `{"verdict": "%verdict", "op": "%op", "arg": "%arg"}` on #out
