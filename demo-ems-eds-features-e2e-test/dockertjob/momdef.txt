@@ -3,6 +3,6 @@ stream string usr := if e.path(cookie) then e.getstr(usr)
 stream bool getVerdict := if e.path(getVerdict) then e.strcmp(getVerdict, "true")
 
 stream string op := if e.path(op) then e.getstr(op)
-strean string arg := if e.path(arg) then e.getstr(arg)
+stream string arg := if e.path(arg) then e.getstr(arg)
 
 stream string verdict := if goodTransition then "ok" else "fail"
