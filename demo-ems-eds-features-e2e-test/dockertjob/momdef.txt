@@ -8,8 +8,8 @@ strean string arg := if e.path(arg) then e.getstr(arg)
 stream string verdict := if goodTransition then "ok" else "fail"
 
 stream bool goodTransition := goodLogin \/ goodTest \/ goodLogout
-stream bool goodLogin := stateUp.op == "login" /\ arg == usr
-stream bool goodTest := stateUp.op == "test" /\ arg == cookie 
-stream bool goodLogout := stateUp.op == "logout" /\ arg == prev(cookie)
+stream bool goodLogin := stateUp.op = "login" /\ arg = usr
+stream bool goodTest := stateUp.op = "test" /\ arg = cookie 
+stream bool goodLogout := stateUp.op = "logout" /\ arg = prev(cookie)
 
 trigger getVerdict do emit `{"verdict": "%verdict", "op": "%op", "arg": "%arg"}` on #out
