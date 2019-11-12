@@ -1,0 +1,19 @@
+stream string cookie := e.getstr(cookie)
+stream string id_usr := e.getstr(id_usr)
+stream bool get_verdict := e.strcmp(get_verdict, "true")
+
+//stream json state_up := e.getjson(state_up)
+stream string op := e.getstr(op)
+strean string arg := e.getstr(arg)
+//stream string op := state_up.op
+//strean string arg := state_up.arg
+
+
+stream json verdict := if good_transition then {"verdict": "ok", "op": op, "arg": arg} else {"verdict": "fail", "op": op, "arg": arg}
+
+stream bool good_transition := good_login \/ good_test \/ good_logout
+stream bool good_login := state_up.op == "login" /\ arg == id_usr //login, arg == id_usr and pair (id_usr, cookie) is correct
+stream bool good_test := state_up.op == "test" /\ arg == cookie //test, arg == cookie and pair (id_usr, cookie) is correct
+stream bool good_test := state_up.op == "logout" /\ arg == prev(cookie) //test, arg == cookie and pair (id_usr, cookie) were correct before the logout operation
+
+trigger get_verdict do emit verdict on #out
