@@ -1,15 +1,15 @@
 stream string cookie := if e.path(cookie) then e.getstr(cookie) 
-stream string id_usr := if e.path(cookie) then e.getstr(id_usr)
-stream bool get_verdict := if e.path(get_verdict) then e.strcmp(get_verdict, "true")
+stream string usr := if e.path(cookie) then e.getstr(usr)
+stream bool getVerdict := if e.path(getVerdict) then e.strcmp(getVerdict, "true")
 
 stream string op := if e.path(op) then e.getstr(op)
 strean string arg := if e.path(arg) then e.getstr(arg)
 
-stream string verdict := if good_transition then "ok" else "fail"
+stream string verdict := if goodTransition then "ok" else "fail"
 
-stream bool good_transition := good_login \/ good_test \/ good_logout
-stream bool good_login := state_up.op == "login" /\ arg == id_usr
-stream bool good_test := state_up.op == "test" /\ arg == cookie 
-stream bool good_test := state_up.op == "logout" /\ arg == prev(cookie)
+stream bool goodTransition := goodLogin \/ goodTest \/ goodLogout
+stream bool goodLogin := stateUp.op == "login" /\ arg == usr
+stream bool goodTest := stateUp.op == "test" /\ arg == cookie 
+stream bool goodLogout := stateUp.op == "logout" /\ arg == prev(cookie)
 
-trigger get_verdict do emit `{"verdict": "%verdict", "op": "%op", "arg": "%arg"}` on #out
+trigger getVerdict do emit `{"verdict": "%verdict", "op": "%op", "arg": "%arg"}` on #out
