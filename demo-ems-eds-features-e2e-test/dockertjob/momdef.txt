@@ -6,4 +6,4 @@ stream bool getVerdict := if e.path(getVerdict) then e.strcmp(getVerdict, "true"
 stream string op := if e.path(op) then e.getstr(op)
 strean string arg := if e.path(arg) then e.getstr(arg)
 
-stream bool goodLogin := op = "login" /\ e.strcmp(arg, usr)
+stream bool goodLogin := e.strcmp(op, "login") /\ e.strcmp(arg, usr)
