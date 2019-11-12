@@ -41,7 +41,7 @@ def login(usr, logged_users):
         "op": "login",
         "arg": usr
     }
-    informEMScookie(emsResponse)
+    informEMS(emsResponse)
     return response
 #requires login
 def test(test_name, cookie, logged_users):
@@ -74,6 +74,7 @@ def logout(cookie, logged_users):
         r = "ok" #success
     except KeyError as k:
         r = "Error: cannot logout user that has not logged in"
+        usr = "not found"
     response = {
         "usr": usr,
         "cookie" : cookie,
@@ -89,7 +90,7 @@ def logout(cookie, logged_users):
 def informEMS(jsonObj):
     url =  "http://" + emsIp + ":"+str(emsPort) #8888 no! that's for specs!, to feed events use port 8181 for http events
     logging.info("new event %s to EMS in %s ", json.dumps(jsonObj), url)
-    resp = requests.post(url, json=newcookie)
+    resp = requests.post(url, json=jsonObj)
     logging.info("EMS responded: %s : %s", resp, resp.content)
     #return resp
     
