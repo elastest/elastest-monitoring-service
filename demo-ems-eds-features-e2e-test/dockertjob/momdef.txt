@@ -6,6 +6,3 @@ stream string op := if e.path(op) then e.getstr(op)
 strean string arg := if e.path(arg) then e.getstr(arg)
 
 stream string verdict := if goodTransition then "ok" else "fail"
-
-stream bool goodTransition := goodLogin 
-stream bool goodLogin := stateUp.op = "login" /\ arg = usr
