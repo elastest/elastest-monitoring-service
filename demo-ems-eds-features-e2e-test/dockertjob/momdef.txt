@@ -8,7 +8,7 @@ stream string op := if e.path(op) then e.getstr(op)
 stream string arg := if e.path(arg) then e.getstr(arg)
 
 stream string lcookie := last cookie
-stream bool goodLogin := e.strcmp(op,"login") /\ e.strcmp(arg, usr)
+stream bool goodLogin := e.strcmp(op,"login") 
 stream bool goodTest := e.strcmp(op,"test") /\ e.strcmp(arg, cookie) 
 stream bool goodLogout := e.strcmp(op, "logout") /\ e.strcmp(arg, lcookie)
 stream bool goodTransition := goodLogin \/ goodTest \/ goodLogout
