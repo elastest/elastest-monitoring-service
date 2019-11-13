@@ -1,1 +1,2 @@
-when e.tag(#out) do #websocket
+when e.tag(#outVerdict) do #websocket
+when e.tag(#outCookie) do #websocket
