@@ -1,0 +1,108 @@
+import groovy.json.JsonSlurperClassic
+import groovy.json.JsonOutput
+node{
+    def sutIp
+    elastest(tss: ['EUS'], surefireReportsPattern: '**/target/surefire-reports/TEST-*.xml', monitoring: true, project: 'Jenkins Examples') {
+        stage("Get SuT & EMS info"){
+            //echo 'Environment variables'
+            //sh "env"
+            git "https://gitlab.software.imdea.org/luismiguel.danielsson/full-teaching-orchestration.git"
+            echo 'params: ' + params
+            sutIp = params.SuTIP
+            //echo 'Sut ip: '+ sutIp
+            sutPort = params.SuTPort as Integer
+            //echo 'Sut port: '+ params.SuTPort
+            msg = params.MSG
+            //echo 'MSG: '+ msg
+            ems = params.EMSIP
+            network = params.NETWORK
+            //echo 'NETWORK: '+ network
+            trigger_event = params.TRIGGER_EVENT
+            //trigger_event = "{\"get\":\"false\"}"
+            //echo 'TRIGGER_EVENT: '+ trigger_event
+        }
+        stage("Getting EMS info"){
+            msgObj = textToJson(msg)
+            op = msgObj.operation
+            if (op == "test" || op == "logout") {
+                echo "going to get EMS State"
+                output = getEMSinfo(network, emsIp, trigger_event)
+                cookie = output.value as String
+                echo "cookie: " + cookie
+                msgObj.args.add(cookie)
+                msg = JsonOutput.toJson(msgObj)
+                echo "Msg with cookie: " + msg
+            }
+        }
+        stage("Running Test"){
+            echo 'Running test, server at https://' + sutIp +':'+sutPort
+            ems = params.EMSIP
+            echo 'Running test, EMS at https://' + ems +':8888'
+            response = sh (
+                script: "cd EMS_orchestration; python ./client.py " +sutIp + " " + sutPort + " '" + msg +"'",
+                returnStdout: true
+            )
+            echo "res: " +response
+            sh "cd EMS_orchestration; cat ./client_log.txt;"
+            def jsonSlurper = new JsonSlurperClassic()
+            def object = jsonSlurper.parseText(response)
+            assert object instanceof Map
+            assert object.result instanceof String
+            echo JsonOutput.toJson(object) //json to string
+            
+            echo "RESPONSE: "+ response
+            assert object.result == "ok"
+        }
+    }
+}
+
+@NonCPS
+def textToJson(text){
+    def jsonSlurper = new JsonSlurperClassic()
+    return jsonSlurper.parseText(text)
+}
+
+def containerID(containerName){
+    echo "Inside containerID function, containerName: " + containerName
+    containerID = sh (
+        script: 'docker container ls -a | grep ' + containerName + ' | grep -Eo "[[:alnum:]]+" | head -1',
+        returnStdout: true
+    ).trim()
+    
+    echo containerName+" ID = " + containerID;
+    return containerID;
+}
+
+def dockerExec(containerID, prog, args){
+    r = sh (
+        script: "docker exec -u 0 "+containerID+" /bin/"+prog + " " + args,
+        returnStdout: true
+    )
+    return r
+}
+
+def getEMSinfo(network, emsIp, trigger_event){
+    r = ""
+    try{
+        //suscribe to EMS output; send 'get' to trigger the sending of the 'cookie'; return EMS state
+        //echo "docker run --name getEMSstate --network="+network+" -v logs:/logs luismigueldanielsson/elastest-luismi:ems_orchestration_getEMSstate " + emsIp + " 3232 8181 '" + trigger_event + "'"
+        output = sh (
+            //volume -v logs:/logs mount host dir ./logs (in Jenkins container) to the /logs dir in the getEMSstate container
+            script: "docker run --name getEMSstate --network="+network+" -v logs:/logs luismigueldanielsson/elastest-luismi:ems_orchestration_getEMSstate " + emsIp + " 3232 8181 '" + trigger_event + "'",
+            returnStdout: true
+        )
+        echo "output: " + output
+        output = textToJson(output)
+        //sh "ls; ls EMS_orchestration; cat ./getEMSstate_log.txt" //docker run creates the dir (-v logs) if it doesn't exists
+        r = output.value
+    } finally {
+        echo 'Stopping getEMSstate'
+        getEMSstateID = containerID("getEMSstate")
+        getEMSstate_down = sh (
+            script: "docker container rm -f " + getEMSstateID,
+            returnStatus: true
+        )
+        echo "getEMSstate_down: " + getEMSstate_down
+    }
+    return r
+}

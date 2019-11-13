@@ -1,0 +1,227 @@
+import groovy.json.JsonSlurperClassic
+import groovy.json.JsonOutput
+node{
+    def sutIp
+    elastest(tss: ['EUS'], surefireReportsPattern: '**/target/surefire-reports/TEST-*.xml', monitoring: true, project: 'Jenkins Examples') {
+        try{
+            stage("Start EMS") {
+                echo 'Starting EMS'
+                common_network = "elastest_elastest"
+                git "https://gitlab.software.imdea.org/luismiguel.danielsson/full-teaching-orchestration.git"
+                sh "cd EMS_orchestration; docker-compose -f docker-compose.yml up -d"
+                //next line is to restore the existing workspace in case it was modified (e.g. by a new git command to start EMS)
+                //git "https://github.com/elastest/full-teaching-experiment.git" //restore the workspace so that cleaning up can be done properly
+                emsContainerName = "elastest-ems";
+                sh "docker network connect " + common_network +" "+ containerID(emsContainerName)
+                emsNetwork = common_network
+                emsIp = containerIp(emsContainerName,emsNetwork)
+                echo 'EMS ip: '+ emsIp
+            }
+            try {
+                stage("Start SUT"){
+              	    sutContainerName = "ems_orchestration_sut";
+              	    sutPort = "10000"
+              	    emsPort = "8181" //for receiving events
+                    //sh "cd EMS_orchestration; docker-compose -f sut-compose.yml up -d && sleep 1 && docker container ls"// && docker network connect " + common_network +" "+ containerID(sutContainerName)
+                    sh "cd EMS_orchestration; docker run --name "+sutContainerName+" -p "+ sutPort + ":" + sutPort +" --network="+common_network+" -d --rm luismigueldanielsson/elastest-luismi:ems_orchestration_sut " + sutPort + " " + emsIp + " " + emsPort
+                    sutNetwork = common_network
+                    sutIp = containerIp(sutContainerName,sutNetwork)
+                    echo 'Sut ip: '+ sutIp
+                }
+                stage("Config EMS"){
+                    echo 'Running test, server at https://' + sutIp +':5001'
+                    mvnHome = tool 'M3.3.9'
+                    ems = emsIp
+                    echo 'Running test, EMS at https://' + ems +':8888'
+                    git "https://github.com/elastest/elastest-monitoring-service.git"
+                    content_type = 'text/plain'
+                    stampers = sh (
+                        script: "cat ./demo-ems-eds-features-e2e-test/dockertjob/stamperdef.txt",
+                        returnStdout: true
+                    )
+                    echo "stampers: "+ stampers
+                    url = "http://" + ems + ":8888/stamper/tag0.1" //8888 incoming port, 3232 outgoing port
+                    response = post(url, content_type, stampers)
+                    
+                    moms = sh (
+                        script: "cat ./demo-ems-eds-features-e2e-test/dockertjob/momdef.txt",
+                        returnStdout: true
+                    )
+                    url = "http://" + ems + ":8888/MonitoringMachine/signals0.1"
+                    //{"cookie":"asdaisuhd"}{"get": "true"}
+                    response = post(url, content_type, moms)
+                    print "after sending requests"
+                }
+            	stage("Run Login"){
+               	    echo 'launching ft1'
+                    @Library('OrchestrationLib') _
+		            // Config
+                    orchestrator.setContext(this)
+                    orchestrator.setParallelResultStrategy(ParallelResultStrategy.AND)
+                    //if next line is commented then it's EXIT_AT_END
+                    //orchestrator.setExitCondition(OrchestrationExitCondition.EXIT_ON_FAIL)
+                    login_msg = "{\"operation\":\"login\", \"args\":[\"a\"]}"
+                    trigger_event = "{\"getCookie\": \"true\"}"
+                    params = ["SuTIP":sutIp, "SuTPort": sutPort, "EMSIP": emsIp, "NETWORK": common_network, "MSG": login_msg, "TRIGGER_EVENT": trigger_event]
+                    echo 'finished config'
+                    def result1 = orchestrator.runJob('reqs-e2e-tjob', params)
+                    echo 'finished ft1'
+                    triggerVerdict = "{\"getVerdict\": \"true\"}"
+                    sleepTime = "2"
+                    emsVerdict = getEMSinfo(common_network, emsIp, triggerVerdict).verdict
+                    echo "emsVerdict: " + emsVerdict
+                    //sh "sleep " + sleepTime
+            	}
+            	stage("Run Test"){
+               	    echo 'launching ft2'
+                    test_msg = "{\"operation\":\"test\", \"args\":[\"t\"]}"
+                    params = ["SuTIP":sutIp, "SuTPort": sutPort, "EMSIP": emsIp, "NETWORK": common_network, "MSG": test_msg, "TRIGGER_EVENT": trigger_event]
+                    def result2 = orchestrator.runJob('reqs-e2e-tjob', params)
+                    echo 'finished ft2'
+                    emsVerdict = getEMSinfo(common_network, emsIp, triggerVerdict).verdict
+                    echo "emsVerdict: " + emsVerdict
+                    //sh "sleep " + sleepTime
+            	}
+            	stage("Run Logout"){
+               	    echo 'launching ft3'
+                    logout_msg = "{\"operation\":\"logout\", \"args\":[]}"
+                    params = ["SuTIP":sutIp, "SuTPort": sutPort, "EMSIP": emsIp, "NETWORK": common_network, "MSG": logout_msg, "TRIGGER_EVENT": trigger_event]
+                    def result2 = orchestrator.runJob('reqs-e2e-tjob', params)
+                    echo 'finished ft1'
+                    emsVerdict = getEMSinfo(common_network, emsIp, triggerVerdict).verdict
+                    echo "emsVerdict: " + emsVerdict
+                    //sh "sleep " + sleepTime
+            	}//now test other orders of the operations and check that they fail (tjobs will fail) but as this is the expected behaviour, the orchestration stage suceeds
+            } finally {
+                echo 'Stopping SUT'
+                sutID = containerID(sutContainerName)
+                sut_log = dockerExec(sutID, "cat", "/sut_log.txt")
+                echo 'sut_log: ' + sut_log
+                sut_down = sh (
+                    script: "docker container rm -f " + sutID,
+                    returnStatus: true
+                )
+                echo "sut_down: " + sut_down
+       	    }
+    	} finally {
+    	    echo 'Stopping EMS'
+    	        git "https://gitlab.software.imdea.org/luismiguel.danielsson/full-teaching-orchestration.git"
+                ems_down = sh (
+                    script: "cd EMS_orchestration; docker-compose -f docker-compose.yml down",
+                    returnStatus: true
+                )
+                echo "ems_down: " + ems_down
+        }
+    }
+}
+
+
+def getFirstNetwork(containerName) {
+    echo "Inside getFirstNetwork function"
+    network = sh (
+        script: "docker inspect " + containerName + " -f \"{{json .NetworkSettings.Networks}}\" | awk \"{sub(/:.*/,\\\"\\\")}1\" | awk \"{sub(/\\\"/,\\\"\\\")}1\" | awk \"{sub(/\\\"/,\\\"\\\")}1\" | awk \"{sub(/{/,\\\"\\\")}1\"",
+        returnStdout: true
+    ).trim()
+    
+    echo containerName+" Network = " + network;
+    return network;
+}
+
+def containerIp(containerName, network) {
+    echo "Inside containerIp function"
+    containerIp = sh (
+        script: "docker inspect --format=\"{{.NetworkSettings.Networks." + network + ".IPAddress}}\" "+ containerName,
+        returnStdout: true
+    ).trim()
+    
+    echo containerName+" IP = " + containerIp;
+    return containerIp;
+}
+
+def containerID(containerName){
+    echo "Inside containerID function, containerName: " + containerName
+    containerID = sh (
+        script: 'docker container ls -a | grep ' + containerName + ' | grep -Eo "[[:alnum:]]+" | head -1',
+        returnStdout: true
+    ).trim()
+    
+    echo containerName+" ID = " + containerID;
+    return containerID;
+}
+
+def post(url, content_type, msg){
+    def r = ""
+    print "POST url: " + url + " content_type: " + content_type + " msg: " + msg
+    def post = new URL(url).openConnection()
+    def message = msg
+    post.setRequestMethod("POST")
+    post.setDoOutput(true)
+    post.setRequestProperty("Content-Type", content_type) //"text/plain"
+    post.getOutputStream().write(message.getBytes("UTF-8"));
+    print "POST done, waiting response..."
+    //try{
+    def postRC = post.getResponseCode();
+    r = post.getInputStream().getText()
+    print "post RC: " + postRC +" post response: "+ r
+    if(!postRC.equals(200)) {
+        r = "" //if there was an error we return ""
+    }
+    /*} catch (Exception e){
+        print e
+        r = ""
+    }*/
+    return r
+}
+
+def get(url){
+    def r = ""
+    def get = new URL(url).openConnection();
+    def getRC = get.getResponseCode();
+    println(getRC);
+    r = get.getInputStream().getText()
+    print "get RC: " + getRC +" get response: "+ r
+    if(getRC.equals(200)) {
+        r = "" //if there was an error we return ""
+    }
+    return r
+}
+
+def dockerExec(containerID, prog, args){
+    r = sh (
+        script: "docker exec -u 0 "+containerID+" /bin/"+prog + " " + args,
+        returnStdout: true
+    )
+    return r
+}
+
+def getEMSinfo(network, emsIp, trigger_event){
+    r = ""
+    try{
+        //suscribe to EMS output; send 'get' to trigger the sending of the 'cookie'; return EMS state
+        //echo "docker run --name getEMSstate --network="+network+" -v logs:/logs luismigueldanielsson/elastest-luismi:ems_orchestration_getEMSstate " + emsIp + " 3232 8181 '" + trigger_event + "'"
+        output = sh (
+            //volume -v logs:/logs mount host dir ./logs (in Jenkins container) to the /logs dir in the getEMSstate container
+            script: "docker run --name getEMSstate --network="+network+" -v logs:/logs luismigueldanielsson/elastest-luismi:ems_orchestration_getEMSstate " + emsIp + " 3232 8181 '" + trigger_event + "'",
+            returnStdout: true
+        )
+        echo "output: " + output
+        output = textToJson(output)
+        //sh "ls; ls EMS_orchestration; cat ./getEMSstate_log.txt" //docker run creates the dir (-v logs) if it doesn't exists
+        r = output
+    } finally {
+        echo 'Stopping getEMSstate'
+        getEMSstateID = containerID("getEMSstate")
+        getEMSstate_down = sh (
+            script: "docker container rm -f " + getEMSstateID,
+            returnStatus: true
+        )
+        echo "getEMSstate_down: " + getEMSstate_down
+    }
+    return r
+}
+
+@NonCPS
+def textToJson(text){
+    def jsonSlurper = new JsonSlurperClassic()
+    return jsonSlurper.parseText(text)
+}
