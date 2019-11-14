@@ -18,5 +18,5 @@ stream string verdict := if goodTransition then 1 else 0
 stream bool getCookie := if e.path(getCookie) then e.strcmp(getCookie, "true") else false
 stream bool getVerdict := if e.path(getVerdict) then e.strcmp(getVerdict, "true") else false
 
-trigger getVerdict do emit `{"verdict": "%verdict", "op": "%op", "arg": "%arg", "goodLogin": "%goodLogin", "goodTest": "%goodTest", "goodLogout": "%goodLogout", "cookie": "%cookie", "usr": "%usr", "lcookie": "%lcookie", "lcookieDef": "%lcookieDef", "initLcookie": "%initLcookie", "emptyStr", "%emptyStr"}` on #outVerdict
+trigger getVerdict do emit `{"verdict": "%verdict", "op": "%op", "arg": "%arg", "goodLogin": "%goodLogin", "goodTest": "%goodTest", "goodLogout": "%goodLogout", "cookie": "%cookie", "usr": "%usr", "lcookie": "%lcookie", "lcookieDef": "%lcookieDef", "initLcookie": "%initLcookie", "emptyStr": "%emptyStr"}` on #outVerdict
 trigger getCookie do emit cookie on #outCookie
