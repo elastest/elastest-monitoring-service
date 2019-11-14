@@ -7,7 +7,7 @@ stream bool getVerdict := if e.path(getVerdict) then e.strcmp(getVerdict, "true"
 stream string op := if e.path(op) then e.getstr(op)
 stream string arg := if e.path(arg) then e.getstr(arg)
 
-stream string lcookie := if is_init(cookie) then last cookie else e.getstr(inexistent)
+stream string lcookie := if is_init cookie then last cookie else e.getstr(inexistent)
 stream bool goodLogin := if e.path(op) /\ e.path(arg) then e.strcmp(op,"login") /\ e.strcmp(arg, usr)
 stream bool goodTest := if e.path(op) /\ e.path(arg) then e.strcmp(op,"test") /\ e.strcmp(arg, cookie)
 stream bool goodLogout := if e.path(op) /\ e.path(arg) then e.strcmp(op, "logout") /\ e.strcmp(arg, lcookie) 
