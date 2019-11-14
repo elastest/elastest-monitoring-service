@@ -38,6 +38,7 @@ def login(usr, logged_users):
     emsResponse = {
         "usr" : usr,
         "cookie" : c,
+        "emptyStr": "",
         "op": "login",
         "arg": usr
     }

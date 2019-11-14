@@ -1,9 +1,10 @@
 stream string cookie := if e.path(cookie) then e.getstr(cookie) 
-stream string usr := if e.path(cookie) then e.getstr(usr)
+stream string usr := if e.path(usr) then e.getstr(usr)
+stream string emptyStr := if e.path(emptyStr) then e.getstr(emptyStr)
 
 stream string lcookie := if e.path(cookie) then last cookie
 stream bool initLcookie := if e.path(cookie) then is_init lcookie
-stream string lcookieDef := if e.path(cookie) then if initLcookie then lcookie else e.getstr(inexistent)
+stream string lcookieDef := if e.path(cookie) then (if initLcookie then lcookie else emptyStr)
 
 stream string op := if e.path(op) then e.getstr(op)
 stream string arg := if e.path(arg) then e.getstr(arg)
@@ -17,5 +18,5 @@ stream string verdict := if goodTransition then 1 else 0
 stream bool getCookie := if e.path(getCookie) then e.strcmp(getCookie, "true") else false
 stream bool getVerdict := if e.path(getVerdict) then e.strcmp(getVerdict, "true") else false
 
-trigger getVerdict do emit `{"verdict": "%verdict", "op": "%op", "arg": "%arg", "goodLogin": "%goodLogin", "goodTest": "%goodTest", "goodLogout": "%goodLogout", "cookie": "%cookie", "usr": "%usr", "lcookie": "%lcookie", "lcookieDef": "%lcookieDef", "initLcookie": "%initLcookie"}` on #outVerdict
+trigger getVerdict do emit `{"verdict": "%verdict", "op": "%op", "arg": "%arg", "goodLogin": "%goodLogin", "goodTest": "%goodTest", "goodLogout": "%goodLogout", "cookie": "%cookie", "usr": "%usr", "lcookie": "%lcookie", "lcookieDef": "%lcookieDef", "initLcookie": "%initLcookie", "emptyStr", "%emptyStr"}` on #outVerdict
 trigger getCookie do emit cookie on #outCookie
