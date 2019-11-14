@@ -14,5 +14,5 @@ stream bool goodTest := if e.path(op) /\ e.path(arg) then e.strcmp(op,"test") /\
 stream bool goodLogout := if e.path(op) /\ e.path(arg) then e.strcmp(op, "logout") /\ e.strcmp(arg, lcookieDef)
 stream bool goodTransition := if e.path(op) /\ e.path(arg) then goodLogin \/ goodTest \/ goodLogout
 stream string verdict := if goodTransition then 1 else 0
-trigger getVerdict do emit `{"verdict": "%verdict", "op": "%op", "arg": "%arg", "goodLogin": "%goodLogin", "goodTest": "%goodTest", "goodLogout": "%goodLogout", "cookie": "%cookie", "usr": "%usr", "lcookie": "%lcookie"}` on #outVerdict
+trigger getVerdict do emit `{"verdict": "%verdict", "op": "%op", "arg": "%arg", "goodLogin": "%goodLogin", "goodTest": "%goodTest", "goodLogout": "%goodLogout", "cookie": "%cookie", "usr": "%usr", "lcookie": "%lcookie", "lcookieDef": "%lcookieDef"}` on #outVerdict
 trigger getCookie do emit cookie on #outCookie
