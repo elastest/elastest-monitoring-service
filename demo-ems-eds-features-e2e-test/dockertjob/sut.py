@@ -84,7 +84,7 @@ def logout(cookie, logged_users):
     emsResponse = {
         "usr" : usr,
         "cookie" : "",
-        "op": "test",
+        "op": "logout",
         "arg": cookie
     }
     informEMS(emsResponse)
