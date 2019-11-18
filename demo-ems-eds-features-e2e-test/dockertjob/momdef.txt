@@ -3,11 +3,10 @@ stream string usr := if e.path(usr) then e.getstr(usr)
 stream string emptyStr := if e.path(emptyStr) then e.getstr(emptyStr)
 
 stream string lcookie := if e.path(cookie) then last cookie
-stream bool initLcookie := if e.path(cookie) then is_init lcookie	
-stream string lcookieDef := if e.path(cookie) then (if initLcookie then lcookie else emptyStr)
-
-stream string lastCookie := last cookie
-stream bool onceLastCookie := Once lastCookie
+stream bool truestr := true
+stream num iscookie := if e.path(cookie) then 1 else 0
+stream num countCookie := sum (iscookie within truestr)
+stream string lcookieDef := if e.path(cookie) then (if countCookie > 1 then lcookie else emptyStr)
 
 stream string op := if e.path(op) then e.getstr(op)
 stream string arg := if e.path(arg) then e.getstr(arg)
