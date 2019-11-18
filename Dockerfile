@@ -57,7 +57,6 @@ WORKDIR /root/
 USER root
 RUN /usr/share/logstash/bin/logstash-plugin install logstash-output-websocket
 COPY new_startmeup.sh /startmeup.sh
-COPY bd.bash /bd.bash
 COPY logstashcfgs/* /usr/share/logstash/pipeline/
 COPY keystore.jks /
 COPY logstash.yml /usr/share/logstash/config/logstash.yml
