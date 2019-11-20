@@ -70,7 +70,8 @@ node{
                     sleepTime = "2"
                     emsVerdict = getEMSinfo(common_network, emsIp, triggerVerdict).verdict
                     echo "emsVerdict: " + emsVerdict
-                    //sh "sleep " + sleepTime
+                    sh "sleep " + sleepTime
+                    assert emsVerdict == 1
             	}
             	stage("Run Test"){
                	    echo 'launching ft2'
@@ -80,7 +81,8 @@ node{
                     echo 'finished ft2'
                     emsVerdict = getEMSinfo(common_network, emsIp, triggerVerdict).verdict
                     echo "emsVerdict: " + emsVerdict
-                    //sh "sleep " + sleepTime
+                    sh "sleep " + sleepTime
+                    assert emsVerdict == 1
             	}
             	stage("Run Logout"){
                	    echo 'launching ft3'
@@ -90,7 +92,8 @@ node{
                     echo 'finished ft1'
                     emsVerdict = getEMSinfo(common_network, emsIp, triggerVerdict).verdict
                     echo "emsVerdict: " + emsVerdict
-                    //sh "sleep " + sleepTime
+                    sh "sleep " + sleepTime
+                    assert emsVerdict == 1
             	}//now test other orders of the operations and check that they fail (tjobs will fail) but as this is the expected behaviour, the orchestration stage suceeds
             } finally {
                 echo 'Stopping SUT'
