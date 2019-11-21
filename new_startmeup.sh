@@ -5,6 +5,8 @@ then
   mv /usr/share/logstash/pipeline/standaloneinlogstash.conf /usr/share/logstash/pipeline/inlogstash.conf
 fi
 
+echo '{"channels": ["#websocket"], "hostname": "'$(hostname)'"}' > /thehostname.txt
+
 logstash -f /usr/share/logstash/pipeline/inlogstash.conf --path.data /usr/share/logstash/in_data &>/inlogs.txt &
 
 logstash -f /usr/share/logstash/pipeline/outlogstash.conf --config.reload.automatic --path.data /usr/share/logstash/out_data &>/outlogs.txt &

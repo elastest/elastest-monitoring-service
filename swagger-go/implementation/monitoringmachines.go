@@ -5,6 +5,7 @@ import (
   runtime "github.com/go-openapi/runtime"
   middleware "github.com/go-openapi/runtime/middleware"
 
+  "os"
   "log"
   "time"
   "golang.org/x/net/context"
@@ -58,6 +59,7 @@ func (o DeployNotAllowed) WriteResponse(rw http.ResponseWriter, producer runtime
 }
 
 func PostMoM(params monitoring_machine.PostMoMParams) middleware.Responder {
+  os.Create("/thehostname.txt")
   req := pb.MomPostRequest{Momtype:params.Version, Momdefinition:*params.Mom}
   conn, err := grpc.Dial(address, grpc.WithInsecure())
   if err != nil {
