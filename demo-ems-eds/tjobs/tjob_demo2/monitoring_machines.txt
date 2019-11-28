@@ -1,0 +1,49 @@
+pred issensor [i:0..NUM_PAIRS] := e.strcmp(appname, "test1") /\ e.strcmp(type,"sensor") /\ e.getnum(id) = i
+pred sensorhigh [i:0..NUM_PAIRS] := issensor_i /\ e.getnum(svalue.actual) > e.getnum(svalue.threshold)
+pred isactuator [i:0..NUM_PAIRS] := e.strcmp(appname, "test1") /\ e.strcmp(type,"actuator") /\ e.getnum(id) = i
+
+stream num sensorTS [i:0..NUM_PAIRS] := if issensor_i then e.getnum(timestamp)
+stream num lastSensorTS [i:0..NUM_PAIRS] := if issensor_i then last sensorTS_i
+
+stream num sensorHighTS [i:0..NUM_PAIRS] := if sensorhigh_i then e.getnum(timestamp)
+stream num lastSensorHighTS [i:0..NUM_PAIRS] := if sensorhigh_i then last sensorHighTS_i
+stream num actuatorTS [i:0..NUM_PAIRS] := if isactuator_i then e.getnum(timestamp)
+stream num lastActuatorTS [i:0..NUM_PAIRS] := if isactuator_i then last actuatorTS_i
+stream bool lastWasActuator [i:0..NUM_PAIRS] := lastSensorHighTS_i < actuatorTS_i
+stream bool lastWasSensor [i:0..NUM_PAIRS] := lastActuatorTS_i < sensorHighTS_i
+
+stream bool checkStatusAct [i:0..NUM_PAIRS] := if isactuator_i then lastWasSensor_i
+stream bool checkStatusSens [i:0..NUM_PAIRS] := if sensorhigh_i then lastWasActuator_i
+stream bool checkQuickResponse [i:0..NUM_PAIRS] := if isactuator_i then actuatorTS_i < sensorHighTS_i + 4
+stream bool defaultedStatusAct [i:0..NUM_PAIRS] := if is_init checkStatusAct_i then checkStatusAct_i else true
+stream bool defaultedStatusSens [i:0..NUM_PAIRS] := if is_init checkStatusSens_i then checkStatusSens_i else true
+stream bool defaultedQuickResponse [i:0..NUM_PAIRS] := if is_init checkQuickResponse_i then checkQuickResponse_i else true
+aggstream bool allCheckStatusAct := all defaultedStatusAct_i [i:0..NUM_PAIRS]
+aggstream bool allCheckStatusSens := all defaultedStatusSens_i [i:0..NUM_PAIRS]
+aggstream bool allCheckQuickResponse := all defaultedQuickResponse_i [i:0..NUM_PAIRS]
+
+stream bool notTooOftenSensor [i:0..NUM_PAIRS] := sensorTS_i - lastSensorTS_i > 4
+stream bool defaultedNotTooOftenSensor [i:0..NUM_PAIRS] := if is_init notTooOftenSensor_i then notTooOftenSensor_i else true
+stream bool notTooSeldomSensor [i:0..NUM_PAIRS] := sensorTS_i - lastSensorTS_i < 6
+stream bool defaultedNotTooSeldomSensor [i:0..NUM_PAIRS] := if is_init notTooSeldomSensor_i then notTooSeldomSensor_i else true
+aggstream bool allSensorsNotTooOften := all defaultedNotTooOftenSensor_i [i:0..NUM_PAIRS]
+aggstream bool allSensorsNotTooSeldom := all defaultedNotTooSeldomSensor_i [i:0..NUM_PAIRS]
+
+stream bool failure := ~(allSensorsNotTooOften /\ allSensorsNotTooSeldom /\ allCheckStatusAct /\ allCheckStatusSens /\ allCheckQuickResponse) 
+
+stream bool end := e.strcmp(ourmessage,"STOP_TEST")
+stream num endTS := if end then e.getnum(timestamp)
+
+stream bool endNotTooSeldom [i:0..NUM_PAIRS] := endTS - sensorTS_i < 6
+stream bool defaultedEndNotTooSeldom [i:0..NUM_PAIRS] := if is_init endNotTooSeldom_i then endNotTooSeldom_i else true
+stream bool endQuickResponse [i:0..NUM_PAIRS] := endTS - sensorHighTS_i < 4 
+stream bool defaultedEndQuickResponse [i:0..NUM_PAIRS] := if is_init endQuickResponse_i then endQuickResponse_i else true
+stream bool defaultedEndStatusAct [i:0..NUM_PAIRS] := if is_init actuatorTS_i then endTS - actuatorTS_i < 4 else false
+stream bool endCorrect [i:0..NUM_PAIRS] := defaultedEndNotTooSeldom_i /\ (defaultedEndQuickResponse_i \/ defaultedEndStatusAct_i)
+aggstream bool allEndCorrect := all endCorrect_i [i:0..NUM_PAIRS]
+
+stream num currentID := e.getnum(id)
+
+trigger failure do emit `{ "currentID": "%currentID", "endTimestamp" : "%endTS", "testCorrect": false, "endingType": "shortcut", "allSensorsNotTooOften": "%allSensorsNotTooOften", "allSensorsNotTooSeldom": "%allSensorsNotTooSeldom", "allCheckStatusAct": "%allCheckStatusAct",  "allCheckStatusSens": "%allCheckStatusSens",  "allCheckQuickResponse": "%allCheckQuickResponse"}` on #terminatetest
+trigger end do emit `{"endTimestamp" : "%endTS", "testCorrect" : "%allEndCorrect", "endingType": "stop test"}` on #terminatetest
+
