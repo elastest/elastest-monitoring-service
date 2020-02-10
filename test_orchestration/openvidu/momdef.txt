@@ -1,2 +1,0 @@
-stream bool getCookie := if e.path(getCookie) then e.strcmp(getCookie, "true") else false
-trigger getCookie do emit cookie on #outCookie
