@@ -1,0 +1,9 @@
+pred isnet := e.tag(#NetData)
+
+stream bool tjobfinished := e.strmatch(message, "FINISHING TEST")
+
+stream num outBandwidth := if isnet then e.getnum(net.txBytes_ps)
+
+stream num avgbw := avg(outBandwidth)
+
+trigger tjobfinished do emit avgbw on #avgbw
